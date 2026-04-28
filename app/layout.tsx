@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Open_Sans, Montserrat } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import { Navbar } from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
 
 const openSans = Open_Sans({
   variable: "--font-open-sans",
@@ -30,8 +30,8 @@ export default function RootLayout({
       className={`${openSans.variable} ${montserrat.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <Header />
-        {children}
+        <Navbar />
+          {children}
         <Footer />
       </body>
     </html>

@@ -16,20 +16,24 @@ const links = [
   { href: "/contato", label: "Contato" },
 ]
 
-export default function Header() {
+export function Navbar() {
   const [open, setOpen] = useState(false)
   const pathname = usePathname()
 
   useEffect(() => {
+    if (!open) return
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setOpen(false)
     }
     document.addEventListener("keydown", handleKey)
     return () => document.removeEventListener("keydown", handleKey)
-  }, [])
+  }, [open])
 
   return (
-    <header className="relative w-full border-b border-gray-200 bg-white z-50" aria-label="Cabeçalho do site">
+    <header
+      className="relative w-full border-b border-gray-200 bg-white z-navbar"
+      aria-label="Cabeçalho do site"
+    >
       <div className="max-w-7xl mx-auto flex items-center justify-between px-4 lg:px-6 h-20">
 
         <Link
