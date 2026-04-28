@@ -6,7 +6,7 @@ export default function Footer() {
             <div className="max-w-7xl mx-auto px-4 lg:px-6 py-16 grid grid-cols-1 md:grid-cols-3 md:items-start md:justify-items-center gap-10">
 
                 <div className="max-w-xs flex flex-col gap-3 text-left">
-                    <h2 className="font-display font-semibold text-base">
+                    <h2 className="font-semibold text-base">
                         Projeto Casulo — Centro Dia da Pessoa com Deficiência
                     </h2>
 
@@ -20,7 +20,7 @@ export default function Footer() {
                 </div>
 
                 <div className="max-w-xs flex flex-col gap-3 text-left">
-                    <h2 className="font-display font-semibold text-base">
+                    <h2 className="font-semibold text-base">
                         Horário de atendimento
                     </h2>
 
@@ -35,7 +35,7 @@ export default function Footer() {
                 </div>
 
                 <div className="max-w-xs flex flex-col gap-3 text-left">
-                    <h2 className="font-display font-semibold text-base">
+                    <h2 className="font-semibold text-base">
                         Fale conosco
                     </h2>
 

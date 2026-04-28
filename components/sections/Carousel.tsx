@@ -1,6 +1,6 @@
 'use client'
 
-import Card from "@/components/Card"
+import Card from "@/components/ui/Card"
 import useEmblaCarousel from "embla-carousel-react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/cn"
