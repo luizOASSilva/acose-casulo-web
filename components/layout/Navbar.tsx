@@ -54,6 +54,7 @@ export function Navbar() {
           className="lg:hidden p-2 text-gray-700 cursor-pointer rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           onClick={() => setOpen((prev) => !prev)}
           aria-label={open ? "Fechar menu" : "Abrir menu"}
+          aria-haspopup="menu"
           aria-expanded={open}
           aria-controls="menu-principal"
         >

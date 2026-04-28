@@ -1,4 +1,4 @@
-@import "tailwindcss";
+  @import "tailwindcss";
 
 :root {
   --background: #F0F0F0;
@@ -18,8 +18,13 @@
   --font-display: var(--font-montserrat);
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans);
-}
+@layer base {
+    h1, h2, h3, h4, h5, h6 {
+      font-family: var(--font-display);
+    }
+    body {
+      background: var(--background);
+      color: var(--foreground);
+      font-family: var(--font-sans);
+    }
+  }
