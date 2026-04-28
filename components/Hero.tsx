@@ -1,6 +1,5 @@
 import Image from "next/image"
-import Link from "next/link"
-import { ArrowRight } from "lucide-react"
+import Button from "@/components/Button"
 
 export default function Hero() {
     return (
@@ -18,7 +17,7 @@ export default function Hero() {
             />
 
             {/* overlay */}
-            <div className="absolute inset-0 bg-linear-to-r from-black/40 via-black/15 to-transparent" />
+            <div className="absolute inset-0 bg-linear-to-r from-black/40 via-black/15 to-transparent" aria-hidden="true" />
 
             <div className="relative z-10 w-full max-w-130 px-6 py-20 space-y-5">
 
@@ -38,14 +37,12 @@ export default function Hero() {
                     O Centro Dia nasceu para responder essa pergunta — oferecendo acolhimento, autonomia e dignidade para jovens adultos com deficiência que o mundo insistia em esquecer.
                 </p>
 
-                <Link
-                    href="/centro-dia"
-                    aria-label="Conheça a história do Centro Dia da Pessoa com Deficiência"
-                    className="inline-flex items-center gap-2 bg-black text-white px-5 py-3 rounded-md hover:opacity-90 transition font-medium w-fit"
-                >
-                    Conheça nossa história
-                    <ArrowRight size={18} strokeWidth={1.5} aria-hidden="true" />
-                </Link>
+                <Button 
+                    href="/centro-dia" 
+                    ariaLabel="Conheça a história do Centro Dia da Pessoa com Deficiência"
+                    variant="secondary"
+                    text="Conheça nossa história"
+                />
 
             </div>
         </header>
