@@ -1,3 +1,13 @@
 export default function Contato() {
-    return <h1>contato</h1>
+    return (
+        <main>
+            <section>
+                <div>
+                </div>
+                <div>
+                    
+                </div>
+            </section>
+        </main>
+    )
 }
