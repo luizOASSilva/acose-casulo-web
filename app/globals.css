@@ -1,11 +1,11 @@
-  @import "tailwindcss";
+@import "tailwindcss";
 
 :root {
-  --background: #F0F0F0;
+  --background: #f0f0f0;
   --foreground: #171717;
-  --primary: #D46C2B;
-  --secondary: #3A3A3A;
-  --footer: #E8E0D5;
+  --primary: #d46c2b;
+  --secondary: #141210;
+  --footer: #e8e0d5;
 }
 
 @theme inline {
@@ -19,12 +19,17 @@
 }
 
 @layer base {
-    h1, h2, h3, h4, h5, h6 {
-      font-family: var(--font-display);
-    }
-    body {
-      background: var(--background);
-      color: var(--foreground);
-      font-family: var(--font-sans);
-    }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-display);
   }
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+  }
+}

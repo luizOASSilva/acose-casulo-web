@@ -1,16 +1,15 @@
-import Image from "next/image"
+import Image from "next/image";
 
 interface CardProps {
-  image: string
-  alt: string
-  title: string
-  summary: string
+  image: string;
+  alt: string;
+  title: string;
+  summary: string;
 }
 
 export default function Card({ image, alt, title, summary }: CardProps) {
   return (
     <article className="group rounded-xl overflow-hidden border border-black/5 bg-white transition-all duration-300 hover:border-primary/25 hover:shadow-md">
-
       <div className="relative h-52 overflow-hidden">
         <Image
           src={image}
@@ -43,7 +42,6 @@ export default function Card({ image, alt, title, summary }: CardProps) {
           {summary}
         </p>
       </div>
-
     </article>
-  )
+  );
 }

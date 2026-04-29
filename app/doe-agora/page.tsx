@@ -1,3 +1,3 @@
 export default function doeAgora() {
-    return <h1>doe agora</h1>
+  return <h1>doe agora</h1>;
 }

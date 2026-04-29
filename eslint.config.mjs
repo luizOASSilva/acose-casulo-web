@@ -17,12 +17,7 @@ const eslintConfig = defineConfig([
       "jsx-a11y/click-events-have-key-events": "warn",
     },
   },
-  globalIgnores([
-    ".next/**",
-    "out/**",
-    "build/**",
-    "next-env.d.ts",
-  ]),
+  globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts"]),
 ]);
 
 export default eslintConfig;

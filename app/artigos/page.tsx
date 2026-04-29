@@ -1,3 +1,3 @@
 export default function Artigos() {
-    return <h1>artigos</h1>
+  return <h1>artigos</h1>;
 }

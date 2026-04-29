@@ -1,10 +1,10 @@
-"use client"
-import Link from "next/link"
-import Image from "next/image"
-import { useState, useEffect } from "react"
-import { Heart, X, Menu } from "lucide-react"
-import { usePathname } from "next/navigation"
-import { cn } from "@/lib/cn"
+"use client";
+import Link from "next/link";
+import Image from "next/image";
+import { useState, useEffect } from "react";
+import { Heart, X, Menu } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/cn";
 
 const links = [
   { href: "/", label: "Home" },
@@ -14,24 +14,26 @@ const links = [
   { href: "/atividades", label: "Atividades" },
   { href: "/artigos", label: "Artigos" },
   { href: "/contato", label: "Contato" },
-]
+];
 
 export default function Navbar() {
-  const [open, setOpen] = useState(false)
-  const pathname = usePathname()
+  const [open, setOpen] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false)
-    }
-    document.addEventListener("keydown", handleKey)
-    return () => document.removeEventListener("keydown", handleKey)
-  }, [])
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, []);
 
   return (
-    <header className="relative w-full border-b border-gray-200 bg-white z-50" aria-label="Cabeçalho do site">
+    <header
+      className="relative w-full border-b border-gray-200 bg-white z-50"
+      aria-label="Cabeçalho do site"
+    >
       <div className="max-w-7xl mx-auto flex items-center justify-between px-4 lg:px-6 h-20">
-
         <Link
           href="/"
           className="flex shrink-0 rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
@@ -54,7 +56,11 @@ export default function Navbar() {
           aria-expanded={open}
           aria-controls="menu-principal"
         >
-          {open ? <X size={24} aria-hidden="true" /> : <Menu size={24} aria-hidden="true" />}
+          {open ? (
+            <X size={24} aria-hidden="true" />
+          ) : (
+            <Menu size={24} aria-hidden="true" />
+          )}
         </button>
 
         <nav
@@ -63,12 +69,12 @@ export default function Navbar() {
           className={cn(
             "absolute top-full left-0 w-full bg-white border-b border-gray-200 shadow-sm flex-col p-6 gap-6",
             "lg:static lg:flex lg:flex-row lg:items-center lg:w-auto lg:border-0 lg:shadow-none lg:p-0 lg:ml-auto",
-            open ? "flex" : "hidden lg:flex"
+            open ? "flex" : "hidden lg:flex",
           )}
         >
           <ul className="flex flex-col lg:flex-row gap-5 lg:gap-6 whitespace-nowrap">
             {links.map(({ href, label }) => {
-              const isActive = pathname === href
+              const isActive = pathname === href;
               return (
                 <li key={href}>
                   <Link
@@ -77,13 +83,13 @@ export default function Navbar() {
                     onClick={() => setOpen(false)}
                     className={cn(
                       "text-sm font-medium transition-colors hover:text-primary rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
-                      isActive ? "text-primary" : "text-gray-600"
+                      isActive ? "text-primary" : "text-gray-600",
                     )}
                   >
                     {label}
                   </Link>
                 </li>
-              )
+              );
             })}
           </ul>
 
@@ -96,8 +102,7 @@ export default function Navbar() {
             Doe agora
           </Link>
         </nav>
-
       </div>
     </header>
-  )
+  );
 }
