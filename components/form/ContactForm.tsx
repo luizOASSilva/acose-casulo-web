@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FormWrapper } from "@/components/ui/FormWrapper";
+import FormWrapper from "@/components/ui/FormWrapper";
 
 const fieldClass = `
   bg-white/10 border border-white/20 text-white placeholder:text-white/40
@@ -11,7 +11,7 @@ const fieldClass = `
   hover:border-white/40
 `;
 
-export function ContactForm() {
+export default function ContactForm() {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
 

@@ -1,3 +1,45 @@
+import type { Metadata } from "next"
+import { articles } from "./articles"
+import ArticleRow from "@/components/ui/ArticleRow"
+
+export const metadata: Metadata = {
+  title: "Artigos | Acose Casulo",
+  description:
+    "Artigos sobre inclusão, autonomia e cuidado para pessoas com deficiência intelectual em Bragança Paulista.",
+  keywords: [
+    "inclusão social",
+    "deficiência intelectual",
+    "autonomia",
+    "Centro Dia",
+    "Bragança Paulista",
+    "Acose Casulo",
+  ],
+  openGraph: {
+    title: "Artigos | Acose Casulo",
+    description:
+      "Artigos sobre inclusão, autonomia e cuidado para pessoas com deficiência intelectual em Bragança Paulista.",
+    type: "website",
+    locale: "pt_BR",
+  },
+}
+
 export default function Artigos() {
-  return <h1>artigos</h1>;
+  return (
+    <main className="w-[90%] max-w-4xl mx-auto py-12 md:py-20">
+      <header className="mb-8 space-y-2">
+        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight">Artigos</h1>
+        <p className="text-gray-500 text-base md:text-lg max-w-xl">
+          Um pouco do material de quem vive o cuidado no dia-a-dia.
+        </p>
+      </header>
+
+      <ul className="flex flex-col divide-y divide-gray-100" role="list">
+        {articles.map((article) => (
+          <li key={article.id} role="listitem">
+            <ArticleRow article={article} />
+          </li>
+        ))}
+      </ul>
+    </main>
+  )
 }

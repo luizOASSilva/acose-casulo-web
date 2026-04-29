@@ -8,7 +8,7 @@ interface FormWrapperProps {
   onSubmit: (e: React.SyntheticEvent<HTMLFormElement>) => Promise<void>;
 }
 
-export function FormWrapper({
+export default function FormWrapper({
   children,
   loading = false,
   onSubmit,
