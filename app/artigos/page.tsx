@@ -1,6 +1,6 @@
-import type { Metadata } from "next"
-import { articles } from "./articles"
-import ArticleRow from "@/components/ui/ArticleRow"
+import type { Metadata } from "next";
+import ArticleRow from "@/components/ui/ArticleRow";
+import { getArticles } from "@/services/articles";
 
 export const metadata: Metadata = {
   title: "Artigos | Acose Casulo",
@@ -21,9 +21,11 @@ export const metadata: Metadata = {
     type: "website",
     locale: "pt_BR",
   },
-}
+};
 
-export default function Artigos() {
+export default async function ArtigosPage() {
+  const articles = await getArticles();
+
   return (
     <main className="w-[90%] max-w-4xl mx-auto py-12 md:py-20">
       <header className="mb-8 space-y-2">
@@ -33,13 +35,17 @@ export default function Artigos() {
         </p>
       </header>
 
-      <ul className="flex flex-col divide-y divide-gray-100" role="list">
-        {articles.map((article) => (
-          <li key={article.id} role="listitem">
-            <ArticleRow article={article} />
-          </li>
-        ))}
-      </ul>
+      {articles.length > 0 ? (
+        <ul className="flex flex-col divide-y divide-gray-100" role="list">
+          {articles.map((article) => (
+            <li key={article.id} role="listitem">
+              <ArticleRow article={article} />
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-gray-400 italic">Nenhum artigo encontrado.</p>
+      )}
     </main>
-  )
+  );
 }

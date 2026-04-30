@@ -4,10 +4,14 @@ import { useCallback, useEffect, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/cn";
-import ActivityCard from "../ui/ActivityCard";
-import { activities } from "@/app/atividades/activity";
+import ActivityCard from "../ActivityCard";
+import type { Activity } from "@/types/activity";
 
-export default function Carousel() {
+interface CarouselClientProps {
+  activities?: Activity[];
+}
+
+export default function CarouselClient({ activities = [] }: CarouselClientProps) {
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: true,
     align: "start",
@@ -51,6 +55,12 @@ export default function Carousel() {
     (index: number) => emblaApi && emblaApi.scrollTo(index),
     [emblaApi],
   );
+
+  if (activities.length === 0) {
+    return (
+      <p className="text-gray-400 italic py-8">Nenhuma atividade encontrada.</p>
+    );
+  }
 
   return (
     <section aria-label="Carrossel de atividades" className="py-8 w-full max-w-7xl mx-auto px-4">

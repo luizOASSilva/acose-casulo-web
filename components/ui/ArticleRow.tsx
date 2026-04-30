@@ -1,6 +1,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import type { Article } from "@/types/article"
+import KeywordBadge from "./KeywordBadge"
 
 export default function ArticleRow({ article }: { article: Article }) {
   return (
@@ -21,13 +22,9 @@ export default function ArticleRow({ article }: { article: Article }) {
 
       <div className="flex flex-col justify-between flex-1 min-w-0 py-0.5">
         <div className="space-y-1.5">
-          <ul className="flex flex-wrap gap-1" aria-label="Palavras-chave">
+          <ul className="flex flex-wrap gap-2">
             {article.keywords.map((kw) => (
-              <li key={kw}>
-                <span className="text-[10px] md:text-[11px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full bg-primary/10 text-primary">
-                  {kw}
-                </span>
-              </li>
+              <KeywordBadge keyword={kw} key={kw} />
             ))}
           </ul>
 

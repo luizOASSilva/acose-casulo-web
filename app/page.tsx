@@ -1,4 +1,4 @@
-import Carousel from "@/components/sections/Carousel";
+import Carousel from "@/components/ui/Carousel/CarouselWrapper";
 import Hero from "@/components/sections/Hero";
 import Impact from "@/components/sections/Impact";
 import Mission from "@/components/sections/Mission";
@@ -97,7 +97,7 @@ export default function Home() {
                     CEP: 12908-843
                   </address>
                 </div>
-                
+
                 <p className="font-semibold text-black text-lg">Centro Dia Pessoa Com Deficiência</p>
 
                 <p className="text-gray-600 leading-relaxed">

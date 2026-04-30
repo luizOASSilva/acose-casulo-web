@@ -1,5 +1,5 @@
 import { activities } from "../../activity";
-import ActivityModalClient from "./ActivityModalClient";
+import ActivityModalClient from "../../../../components/Modals/ActivityModalClient";
 import { Metadata } from "next";
 
 type Props = {
