@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Heart, X, Menu, ChevronDown } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/cn";
@@ -25,7 +25,20 @@ const links = [
 export default function NavbarClient({ recentArticles }: { recentArticles: Article[] }) {
   const [open, setOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [navbarHeight, setNavbarHeight] = useState(80); // ✅ estado para a altura
   const pathname = usePathname();
+  const headerRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (!headerRef.current) return;
+
+    const observer = new ResizeObserver(() => {
+      setNavbarHeight(headerRef.current?.offsetHeight ?? 80); // ✅ atualiza quando redimensiona (zoom, resize)
+    });
+
+    observer.observe(headerRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   useModalEffects(open, () => setOpen(false));
 
@@ -35,7 +48,7 @@ export default function NavbarClient({ recentArticles }: { recentArticles: Artic
   };
 
   return (
-    <header className="relative w-full border-b border-gray-200 bg-white z-50">
+    <header ref={headerRef} className="relative w-full border-b border-gray-200 bg-white z-50">
       <div className="max-w-7xl mx-auto flex items-center justify-between px-4 lg:px-6 h-20">
 
         <Link href="/" className="flex shrink-0" onClick={closeMenus}>
@@ -52,9 +65,13 @@ export default function NavbarClient({ recentArticles }: { recentArticles: Artic
         </button>
 
         <nav
+          style={{
+            maxHeight: open ? `calc(100dvh - ${navbarHeight}px)` : undefined, // ✅ usa o estado
+          }}
           className={cn(
             "absolute top-full left-0 w-full bg-white border-b border-gray-200 flex-col p-6 gap-6 transition-all duration-300",
-            "lg:static lg:flex lg:flex-row lg:items-center lg:w-auto lg:border-0 lg:p-0 lg:ml-auto",
+            "overflow-y-auto",
+            "lg:static lg:flex lg:flex-row lg:items-center lg:w-auto lg:border-0 lg:p-0 lg:ml-auto lg:max-h-none lg:overflow-visible",
             open ? "flex opacity-100 visible" : "hidden lg:flex"
           )}
         >

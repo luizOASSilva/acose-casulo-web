@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function ArtigosPage() {
+export default async function Artigos() {
   const articles = await getArticles();
 
   return (

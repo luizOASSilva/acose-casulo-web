@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: ParamProps): Promise<Metadata
   };
 }
 
-export default async function ArtigoPage({ params }: ParamProps) {
+export default async function Artigo({ params }: ParamProps) {
   const { slug } = await params;
   const article = await getArticleBySlug(slug);
 

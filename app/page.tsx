@@ -3,6 +3,7 @@ import Hero from "@/components/sections/Hero";
 import Impact from "@/components/sections/Impact";
 import Mission from "@/components/sections/Mission";
 import Button from "@/components/ui/Button";
+import { Trees } from "lucide-react";
 
 export default function Home() {
   return (
@@ -107,6 +108,22 @@ export default function Home() {
                 </p>
               </header>
             </div>
+
+            <section>
+              <div>
+                <p>Compromisso Ambiental</p>
+                <h2>Centro Dia <span className="text-green-600">Ambiental</span></h2>
+                <p>A reciclagem é uma das formas que o Centro Dia encontrou de unir propósito social e cuidado com o planeta. Por meio de ações simples e contínuas, contribuímos para reduzir o descarte incorreto de resíduos, a contaminação do solo e o esgotamento de recursos naturais — e ainda geramos renda e autonomia para as famílias envolvidas.</p>
+              </div>
+
+              <div>
+                <div>
+                  <Trees size={20} />
+                </div>
+                <h3></h3>
+                <p></p>
+              </div>
+            </section>  
 
             <div className="space-y-3">
               <p id="map-description" className="sr-only">

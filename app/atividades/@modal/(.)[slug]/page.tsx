@@ -1,6 +1,7 @@
-import { activities } from "../../activity";
-import ActivityModalClient from "../../../../components/Modals/ActivityModalClient";
+import { getActivityBySlug } from "@/services/activities";
+import ActivityModalClient from "@/components/Modals/ActivityModalClient";
 import { Metadata } from "next";
+import { Suspense } from "react";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -8,7 +9,7 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const activity = activities.find((a) => a.slug === slug);
+  const activity = await getActivityBySlug(slug);
 
   if (!activity) return { title: "Atividade não encontrada" };
 
@@ -18,9 +19,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: fullTitle,
     description: fullDesc,
-    alternates: {
-      canonical: `https://seusite.com.br/activity/${slug}`,
-    },
     openGraph: {
       title: fullTitle,
       description: fullDesc,
@@ -28,18 +26,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       siteName: "Projeto Casulo",
       locale: "pt_BR",
       type: "article",
-      images: [
-        {
-          url: activity.media.url,
-          width: 1200,
-          height: 630,
-          alt: activity.media.alt_text,
-        },
-      ],
+      images: [{ url: activity.media.url, width: 1200, height: 630, alt: activity.media.alt_text }],
     },
-  }
+  };
 }
 
 export default async function Page({ params }: Props) {
-  return <ActivityModalClient params={params} />;
+  const { slug } = await params;
+  const activity = await getActivityBySlug(slug); 
+
+  return (
+    <Suspense fallback={null}>
+      <ActivityModalClient activity={activity} />
+    </Suspense>
+  );
 }

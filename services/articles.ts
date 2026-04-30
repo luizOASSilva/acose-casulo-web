@@ -1,9 +1,9 @@
 import { apiFetch } from "@/lib/api";
 import type { Article } from "@/types/article";
 
-export async function getRecentArticles(limit: number = 4): Promise<Article[]> {
+export async function getRecentArticles(): Promise<Article[]> {
   try {
-    const response = await apiFetch(`/articles/recent?limit=${limit}`, {
+    const response = await apiFetch(`/articles/recent`, {
       next: { revalidate: Number(process.env.NEXT_CACHE_REVALIDATE_TIME) || 3600 },
     });
 

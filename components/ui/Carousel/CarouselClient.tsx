@@ -41,6 +41,7 @@ export default function CarouselClient({ activities = [] }: CarouselClientProps)
     emblaApi.on("reInit", onInit);
     emblaApi.on("reInit", onSelect);
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     onInit();
     onSelect();
 
@@ -77,7 +78,7 @@ export default function CarouselClient({ activities = [] }: CarouselClientProps)
         </div>
       </div>
 
-      <div className="flex flex-row justify-center items-center gap-2 mt-8">
+      <div className="flex flex-row justify-center items-center gap-2 mt-4">
         <button
           onClick={() => emblaApi?.scrollPrev()}
           className="rounded-full p-2 bg-gray-100 text-gray-600 shrink-0 hover:bg-gray-200 transition cursor-pointer"
@@ -87,7 +88,7 @@ export default function CarouselClient({ activities = [] }: CarouselClientProps)
 
         <div className="flex items-center justify-center">
           {scrollSnaps.map((_, index) => (
-            <div key={index} className="flex items-center justify-center w-6 h-5">
+            <div key={index} className="flex items-center justify-center w-4 h-5 bg-10">
               <button
                 onClick={() => scrollTo(index)}
                 className={cn(
