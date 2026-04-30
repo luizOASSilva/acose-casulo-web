@@ -69,6 +69,21 @@ export default function Home() {
         </div>
       </section>
 
+      <section>
+        <div>
+          <p>Compromisso Ambiental</p>
+          <h2>Centro Dia <span className="text-green-600">Ambiental</span></h2>
+          <p>A reciclagem é uma das formas que o Centro Dia encontrou de unir propósito social e cuidado com o planeta. Por meio de ações simples e contínuas, contribuímos para reduzir o descarte incorreto de resíduos, a contaminação do solo e o esgotamento de recursos naturais — e ainda geramos renda e autonomia para as famílias envolvidas.</p>
+        </div>
+        <div>
+          <div className="flex flex-row">
+            <Trees size={20} />
+          </div>
+          <h3>Educação Ambiental</h3>
+          <p>Coleta e destinação correta de materiais recicláveis, reduzindo lixões e poluição ambiental.</p>
+        </div>
+      </section>  
+
       <section aria-labelledby="location-title" className="py-20">
         <div className="w-4/5 mx-auto max-w-6xl">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
@@ -108,22 +123,6 @@ export default function Home() {
                 </p>
               </header>
             </div>
-
-            <section>
-              <div>
-                <p>Compromisso Ambiental</p>
-                <h2>Centro Dia <span className="text-green-600">Ambiental</span></h2>
-                <p>A reciclagem é uma das formas que o Centro Dia encontrou de unir propósito social e cuidado com o planeta. Por meio de ações simples e contínuas, contribuímos para reduzir o descarte incorreto de resíduos, a contaminação do solo e o esgotamento de recursos naturais — e ainda geramos renda e autonomia para as famílias envolvidas.</p>
-              </div>
-
-              <div>
-                <div>
-                  <Trees size={20} />
-                </div>
-                <h3></h3>
-                <p></p>
-              </div>
-            </section>  
 
             <div className="space-y-3">
               <p id="map-description" className="sr-only">
