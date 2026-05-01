@@ -3,7 +3,8 @@ import Hero from "@/components/sections/Hero";
 import Impact from "@/components/sections/Impact";
 import Mission from "@/components/sections/Mission";
 import Button from "@/components/ui/Button";
-import { Trees } from "lucide-react";
+import LeafIllustration from "@/components/ui/LeafIllustration";
+import { Briefcase, Coins, Recycle, Sprout } from "lucide-react";
 
 export default function Home() {
   return (
@@ -69,34 +70,108 @@ export default function Home() {
         </div>
       </section>
 
-      <section>
-        <div>
-          <p>Compromisso Ambiental</p>
-          <h2>Centro Dia <span className="text-green-600">Ambiental</span></h2>
-          <p>A reciclagem é uma das formas que o Centro Dia encontrou de unir propósito social e cuidado com o planeta. Por meio de ações simples e contínuas, contribuímos para reduzir o descarte incorreto de resíduos, a contaminação do solo e o esgotamento de recursos naturais — e ainda geramos renda e autonomia para as famílias envolvidas.</p>
+      <section className="relative py-20 overflow-hidden" aria-labelledby="environmental-title">
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none opacity-10 lg:hidden">
+          <LeafIllustration className="w-150 h-150" />
         </div>
-        <div>
-          <div className="flex flex-row">
-            <Trees size={20} />
-          </div>
-          <h3>Educação Ambiental</h3>
-          <p>Coleta e destinação correta de materiais recicláveis, reduzindo lixões e poluição ambiental.</p>
-        </div>
-      </section>  
 
-      <section aria-labelledby="location-title" className="py-20">
+        <div className="relative z-10 w-4/5 mx-auto max-w-6xl">
+          
+          <div className="flex flex-col lg:flex-row lg:items-center lg:gap-16">
+            <div className="flex-1">
+              <header className="max-w-xl mb-16 space-y-4">
+                <p className="text-sm text-green-600 uppercase tracking-widest font-medium">
+                  Compromisso Ambiental
+                </p>
+                <h2 id="environmental-title" className="text-2xl md:text-3xl font-bold leading-tight">
+                  Centro Dia <span className="text-green-400">Ambiental</span>
+                </h2>
+                <p className="text-gray-700 leading-relaxed">
+                  A reciclagem é uma das formas que o Centro Dia encontrou de unir
+                  impacto social com responsabilidade ambiental, promovendo consciência
+                  e transformação na comunidade.
+                </p>
+              </header>
+
+              <ul className="pl-2 space-y-10 list-none">
+                <li className="flex gap-4">
+                  <div className="text-green-400 mt-1 shrink-0" aria-hidden="true">
+                    <Recycle size={22} />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg">Reciclagem ativa</h3>
+                    <p className="text-gray-700 mt-2 text-sm leading-relaxed">
+                      Separação e reaproveitamento de resíduos, reduzindo impactos
+                      ambientais e incentivando hábitos conscientes.
+                    </p>
+                  </div>
+                </li>
+                <li className="flex gap-4">
+                  <div className="text-green-400 mt-1 shrink-0" aria-hidden="true">
+                    <Sprout size={22} />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg">Horta comunitária</h3>
+                    <p className="text-gray-700 mt-2 text-sm leading-relaxed">
+                      Cultivo coletivo de alimentos, promovendo sustentabilidade.
+                    </p>
+                  </div>
+                </li>
+                <li className="flex gap-4">
+                  <div className="text-green-400 mt-1 shrink-0" aria-hidden="true">
+                    <Coins size={22} />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg">Moeda verde</h3>
+                    <p className="text-gray-700 mt-2 text-sm leading-relaxed">
+                      Troca de materiais recicláveis por benefícios.
+                    </p>
+                  </div>
+                </li>
+                <li className="flex gap-4">
+                  <div className="text-green-400 mt-1 shrink-0" aria-hidden="true">
+                    <Briefcase size={22} />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg">Geração de renda</h3>
+                    <p className="text-gray-700 mt-2 text-sm leading-relaxed">
+                      Criação de oportunidades através da reciclagem.
+                    </p>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <div className="hidden lg:flex items-center justify-center shrink-0">
+              <LeafIllustration className="w-100 h-100" />
+            </div>
+          </div>
+
+          <blockquote className="border-l-4 border-l-green-950 pl-6 mt-12 max-w-3xl bg-green-600/10 p-2">
+            <p className="text-md italic text-gray-800 leading-relaxed">
+              {"\""}O Centro Dia atua diretamente na preservação do meio ambiente, buscando a propagação de pequenas atitudes diárias que fazem toda a diferença.{"\""}
+            </p>
+            <cite className="block mt-4 not-italic font-semibold text-sm text-green-950">
+              Projeto Casulo · Bragança Paulista
+            </cite>
+          </blockquote>
+
+        </div>
+      </section>
+
+      <section aria-labelledby="location-title" className="pb-20">
         <div className="w-4/5 mx-auto max-w-6xl">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
             <div className="space-y-6">
               <header className="space-y-4">
                 <h2
                   id="location-title"
-                  className="text-2xl md:text-4xl font-bold leading-tight"
+                  className="text-2xl md:text-3xl font-bold leading-tight"
                 >
                   Onde estamos
                 </h2>
 
-                <p className="text-gray-600 text-lg leading-relaxed">
+                <p className="text-gray-600 leading-relaxed">
                   O Projeto Casulo está localizado em Bragança Paulista, SP, em
                   um espaço preparado para promover acolhimento, inclusão e
                   desenvolvimento de jovens adultos com deficiência.
@@ -104,7 +179,6 @@ export default function Home() {
 
                 <div className="text-gray-600 leading-relaxed space-y-2">
                   <p className="font-semibold text-black text-lg">Endereço</p>
-
                   <address className="not-italic">
                     Rua Francisco Rodrigues Dias, 80
                     <br />
@@ -129,8 +203,7 @@ export default function Home() {
                 Mapa mostrando a localização do Projeto Casulo em Bragança
                 Paulista, São Paulo.
               </p>
-
-              <div className="relative w-full h-125 rounded-3xl overflow-hidden shadow-2xl border border-gray-100">
+              <div className="relative w-full h-105 rounded-3xl overflow-hidden shadow-2xl border border-gray-100">
                 <iframe
                   title="Mapa de localização do Projeto Casulo"
                   src="https://maps.google.com/maps?q=Rua+Francisco+Rodrigues+Dias,+80+Bragança+Paulista&z=15&output=embed"
@@ -138,7 +211,6 @@ export default function Home() {
                   loading="lazy"
                 />
               </div>
-
               <a
                 href="https://www.google.com/maps?q=Rua+Francisco+Rodrigues+Dias,+80+Bragança+Paulista"
                 target="_blank"
