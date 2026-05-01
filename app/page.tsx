@@ -147,7 +147,7 @@ export default function Home() {
             </div>
           </div>
 
-          <blockquote className="border-l-4 border-l-green-950 pl-6 mt-12 max-w-3xl bg-green-600/10 p-2">
+          <blockquote className="border-l-4 border-l-green-950 pl-6 mt-10 max-w-3xl bg-green-600/10 p-6">
             <p className="text-md italic text-gray-800 leading-relaxed">
               {"\""}O Centro Dia atua diretamente na preservação do meio ambiente, buscando a propagação de pequenas atitudes diárias que fazem toda a diferença.{"\""}
             </p>
