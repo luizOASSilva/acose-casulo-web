@@ -15,8 +15,45 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
-  title: "Acose Casulo",
-  description: "Centro de atenção à pessoa com deficiência.",
+  title: {
+    default: "Acose Casulo | Centro Dia | Bragança Paulista",
+    template: "%s | Acose Casulo",
+  },
+  description:
+    "Centro Dia da Pessoa com Deficiência - Acose Casulo oferece acolhimento, autonomia e dignidade para jovens adultos com deficiência em Bragança Paulista, SP.",
+  keywords: [
+    "centro dia",
+    "pessoa com deficiência",
+    "deficiência intelectual",
+    "Bragança Paulista",
+    "inclusão social",
+    "Projeto Casulo",
+    "Acose",
+    "jovens adultos",
+    "acolhimento",
+    "CDPD",
+  ],
+  authors: [{ name: "Acose Casulo" }],
+  creator: "Acose Casulo",
+  publisher: "Acose Casulo",
+  metadataBase: new URL("https://acosecasulo.org.br"),
+  openGraph: {
+    title: "Acose Casulo | Centro Dia | CDPD | Bragança Paulista",
+    description:
+      "Centro Dia da Pessoa com Deficiência - Acose Casulo oferece acolhimento, autonomia e dignidade para jovens adultos com deficiência em Bragança Paulista, SP.",
+    url: "https://acosecasulo.org.br",
+    siteName: "Acose Casulo",
+    locale: "pt_BR",
+    type: "website",
+    images: [
+      {
+        url: "/favicon.ico",
+        width: 1200,
+        height: 630,
+        alt: "Acose Casulo — Centro Dia da Pessoa com Deficiência",
+      },
+    ],
+  },
 };
 
 export default function RootLayout({
@@ -31,7 +68,7 @@ export default function RootLayout({
     >
       <body className="min-h-screen flex flex-col">
         <Navbar />
-        <div className="flex-1">{children}</div>
+        <div className="flex-1 pt-20">{children}</div>
         <Footer />
       </body>
     </html>

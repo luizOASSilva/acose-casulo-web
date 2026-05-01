@@ -31,6 +31,28 @@
     background: var(--background);
     color: var(--foreground);
     font-family: var(--font-sans);
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-tap-highlight-color: transparent;
+  }
+  html {
+    scroll-behavior: auto;
+    overflow-y: scroll;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  main {
+    isolation: isolate;
   }
 }
 

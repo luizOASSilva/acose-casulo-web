@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/cn";
-import ActivityCard from "../ActivityCard";
+import ActivityCard from "@/components/ui/ActivityCard";
 import type { Activity } from "@/types/activity";
 
 interface CarouselClientProps {
@@ -14,10 +14,10 @@ interface CarouselClientProps {
 export default function CarouselClient({ activities = [] }: CarouselClientProps) {
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: true,
-    align: "start",
+    align: "center",
     slidesToScroll: 1,
     breakpoints: {
-      "(min-width: 768px)": { slidesToScroll: 3 },
+      "(min-width: 768px)": { slidesToScroll: 3, align: "start" },
     },
   });
 
@@ -41,6 +41,7 @@ export default function CarouselClient({ activities = [] }: CarouselClientProps)
     emblaApi.on("reInit", onInit);
     emblaApi.on("reInit", onSelect);
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     onInit();
     onSelect();
 
@@ -63,13 +64,13 @@ export default function CarouselClient({ activities = [] }: CarouselClientProps)
   }
 
   return (
-    <section aria-label="Carrossel de atividades" className="py-8 w-full max-w-7xl mx-auto px-4">
+    <section aria-label="Carrossel de atividades" className="py-8 max-w-7xl md:mx-auto md:px-4">
       <div className="overflow-hidden" ref={emblaRef}>
-        <div className="flex touch-pan-y touch-pinch-zoom gap-4">
+        <div className="flex touch-pan-y touch-pinch-zoom gap-4 pl-4 md:pl-0">
           {activities.map((activity) => (
             <div
               key={activity.id}
-              className="flex-none w-full md:w-[calc(33.333%-11px)]"
+              className="flex-none w-[75vw] md:w-[calc(33.333%-11px)]"
             >
               <ActivityCard activity={activity} />
             </div>
@@ -77,17 +78,17 @@ export default function CarouselClient({ activities = [] }: CarouselClientProps)
         </div>
       </div>
 
-      <div className="flex flex-row justify-center items-center gap-2 bg-amber-300">
+      <div className="flex flex-row justify-center items-center gap-2 mt-5">
         <button
           onClick={() => emblaApi?.scrollPrev()}
-          className="rounded-full bg-gray-100 text-gray-600 shrink-0 hover:bg-gray-200 transition cursor-pointer"
+          className="rounded-full p-2 bg-gray-100 text-gray-600 shrink-0 hover:bg-gray-200 transition cursor-pointer"
         >
           <ChevronLeft size={24} aria-hidden="true" />
         </button>
 
         <div className="flex items-center justify-center">
           {scrollSnaps.map((_, index) => (
-            <div key={index} className="flex items-center justify-center w-4 h-5 bg-10">
+            <div key={index} className="flex items-center justify-center w-4 h-5">
               <button
                 onClick={() => scrollTo(index)}
                 className={cn(

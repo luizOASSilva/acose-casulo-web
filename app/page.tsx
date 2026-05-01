@@ -1,7 +1,7 @@
 import Carousel from "@/components/ui/Carousel/CarouselWrapper";
-import Hero from "@/components/sections/Hero";
-import Impact from "@/components/sections/Impact";
-import Mission from "@/components/sections/Mission";
+import Hero from "@/components/Sections/Hero";
+import Impact from "@/components/Sections/Impact";
+import Mission from "@/components/Sections/Mission";
 import Button from "@/components/ui/Button";
 import LeafIllustration from "@/components/ui/LeafIllustration";
 import { Briefcase, Coins, Recycle, Sprout } from "lucide-react";
@@ -60,7 +60,11 @@ export default function Home() {
               futuro mais justo.
             </p>
           </div>
-          <Carousel />
+        </div>
+
+        <Carousel />
+
+        <div className="w-4/5 mx-auto max-w-6xl mt-4 flex justify-center md:justify-start">
           <Button
             href="/atividades"
             ariaLabel="Conheça as atividades do Centro Dia da Pessoa com Deficiência"
@@ -147,11 +151,11 @@ export default function Home() {
             </div>
           </div>
 
-          <blockquote className="border-l-4 border-l-green-950 pl-6 mt-10 max-w-3xl bg-green-600/10 p-6">
+          <blockquote className="border-l-4 border-l-green-950 pl-6 mt-10 max-w-3xl bg-green-600/10 p-4 space-y-2">
             <p className="text-md italic text-gray-800 leading-relaxed">
               {"\""}O Centro Dia atua diretamente na preservação do meio ambiente, buscando a propagação de pequenas atitudes diárias que fazem toda a diferença.{"\""}
             </p>
-            <cite className="block mt-4 not-italic font-semibold text-sm text-green-950">
+            <cite className="block not-italic font-semibold text-sm text-green-950">
               Projeto Casulo · Bragança Paulista
             </cite>
           </blockquote>

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import PartnerMarquee from "@/components/sections/PartnerMarquee";
+import PartnerMarquee from "@/components/Sections/PartnerMarquee";
 import Button from "@/components/ui/Button";
 import StatCounterClient from "@/components/ui/StatCount/StateCountClient";
 

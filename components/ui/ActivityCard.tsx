@@ -11,11 +11,11 @@ interface ActivityCardProps {
 export default function ActivityCard({ activity }: ActivityCardProps) {
   return (
     <article
-      className="group flex flex-col h-full w-full rounded-2xl border border-gray-100 bg-white overflow-hidden hover:shadow-lg transition-shadow"
+      className="group flex flex-col rounded-2xl border border-gray-100 bg-white overflow-hidden hover:shadow-lg transition-shadow h-[380px]"
       aria-labelledby={`activity-title-${activity.id}`}
       aria-describedby={`activity-desc-${activity.id}`}
     >
-      <div className="relative w-full h-48 overflow-hidden">
+      <div className="relative w-full aspect-video overflow-hidden shrink-0">
         <Image
           src={activity.media.url}
           alt={
@@ -28,7 +28,7 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
         />
       </div>
 
-      <div className="flex flex-col flex-1 p-5 space-y-3">
+      <div className="flex flex-col flex-1 p-5 space-y-3 overflow-hidden">
         <h3
           id={`activity-title-${activity.id}`}
           className="text-base font-semibold text-gray-900 leading-snug group-hover:text-primary transition-colors line-clamp-2"

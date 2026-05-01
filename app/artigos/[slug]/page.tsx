@@ -58,18 +58,18 @@ export default async function Artigo({ params }: ParamProps) {
             })}
           />
 
-          <figure className="w-full rounded-xl overflow-hidden border border-gray-100">
+          <figure className="w-full overflow-hidden">
             <div className="relative w-full h-72 md:h-96 bg-gray-50">
               <Image
                 src={article.media?.url || ""}
                 alt={article.media?.alt_text || article.title}
                 fill
-                className="object-cover"
+                className="object-cover rounded-md"
                 priority
               />
             </div>
             {article.media?.caption && (
-              <figcaption className="text-xs text-gray-500 text-center p-3 bg-gray-50">
+              <figcaption className="text-xs text-gray-500 text-center p-3">
                 {article.media.caption}
               </figcaption>
             )}

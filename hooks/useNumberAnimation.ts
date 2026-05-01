@@ -8,7 +8,7 @@ type UseNumberAnimationProps = {
 
 export function useNumberAnimation({
   to,
-  duration = 5000,
+  duration = 2000,
   start,
 }: UseNumberAnimationProps) {
   const [value, setValue] = useState(0);
@@ -22,7 +22,7 @@ export function useNumberAnimation({
       if (!startTime) startTime = timestamp;
 
       const progress = Math.min((timestamp - startTime) / duration, 1);
-      const eased = 1 - Math.pow(2, -10 * progress);
+      const eased = 1 - Math.pow(2, -8 * progress);
 
       const current = Math.floor(eased * to);
 

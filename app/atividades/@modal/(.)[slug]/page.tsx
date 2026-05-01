@@ -1,5 +1,5 @@
 import { getActivityBySlug } from "@/services/activities";
-import ActivityModalClient from "@/components/Modals/ActivityModalClient";
+import ActivityModalClient from "@/components/modals/ActivityModalClient";
 import { Metadata } from "next";
 import { Suspense } from "react";
 

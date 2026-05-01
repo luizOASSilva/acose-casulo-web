@@ -1,5 +1,5 @@
 import Filter from "@/components/ui/Filter";
-import Hero from "@/components/sections/Hero";
+import Hero from "@/components/Sections/Hero";
 import Button from "@/components/ui/Button";
 
 export default function Transparencia() {

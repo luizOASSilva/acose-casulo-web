@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import ActivityGrid from "@/components/sections/ActivityGrid";
+import ActivityGrid from "@/components/Sections/ActivityGrid";
 
 export const metadata: Metadata = {
   title: "Atividades | Acose Casulo",
