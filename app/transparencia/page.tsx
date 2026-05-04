@@ -1,40 +1,75 @@
-import Filter from "@/components/ui/Filter";
-import Hero from "@/components/Sections/Hero";
-import Button from "@/components/ui/Button";
+import type { Metadata } from "next";
+import Hero from "@/components/sections/Hero";
+import Filter from "@/components/ui/YearFilter";
+import TransparencySection from "@/components/sections/TransparencySection";
+import SupportCTA from "@/components/sections/SupportCTA";
+import { getTransparencyData } from "@/services/transparency";
+import { TransparencyResponse } from "@/types/transparency";
 
-export default function Transparencia() {
+export const metadata: Metadata = {
+  title: "Transparência",
+  description: "Acesse documentos públicos, contratos, atas e relatórios financeiros do Centro Dia.",
+  alternates: {
+    canonical: "/transparencia",
+  },
+  openGraph: {
+    title: "Transparência | Acose Casulo",
+    description: "Portal da transparência: acesse documentos oficiais e prestações de contas da Acose Casulo.",
+    url: "/transparencia",
+    type: "website",
+    images: [{ url: "/og-transparencia.jpg", width: 1200, height: 630 }],
+  },
+};
+
+interface PageProps {
+  searchParams: Promise<{ ano?: string }>;
+}
+
+export default async function Transparencia({ searchParams }: PageProps) {
+  const { ano } = await searchParams;
+  const data: TransparencyResponse | null = await getTransparencyData(ano ? Number(ano) : undefined);
+
+  const years = data?.years || [];
+  const currentYear = data?.year ?? new Date().getFullYear();
+  const categories = data?.categories || [];
+
+  const sortedCategories = [...categories].sort((a, b) => a.order - b.order);
+
   return (
     <main>
       <Hero
-        title={
-          <>
-            Nossa <span className="text-primary">transparência</span> é pública
-          </>
-        }
-        description="O Centro Dia da Pessoa com Deficiência tem como compromisso junto à sociedade e órgãos governamentais demonstrar os recursos recebidos e investidos na entidade."
+        title={<>Nossa <span className="text-primary">transparência</span> é pública</>}
+        description="O Centro Dia da Pessoa com Deficiência demonstra os recursos recebidos e investidos na entidade."
         overlay={false}
-      ></Hero>
-      <section className="flex flex-col items-center">
-        <Filter years={[2024, 2025, 2026]} />
+      />
 
-        <div className="flex flex-row items-center justify-between max-w-7xl mx-auto w-full bg-white p-8 ">
-          <div className="space-y-1.5">
-            <h3 className="text-xl font-medium">
-              Tem alguma dúvida sobre nossos documentos?
-            </h3>
-            <p className="text-gray-800 font-light">
-              Entre em contato - respondemos o mais rápido possível
-            </p>
-          </div>
-          <div>
-            <Button
-              href="/contato"
-              text="Falar com a nossa equipe!"
-              icon={false}
-              ariaLabel=""
-            />
+      <section aria-labelledby="transparencia-titulo">
+        <Filter years={years} activeYear={currentYear} />
+
+        <div className="max-w-7xl mx-auto px-4 py-10">
+          <p className="text-sm text-gray-500 mb-6">
+            Exibindo documentos de <strong className="text-primary">{currentYear}</strong>
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 border-t border-l border-gray-200">
+            {sortedCategories.map((category, index) => (
+              <div key={category.id} className="border-r border-b border-gray-200">
+                <TransparencySection
+                  number={(index + 1).toString().padStart(2, "0")}
+                  title={category.name}
+                  description={category.description}
+                  documents={category.documents}
+                  variant={category.featured ? "featured" : (category.order === 3 ? "dark" : "light")}
+                />
+              </div>
+            ))}
           </div>
         </div>
+
+        <SupportCTA 
+          title="Tem alguma dúvida sobre nossos documentos? Entre em contato — respondemos o mais rápido possível"
+          buttonText="Falar com a nossa equipe!"
+        />
       </section>
     </main>
   );

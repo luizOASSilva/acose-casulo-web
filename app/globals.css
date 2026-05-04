@@ -41,6 +41,10 @@
     overflow-y: scroll;
   }
 
+  html.menu-open {
+    overflow: hidden;
+  }
+
   @media (prefers-reduced-motion: no-preference) {
     html {
       scroll-behavior: smooth;

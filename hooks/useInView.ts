@@ -2,7 +2,7 @@
 
 import { useEffect, useState, RefObject } from "react";
 
-export function useInView(ref: RefObject<Element>, threshold = 0.3) {
+export function useInView(ref: RefObject<Element | null>, threshold = 0.3) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -25,3 +25,4 @@ export function useInView(ref: RefObject<Element>, threshold = 0.3) {
 
   return visible;
 }
+  

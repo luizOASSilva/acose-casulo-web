@@ -1,40 +1,21 @@
 import type { Metadata } from "next";
-import PartnerMarquee from "@/components/Sections/PartnerMarquee";
-import Button from "@/components/ui/Button";
+import PartnerMarquee from "@/components/sections/PartnerMarquee";
 import StatCounterClient from "@/components/ui/StatCount/StateCountClient";
+import SupportCTA from "@/components/sections/SupportCTA";
 
 export const metadata: Metadata = {
-  title: "Parceiros | Centro Dia Pessoa com Deficiência — Projeto Casulo",
+  title: "Parceiros",
   description:
     "Conheça as empresas e instituições que apoiam o Centro Dia da Pessoa com Deficiência em Bragança Paulista. Juntos promovemos inclusão, autonomia e dignidade.",
-  keywords: [
-    "parceiros Centro Dia",
-    "apoio inclusão social",
-    "deficiência intelectual",
-    "Projeto Casulo",
-    "Bragança Paulista",
-    "empresas parceiras",
-    "responsabilidade social",
-  ],
   alternates: {
-    canonical: "https://www.projetocasulo.org.br/parceiros",
+    canonical: "/parceiros",
   },
   openGraph: {
-    title: "Parceiros | Centro Dia Pessoa com Deficiência — Projeto Casulo",
+    title: "Parceiros | Acose Casulo",
     description:
       "Empresas e instituições que acreditam no trabalho do Centro Dia e caminham com a gente na promoção da inclusão em Bragança Paulista.",
-    url: "https://www.projetocasulo.org.br/parceiros",
-    siteName: "Projeto Casulo",
-    locale: "pt_BR",
+    url: "/parceiros",
     type: "website",
-    images: [
-      {
-        url: "https://www.projetocasulo.org.br/og/parceiros.jpg",
-        width: 1200,
-        height: 630,
-        alt: "Parceiros do Centro Dia Pessoa com Deficiência — Projeto Casulo",
-      },
-    ],
   },
 };
 
@@ -82,14 +63,10 @@ export default function Parceiros() {
 
       <PartnerMarquee partners={partners} />
 
-      <section aria-label="Seja um parceiro" className="border-t border-gray-200">
-        <div className="max-w-7xl mx-auto px-6 mt-10 pt-10 pb-15 flex flex-col md:flex-row items-center justify-between gap-6">
-          <p className="text-gray-700 font-medium text-md md:text-lg max-w-xl">
-            Quer apoiar o Centro Dia e fazer parte desta rede de parceiros?
-          </p>
-          <Button href="/contato" text="Seja um parceiro" variant="primary" />
-        </div>
-      </section>
+      <SupportCTA 
+        title="Quer apoiar o Centro Dia e fazer parte desta rede de parceiros?"
+        buttonText="Seja um parceiro"
+      />
     </main>
   );
 }

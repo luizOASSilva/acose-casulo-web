@@ -3,9 +3,12 @@ import ContactForm from "@/components/forms/ContactForm";
 import { Clock, MapPin, Mail, Phone } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Contato | Acose Casulo",
+  title: "Contato",
   description:
     "Entre em contato com nossa equipe. Respondemos todas as mensagens o mais rápido possível.",
+  alternates: {
+    canonical: "/contato",
+  },
   openGraph: {
     title: "Contato | Acose Casulo",
     description: "Fale com nossa equipe. Estamos prontos para ajudar.",

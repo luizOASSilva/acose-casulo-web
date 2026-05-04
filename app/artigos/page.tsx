@@ -3,23 +3,17 @@ import ArticleRow from "@/components/ui/ArticleRow";
 import { getArticles } from "@/services/articles";
 
 export const metadata: Metadata = {
-  title: "Artigos | Acose Casulo",
+  title: "Artigos",
   description:
     "Artigos sobre inclusão, autonomia e cuidado para pessoas com deficiência intelectual em Bragança Paulista.",
-  keywords: [
-    "inclusão social",
-    "deficiência intelectual",
-    "autonomia",
-    "Centro Dia",
-    "Bragança Paulista",
-    "Acose Casulo",
-  ],
+  alternates: {
+    canonical: "/artigos",
+  },
   openGraph: {
     title: "Artigos | Acose Casulo",
     description:
       "Artigos sobre inclusão, autonomia e cuidado para pessoas com deficiência intelectual em Bragança Paulista.",
     type: "website",
-    locale: "pt_BR",
   },
 };
 
@@ -28,7 +22,7 @@ export default async function Artigos() {
 
   return (
     <main className="w-[90%] max-w-4xl mx-auto py-12 md:py-20">
-      <header className="mb-8 space-y-2">
+      <header className="mb-8 space-y-6 mb-10 space-y-2">
         <h1 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight">Artigos</h1>
         <p className="text-gray-500 text-base md:text-lg max-w-xl">
           Um pouco do material de quem vive o cuidado no dia-a-dia.

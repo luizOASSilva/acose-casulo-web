@@ -1,10 +1,24 @@
+import type { Metadata } from "next";
 import Carousel from "@/components/ui/Carousel/CarouselWrapper";
-import Hero from "@/components/Sections/Hero";
-import Impact from "@/components/Sections/Impact";
-import Mission from "@/components/Sections/Mission";
+import Hero from "@/components/sections/Hero";
+import Impact from "@/components/sections/Impact";
+import Mission from "@/components/sections/Mission";
 import Button from "@/components/ui/Button";
 import LeafIllustration from "@/components/ui/LeafIllustration";
 import { Briefcase, Coins, Recycle, Sprout } from "lucide-react";
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "Acose Casulo | Centro Dia | Bragança Paulista",
+    description:
+      "Centro Dia da Pessoa com Deficiência — acolhimento, autonomia e dignidade para jovens adultos com deficiência em Bragança Paulista, SP.",
+    url: "/",
+    type: "website",
+  },
+};
 
 export default function Home() {
   return (

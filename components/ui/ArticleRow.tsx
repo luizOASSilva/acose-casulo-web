@@ -1,7 +1,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import type { Article } from "@/types/article"
-import KeywordBadge from "./KeywordBadge"
+import KeywordBadge from "@/components/ui/KeywordBadge"
 
 export default function ArticleRow({ article }: { article: Article }) {
   return (

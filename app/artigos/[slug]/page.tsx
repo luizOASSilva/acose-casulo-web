@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { getArticleBySlug } from "@/services/articles";
 import UserBadge from "@/components/ui/UserBadge";
 import KeywordBadge from "@/components/ui/KeywordBadge";
+import BackButton from "@/components/ui/BackButton";
 
 interface ParamProps {
   params: Promise<{ slug: string }>;
@@ -16,7 +17,7 @@ export async function generateMetadata({ params }: ParamProps): Promise<Metadata
   if (!article) return { title: "Artigo não encontrado" };
 
   return {
-    title: `${article.title} | Acose Casulo`,
+    title: article.title,
     description: article.summary,
     openGraph: {
       title: article.title,
@@ -34,8 +35,10 @@ export default async function Artigo({ params }: ParamProps) {
   if (!article) notFound();
 
   return (
-    <main className="w-[90%] max-w-3xl mx-auto px-6 py-20">
-      <article aria-labelledby="article-title">
+    <main className="w-[90%] max-w-3xl mx-auto py-20">
+      <BackButton fallback="/artigos" label="Todos os artigos" />
+
+      <article aria-labelledby="article-title" className="mt-8">
         <header className="space-y-6 mb-10">
           {article.keywords && article.keywords.length > 0 && (
             <ul className="flex flex-wrap gap-2">

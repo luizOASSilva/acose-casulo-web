@@ -64,8 +64,34 @@ export default function RootLayout({
   return (
     <html
       lang="pt-BR"
+      data-scroll-behavior="smooth"
       className={`${openSans.variable} ${montserrat.variable} antialiased`}
     >
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "NGO",
+              name: "Acose Casulo",
+              url: "https://acosecasulo.org.br",
+              telephone: "+551124734994",
+              email: "contato@projetocasulobp.org.br",
+              address: {
+                "@type": "PostalAddress",
+                streetAddress: "Rua Francisco Rodrigues Dias, 80",
+                addressLocality: "Bragança Paulista",
+                addressRegion: "SP",
+                postalCode: "12908-843",
+                addressCountry: "BR",
+              },
+              description:
+                "Centro Dia da Pessoa com Deficiência — acolhimento, autonomia e dignidade para jovens adultos com deficiência em Bragança Paulista, SP.",
+            }),
+          }}
+        />
+      </head>
       <body className="min-h-screen flex flex-col">
         <Navbar />
         <div className="flex-1 pt-20">{children}</div>

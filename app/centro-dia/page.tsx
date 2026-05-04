@@ -1,29 +1,18 @@
-import Gallery from "@/components/Sections/Gallery";
+import Gallery from "@/components/sections/Gallery";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Centro Dia | Projeto Casulo — Bragança Paulista",
+  title: "Centro Dia",
   description:
     "Conheça a história do Centro Dia da Pessoa com Deficiência, idealizado pelo Projeto Casulo para oferecer acolhimento, autonomia e dignidade a jovens adultos com deficiência em Bragança Paulista.",
-  keywords: [
-    "Centro Dia",
-    "Projeto Casulo",
-    "deficiência intelectual",
-    "jovens adultos com deficiência",
-    "inclusão social",
-    "Bragança Paulista",
-    "Associação Comunitária Santo Expedito",
-  ],
   alternates: {
-    canonical: "https://www.projetocasulo.org.br/centro-dia",
+    canonical: "/centro-dia",
   },
   openGraph: {
-    title: "Centro Dia | Projeto Casulo — Bragança Paulista",
+    title: "Centro Dia | Acose Casulo — Bragança Paulista",
     description:
       "A história do Centro Dia da Pessoa com Deficiência e seu compromisso com a inclusão e dignidade de jovens adultos.",
-    url: "https://www.projetocasulo.org.br/centro-dia",
-    siteName: "Projeto Casulo",
-    locale: "pt_BR",
+    url: "/centro-dia",
     type: "article",
     publishedTime: "2022-01-01T00:00:00Z",
     authors: ["Padre José Roberto Cavasa"],
