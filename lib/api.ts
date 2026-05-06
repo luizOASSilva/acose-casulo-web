@@ -1,21 +1,29 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
 
-export async function apiFetch(endpoint: string, options: RequestInit = {}) {
+export async function apiFetch<T = any>(
+  endpoint: string,
+  options: RequestInit = {}
+): Promise<T> {
   const url = `${API_URL}/api${endpoint}`;
 
-  const defaultOptions: RequestInit = {
+  const response = await fetch(url, {
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json',
+      ...(options.headers || {}),
     },
     ...options,
-  };
-
-  const response = await fetch(url, defaultOptions);
+  });
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || 'Erro na requisição');
+    let errorMessage = 'Erro na requisição';
+
+    try {
+      const errorData = await response.json();
+      errorMessage = errorData.message || errorData.error || errorMessage;
+    } catch {}
+
+    throw new Error(errorMessage);
   }
 
   return response.json();

@@ -72,7 +72,12 @@ export default function NavbarClient({
 
   useModalEffects(open, () => setOpen(false));
 
-  const closeMenus = () => setOpen(false);
+  const closeMenus = () => {
+    setOpen(false);
+    setDropdownOpen(false);
+  };
+
+  const isDesktop = () => typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches;
 
   return (
     <>
@@ -102,13 +107,15 @@ export default function NavbarClient({
             onClick={closeMenus}
             aria-label="Ir para a página inicial da Acose Casulo"
           >
+          <div style={{ position: 'relative', width: 100, height: 100 }}>
             <Image
               src="/logo.svg"
               alt="Acose Casulo"
-              width={100}
-              height={100}
+              fill
+              style={{ objectFit: 'contain' }}
               priority
             />
+          </div>
           </Link>
 
           <button
@@ -160,11 +167,11 @@ export default function NavbarClient({
 
               <li
                 className="relative w-full lg:w-auto"
-                onMouseEnter={() => setDropdownOpen(true)}
-                onMouseLeave={() => setDropdownOpen(false)}
+                onMouseEnter={() => isDesktop() && setDropdownOpen(true)}
+                onMouseLeave={() => isDesktop() && setDropdownOpen(false)}
               >
                 <button
-                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  onClick={() => !isDesktop() && setDropdownOpen(!dropdownOpen)}
                   aria-expanded={dropdownOpen}
                   aria-controls="artigos-dropdown"
                   aria-label={

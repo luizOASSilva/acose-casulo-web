@@ -74,6 +74,7 @@ export default async function Artigo({ params }: ParamProps) {
                 src={article.media?.url || ''}
                 alt={article.media?.alt_text || article.title}
                 fill
+                sizes="(max-width: 768px) 90vw, 768px"
                 className="object-cover rounded-md"
                 priority
               />

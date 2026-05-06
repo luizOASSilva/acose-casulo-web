@@ -35,6 +35,7 @@ export default function LogoCard({
             src={logo.src}
             alt={isClone ? '' : `Parceiro ${logo.name}`}
             fill
+            sizes="(max-width: 768px) 120px, 220px"
             priority={isPriority}
             loading="eager"
             className="object-contain"

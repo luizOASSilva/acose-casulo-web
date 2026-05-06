@@ -5,6 +5,7 @@ import TransparencySection from '@/components/sections/TransparencySection';
 import SupportCTA from '@/components/sections/SupportCTA';
 import { getTransparencyData } from '@/services/transparency';
 import { TransparencyResponse } from '@/types/transparency';
+import { redirect } from 'next/navigation';
 
 export const metadata: Metadata = {
   title: 'Transparência',
@@ -29,6 +30,11 @@ interface PageProps {
 
 export default async function Transparencia({ searchParams }: PageProps) {
   const { ano } = await searchParams;
+
+  if (!ano) {
+    redirect(`/transparencia?ano=${new Date().getFullYear()}`);
+  }
+
   const anoAtual = ano ? Number(ano) : new Date().getFullYear();
 
   const data: TransparencyResponse | null = await getTransparencyData(anoAtual);

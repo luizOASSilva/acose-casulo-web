@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { useTransition, useEffect } from 'react';
+import { useTransition } from 'react';
 
 export default function YearFilter({
   years,
@@ -14,14 +14,6 @@ export default function YearFilter({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
-
-  useEffect(() => {
-    if (!searchParams.get('ano')) {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set('ano', String(activeYear));
-      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-    }
-  }, [activeYear, pathname, router, searchParams]);
 
   const handleYear = (year: number) => {
     if (year === activeYear) return;
