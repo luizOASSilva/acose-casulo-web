@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import { useState } from 'react';
 
 export function useActivityActions(initialLikes: number) {
   const [likes, setLikes] = useState(initialLikes);
@@ -16,6 +16,6 @@ export function useActivityActions(initialLikes: number) {
     likes,
     isLiked,
     handleLike,
-    likeLabel: isLiked ? "Curtido" : "Curtir atividade"
+    likeLabel: isLiked ? 'Curtido' : 'Curtir atividade',
   };
 }

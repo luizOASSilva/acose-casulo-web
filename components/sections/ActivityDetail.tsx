@@ -29,23 +29,19 @@ export default function ActivityDetail({
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-title"
-      aria-describedby="modal-description"
-      className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4"
+      className="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-4 h-full"
     >
       <div
         aria-hidden="true"
-        className="absolute inset-0 cursor-default bg-black/70 backdrop-blur-sm"
+        className="absolute inset-0 h-full w-full cursor-default bg-black/70 backdrop-blur-sm"
         onClick={onClose}
       />
 
-      <div className="relative z-10 flex w-full flex-col bg-white shadow-2xl rounded-t-[2.5rem] sm:rounded-3xl sm:max-w-2xl max-h-[92svh] sm:max-h-[85vh]">
-        <div className="relative h-48 w-full shrink-0 sm:h-64 bg-gray-100 rounded-t-[2.5rem] sm:rounded-t-3xl overflow-hidden">
+      <div className="relative z-10 flex h-[92vh] w-full flex-col overflow-hidden rounded-t-[2.5rem] bg-white shadow-2xl transition-all duration-300 sm:h-auto sm:max-w-3xl sm:rounded-3xl">
+        <div className="relative h-48 w-full shrink-0 sm:h-64 bg-gray-100">
           <Image
             src={activity.media?.url || ''}
-            alt={
-              activity.media?.alt_text ||
-              `Imagem da atividade ${activity.title}`
-            }
+            alt={activity.media?.alt_text || activity.title}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 768px"
             className="object-cover"
@@ -54,10 +50,9 @@ export default function ActivityDetail({
           />
           <button
             onClick={onClose}
-            aria-label="Fechar modal"
             className="absolute right-4 top-4 z-20 rounded-full bg-white/90 p-2 text-gray-800 shadow-md transition-transform hover:bg-white active:scale-95 cursor-pointer"
           >
-            <X size={20} aria-hidden="true" />
+            <X size={20} />
           </button>
         </div>
 
@@ -71,26 +66,19 @@ export default function ActivityDetail({
                 {activity.title}
               </h2>
 
-              <div
-                className="flex flex-wrap gap-3"
-                aria-label="Informações da atividade"
-              >
+              <div className="flex flex-wrap gap-3">
                 <div className="flex items-center gap-2 rounded-lg bg-orange-50 px-3 py-1 text-sm font-semibold text-orange-700 border border-orange-100">
-                  <Calendar size={14} aria-hidden="true" />
+                  <Calendar size={14} />
                   <span>Segunda a Sexta</span>
                 </div>
                 <div className="flex items-center gap-2 rounded-lg bg-orange-50 px-3 py-1 text-sm font-semibold text-orange-700 border border-orange-100">
-                  <Clock size={14} aria-hidden="true" />
+                  <Clock size={14} />
                   <span>08h - 11h</span>
                 </div>
               </div>
             </header>
 
-            <article
-              id="modal-description"
-              className="border-b border-gray-100 pb-8 text-gray-600 leading-relaxed"
-              aria-label={`Descrição de ${activity.title}`}
-            >
+            <article className="border-b border-gray-100 pb-8 text-gray-600 leading-relaxed">
               {(activity.content || '')
                 .split('\n')
                 .filter((p) => p.trim())
@@ -102,19 +90,13 @@ export default function ActivityDetail({
             </article>
 
             <div className="mt-8 flex flex-col items-center justify-between gap-6 pb-4 sm:flex-row sm:pb-0">
-              <p
-                className="text-sm font-medium text-gray-500"
-                aria-live="polite"
-                aria-atomic="true"
-              >
+              <p className="text-sm font-medium text-gray-500">
                 <span className="font-bold text-orange-600">{likes}</span>{' '}
                 pessoas curtiram
               </p>
 
               <button
                 onClick={handleLike}
-                aria-label={likeLabel}
-                aria-pressed={isLiked}
                 className={`
                   flex w-full items-center justify-center gap-3 rounded-2xl border-2 px-8 py-3.5 font-bold transition-all active:scale-95 sm:w-auto cursor-pointer
                   ${
@@ -126,7 +108,6 @@ export default function ActivityDetail({
               >
                 <Heart
                   size={20}
-                  aria-hidden="true"
                   fill={isLiked ? 'currentColor' : 'none'}
                   className={isLiked ? 'animate-pulse' : ''}
                 />

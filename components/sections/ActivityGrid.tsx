@@ -1,6 +1,6 @@
-import Link from "next/link";
-import { getActivities } from "@/services/activities";
-import ActivityCard from "@/components/ui/ActivityCard";
+import Link from 'next/link';
+import { getActivities } from '@/services/activities';
+import ActivityCard from '@/components/ui/ActivityCard';
 
 export default async function ActivityGrid() {
   const activities = await getActivities();

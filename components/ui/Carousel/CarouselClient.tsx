@@ -1,23 +1,25 @@
-"use client";
+'use client';
 
-import { useCallback, useEffect, useState } from "react";
-import useEmblaCarousel from "embla-carousel-react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { cn } from "@/lib/cn";
-import ActivityCard from "@/components/ui/ActivityCard";
-import type { Activity } from "@/types/activity";
+import { useCallback, useEffect, useState } from 'react';
+import useEmblaCarousel from 'embla-carousel-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { cn } from '@/lib/cn';
+import ActivityCard from '@/components/ui/ActivityCard';
+import type { Activity } from '@/types/activity';
 
 interface CarouselClientProps {
   activities?: Activity[];
 }
 
-export default function CarouselClient({ activities = [] }: CarouselClientProps) {
+export default function CarouselClient({
+  activities = [],
+}: CarouselClientProps) {
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: true,
-    align: "center",
+    align: 'center',
     slidesToScroll: 1,
     breakpoints: {
-      "(min-width: 768px)": { slidesToScroll: 3, align: "start" },
+      '(min-width: 768px)': { slidesToScroll: 3, align: 'start' },
     },
   });
 
@@ -37,24 +39,24 @@ export default function CarouselClient({ activities = [] }: CarouselClientProps)
   useEffect(() => {
     if (!emblaApi) return;
 
-    emblaApi.on("select", onSelect);
-    emblaApi.on("reInit", onInit);
-    emblaApi.on("reInit", onSelect);
+    emblaApi.on('select', onSelect);
+    emblaApi.on('reInit', onInit);
+    emblaApi.on('reInit', onSelect);
 
     // eslint-disable-next-line react-hooks/set-state-in-effect
     onInit();
     onSelect();
 
     return () => {
-      emblaApi.off("select", onSelect);
-      emblaApi.off("reInit", onInit);
-      emblaApi.off("reInit", onSelect);
+      emblaApi.off('select', onSelect);
+      emblaApi.off('reInit', onInit);
+      emblaApi.off('reInit', onSelect);
     };
   }, [emblaApi, onSelect, onInit]);
 
   const scrollTo = useCallback(
     (index: number) => emblaApi && emblaApi.scrollTo(index),
-    [emblaApi],
+    [emblaApi]
   );
 
   if (activities.length === 0) {
@@ -64,7 +66,10 @@ export default function CarouselClient({ activities = [] }: CarouselClientProps)
   }
 
   return (
-    <section aria-label="Carrossel de atividades" className="py-8 max-w-7xl md:mx-auto md:px-4">
+    <section
+      aria-label="Carrossel de atividades"
+      className="pt-8 max-w-7xl md:mx-auto md:px-4"
+    >
       <div className="overflow-hidden" ref={emblaRef}>
         <div className="flex touch-pan-y touch-pinch-zoom gap-4 pl-4 md:pl-0">
           {activities.map((activity) => (
@@ -88,12 +93,17 @@ export default function CarouselClient({ activities = [] }: CarouselClientProps)
 
         <div className="flex items-center justify-center">
           {scrollSnaps.map((_, index) => (
-            <div key={index} className="flex items-center justify-center w-4 h-5">
+            <div
+              key={index}
+              className="flex items-center justify-center w-4 h-5"
+            >
               <button
                 onClick={() => scrollTo(index)}
                 className={cn(
-                  "rounded-full h-2.5 transition-all duration-300 ease-in-out",
-                  index === selectedIndex ? "bg-primary w-6" : "bg-gray-300 w-2.5",
+                  'rounded-full h-2.5 transition-all duration-300 ease-in-out',
+                  index === selectedIndex
+                    ? 'bg-primary w-6'
+                    : 'bg-gray-300 w-2.5'
                 )}
               />
             </div>

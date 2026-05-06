@@ -1,23 +1,25 @@
-import type { Metadata } from "next";
-import Hero from "@/components/sections/Hero";
-import Filter from "@/components/ui/YearFilter";
-import TransparencySection from "@/components/sections/TransparencySection";
-import SupportCTA from "@/components/sections/SupportCTA";
-import { getTransparencyData } from "@/services/transparency";
-import { TransparencyResponse } from "@/types/transparency";
+import type { Metadata } from 'next';
+import Hero from '@/components/sections/Hero';
+import Filter from '@/components/ui/YearFilter';
+import TransparencySection from '@/components/sections/TransparencySection';
+import SupportCTA from '@/components/sections/SupportCTA';
+import { getTransparencyData } from '@/services/transparency';
+import { TransparencyResponse } from '@/types/transparency';
 
 export const metadata: Metadata = {
-  title: "Transparência",
-  description: "Acesse documentos públicos, contratos, atas e relatórios financeiros do Centro Dia.",
+  title: 'Transparência',
+  description:
+    'Acesse documentos públicos, contratos, atas e relatórios financeiros do Centro Dia.',
   alternates: {
-    canonical: "/transparencia",
+    canonical: '/transparencia',
   },
   openGraph: {
-    title: "Transparência | Acose Casulo",
-    description: "Portal da transparência: acesse documentos oficiais e prestações de contas da Acose Casulo.",
-    url: "/transparencia",
-    type: "website",
-    images: [{ url: "/og-transparencia.jpg", width: 1200, height: 630 }],
+    title: 'Transparência | Acose Casulo',
+    description:
+      'Portal da transparência: acesse documentos oficiais e prestações de contas da Acose Casulo.',
+    url: '/transparencia',
+    type: 'website',
+    images: [{ url: '/og-transparencia.jpg', width: 1200, height: 630 }],
   },
 };
 
@@ -27,10 +29,12 @@ interface PageProps {
 
 export default async function Transparencia({ searchParams }: PageProps) {
   const { ano } = await searchParams;
-  const data: TransparencyResponse | null = await getTransparencyData(ano ? Number(ano) : undefined);
+  const anoAtual = ano ? Number(ano) : new Date().getFullYear();
+
+  const data: TransparencyResponse | null = await getTransparencyData(anoAtual);
 
   const years = data?.years || [];
-  const currentYear = data?.year ?? new Date().getFullYear();
+  const currentYear = data?.year ?? anoAtual;
   const categories = data?.categories || [];
 
   const sortedCategories = [...categories].sort((a, b) => a.order - b.order);
@@ -38,35 +42,49 @@ export default async function Transparencia({ searchParams }: PageProps) {
   return (
     <main>
       <Hero
-        title={<>Nossa <span className="text-primary">transparência</span> é pública</>}
+        title={
+          <>
+            Nossa <span className="text-primary">transparência</span> é pública
+          </>
+        }
         description="O Centro Dia da Pessoa com Deficiência demonstra os recursos recebidos e investidos na entidade."
         overlay={false}
       />
 
-      <section aria-labelledby="transparencia-titulo">
+      <section aria-labelledby="transparency-title">
         <Filter years={years} activeYear={currentYear} />
 
         <div className="max-w-7xl mx-auto px-4 py-10">
-          <p className="text-sm text-gray-500 mb-6">
-            Exibindo documentos de <strong className="text-primary">{currentYear}</strong>
+          <p className="text-sm text-gray-500 mb-6" id="transparency-title">
+            Exibindo documentos de{' '}
+            <strong className="text-primary">{currentYear}</strong>
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 border-t border-l border-gray-200">
             {sortedCategories.map((category, index) => (
-              <div key={category.id} className="border-r border-b border-gray-200">
+              <div
+                key={category.id}
+                className="border-r border-b border-gray-200"
+              >
                 <TransparencySection
-                  number={(index + 1).toString().padStart(2, "0")}
+                  number={(index + 1).toString().padStart(2, '0')}
                   title={category.name}
                   description={category.description}
                   documents={category.documents}
-                  variant={category.featured ? "featured" : (category.order === 3 ? "dark" : "light")}
+                  variant={
+                    category.featured
+                      ? 'featured'
+                      : category.order === 3
+                        ? 'dark'
+                        : 'light'
+                  }
                 />
               </div>
             ))}
           </div>
         </div>
 
-        <SupportCTA 
+        <SupportCTA
           title="Tem alguma dúvida sobre nossos documentos? Entre em contato — respondemos o mais rápido possível"
           buttonText="Falar com a nossa equipe!"
         />

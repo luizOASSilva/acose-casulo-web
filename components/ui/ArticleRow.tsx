@@ -1,7 +1,7 @@
-import Link from "next/link"
-import Image from "next/image"
-import type { Article } from "@/types/article"
-import KeywordBadge from "@/components/ui/KeywordBadge"
+import Link from 'next/link';
+import Image from 'next/image';
+import type { Article } from '@/types/article';
+import KeywordBadge from '@/components/ui/KeywordBadge';
 
 export default function ArticleRow({ article }: { article: Article }) {
   return (
@@ -45,13 +45,20 @@ export default function ArticleRow({ article }: { article: Article }) {
             >
               {article.author.name.charAt(0).toUpperCase()}
             </div>
-            <span className="text-xs text-gray-500 truncate hidden sm:block">{article.author.name}</span>
-            <span aria-hidden="true" className="text-gray-300 hidden sm:block">·</span>
-            <time dateTime={article.created_at} className="text-xs text-gray-400 shrink-0">
-              {new Date(article.created_at).toLocaleDateString("pt-BR", {
-                day: "2-digit",
-                month: "long",
-                year: "numeric",
+            <span className="text-xs text-gray-500 truncate hidden sm:block">
+              {article.author.name}
+            </span>
+            <span aria-hidden="true" className="text-gray-300 hidden sm:block">
+              ·
+            </span>
+            <time
+              dateTime={article.created_at}
+              className="text-xs text-gray-400 shrink-0"
+            >
+              {new Date(article.created_at).toLocaleDateString('pt-BR', {
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric',
               })}
             </time>
           </div>
@@ -65,5 +72,5 @@ export default function ArticleRow({ article }: { article: Article }) {
         </div>
       </div>
     </Link>
-  )
+  );
 }

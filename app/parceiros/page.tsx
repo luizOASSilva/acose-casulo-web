@@ -1,38 +1,66 @@
-import type { Metadata } from "next";
-import PartnerMarquee from "@/components/sections/PartnerMarquee";
-import StatCounterClient from "@/components/ui/StatCount/StateCountClient";
-import SupportCTA from "@/components/sections/SupportCTA";
+import type { Metadata } from 'next';
+import PartnerMarquee from '@/components/sections/PartnerMarquee';
+import StatCounterClient from '@/components/ui/StatCount/StateCountClient';
+import SupportCTA from '@/components/sections/SupportCTA';
 
 export const metadata: Metadata = {
-  title: "Parceiros",
+  title: 'Parceiros',
   description:
-    "Conheça as empresas e instituições que apoiam o Centro Dia da Pessoa com Deficiência em Bragança Paulista. Juntos promovemos inclusão, autonomia e dignidade.",
+    'Conheça as empresas e instituições que apoiam o Centro Dia da Pessoa com Deficiência em Bragança Paulista. Juntos promovemos inclusão, autonomia e dignidade.',
   alternates: {
-    canonical: "/parceiros",
+    canonical: '/parceiros',
   },
   openGraph: {
-    title: "Parceiros | Acose Casulo",
+    title: 'Parceiros | Acose Casulo',
     description:
-      "Empresas e instituições que acreditam no trabalho do Centro Dia e caminham com a gente na promoção da inclusão em Bragança Paulista.",
-    url: "/parceiros",
-    type: "website",
+      'Empresas e instituições que acreditam no trabalho do Centro Dia e caminham com a gente na promoção da inclusão em Bragança Paulista.',
+    url: '/parceiros',
+    type: 'website',
   },
 };
 
 const partners = [
-  { name: "Apoio Social", src: "/parceiros/apoio-social.svg", bgColor: "#ffffff" },
-  { name: "Casa do Pintor", src: "/parceiros/casa-do-pintor.svg", bgColor: "#ffffff" },
-  { name: "Damatsu", src: "/parceiros/damatsu.svg", bgColor: "#ffffff" },
-  { name: "Giorgino", src: "/parceiros/giorgino.svg", bgColor: "#212121" },
-  { name: "José Paulino", src: "/parceiros/jose-paulino.svg", bgColor: "#ffffff" },
-  { name: "Makino", src: "/parceiros/makino.svg", bgColor: "#ffffff" },
-  { name: "Marcus Bonna", src: "/parceiros/marcus-bonna.svg", bgColor: "#ffffff" },
-  { name: "Musical Tassara", src: "/parceiros/musical-tassara.svg", bgColor: "#000000" },
-  { name: "Parque Brasil", src: "/parceiros/parque-brasil.svg", bgColor: "#ffffff" },
-  { name: "Policog", src: "/parceiros/policog.svg", bgColor: "#000000" },
-  { name: "Primeira Impressão", src: "/parceiros/primeira-impressao.svg", bgColor: "#4A5672" },
-  { name: "Probac", src: "/parceiros/probac.svg", bgColor: "#000000" },
-  { name: "Woodpel", src: "/parceiros/woodpel.svg", bgColor: "#ffffff" },
+  {
+    name: 'Apoio Social',
+    src: '/parceiros/apoio-social.svg',
+    bgColor: '#ffffff',
+  },
+  {
+    name: 'Casa do Pintor',
+    src: '/parceiros/casa-do-pintor.svg',
+    bgColor: '#ffffff',
+  },
+  { name: 'Damatsu', src: '/parceiros/damatsu.svg', bgColor: '#ffffff' },
+  { name: 'Giorgino', src: '/parceiros/giorgino.svg', bgColor: '#212121' },
+  {
+    name: 'José Paulino',
+    src: '/parceiros/jose-paulino.svg',
+    bgColor: '#ffffff',
+  },
+  { name: 'Makino', src: '/parceiros/makino.svg', bgColor: '#ffffff' },
+  {
+    name: 'Marcus Bonna',
+    src: '/parceiros/marcus-bonna.svg',
+    bgColor: '#ffffff',
+  },
+  {
+    name: 'Musical Tassara',
+    src: '/parceiros/musical-tassara.svg',
+    bgColor: '#000000',
+  },
+  {
+    name: 'Parque Brasil',
+    src: '/parceiros/parque-brasil.svg',
+    bgColor: '#ffffff',
+  },
+  { name: 'Policog', src: '/parceiros/policog.svg', bgColor: '#000000' },
+  {
+    name: 'Primeira Impressão',
+    src: '/parceiros/primeira-impressao.svg',
+    bgColor: '#4A5672',
+  },
+  { name: 'Probac', src: '/parceiros/probac.svg', bgColor: '#000000' },
+  { name: 'Woodpel', src: '/parceiros/woodpel.svg', bgColor: '#ffffff' },
 ];
 
 export default function Parceiros() {
@@ -63,7 +91,7 @@ export default function Parceiros() {
 
       <PartnerMarquee partners={partners} />
 
-      <SupportCTA 
+      <SupportCTA
         title="Quer apoiar o Centro Dia e fazer parte desta rede de parceiros?"
         buttonText="Seja um parceiro"
       />

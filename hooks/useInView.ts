@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useEffect, useState, RefObject } from "react";
+import { useEffect, useState, RefObject } from 'react';
 
 export function useInView(ref: RefObject<Element | null>, threshold = 0.3) {
   const [visible, setVisible] = useState(false);
@@ -25,4 +25,3 @@ export function useInView(ref: RefObject<Element | null>, threshold = 0.3) {
 
   return visible;
 }
-  

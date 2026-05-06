@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from 'next/image';
 
 interface HeroProps {
   children?: React.ReactNode;
@@ -19,7 +19,7 @@ export default function Hero({
     <section
       aria-labelledby="hero-title"
       className={`relative min-h-[65vh] flex items-center overflow-hidden ${
-        image ? "" : "bg-secondary"
+        image ? '' : 'bg-secondary'
       }`}
     >
       {image && (
@@ -53,7 +53,7 @@ export default function Hero({
           {title}
         </h1>
 
-        <p className={image ? "text-white/90" : "text-gray-300"}>
+        <p className={image ? 'text-white/90' : 'text-gray-300'}>
           {description}
         </p>
 

@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { useTransition } from "react";
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { useTransition, useEffect } from 'react';
 
 export default function YearFilter({
   years,
@@ -15,11 +15,19 @@ export default function YearFilter({
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
 
+  useEffect(() => {
+    if (!searchParams.get('ano')) {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set('ano', String(activeYear));
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    }
+  }, [activeYear, pathname, router, searchParams]);
+
   const handleYear = (year: number) => {
     if (year === activeYear) return;
 
     const params = new URLSearchParams(searchParams.toString());
-    params.set("ano", String(year));
+    params.set('ano', String(year));
 
     startTransition(() => {
       router.push(`${pathname}?${params.toString()}`, { scroll: false });
@@ -27,13 +35,10 @@ export default function YearFilter({
   };
 
   return (
-    <fieldset className="w-full px-4 bg-white flex flex-row gap-4 items-center border-b border-gray-200">
+    <fieldset className="w-full px-4 bg-white flex flex-row gap-4 items-center border-b border-gray-200 sticky top-0 z-10">
       <legend className="sr-only">Filtrar por ano</legend>
 
-      <span
-        aria-hidden="true"
-        className="text-sm font-semibold text-gray-500"
-      >
+      <span aria-hidden="true" className="text-sm font-semibold text-gray-500">
         ANO
       </span>
 
@@ -49,11 +54,9 @@ export default function YearFilter({
                 disabled={isPending}
                 className={`py-3 h-full border-b-2 text-sm font-semibold transition-all duration-200 cursor-pointer ${
                   isActive
-                    ? "border-primary text-primary"
-                    : "border-transparent text-gray-600 hover:text-primary"
-                } ${
-                  isPending ? "opacity-50 pointer-events-none" : ""
-                }`}
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-gray-600 hover:text-primary'
+                } ${isPending ? 'opacity-50 pointer-events-none' : ''}`}
               >
                 {year}
               </button>

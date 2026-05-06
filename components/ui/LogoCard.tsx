@@ -1,5 +1,7 @@
-import Image from "next/image";
-import type { Partner } from "@/types/Partner";
+'use client';
+
+import Image from 'next/image';
+import { Partner } from '@/types/partner';
 
 export default function LogoCard({
   logo,
@@ -15,27 +17,30 @@ export default function LogoCard({
   return (
     <div
       role="listitem"
-      className="
-        mx-2 md:mx-6
-        flex items-center justify-center
-        w-30 h-17.5
-        md:w-55 md:h-30
-        rounded-2xl
-        shadow-sm border border-gray-200
-        transition-all duration-500 hover:scale-105
-      "
-      style={{ backgroundColor: logo.bgColor || "#ffffff" }}
+      className="mx-2 md:mx-6 w-30 h-17.5 md:w-55 md:h-30"
     >
-      <div className="relative w-[70%] h-[70%]">
-        <Image
-          src={logo.src}
-          alt={isClone ? "" : `Parceiro ${logo.name}`}
-          fill
-          priority={isPriority}
-          loading={isPriority ? "eager" : "lazy"}
-          className="object-contain"
-          aria-hidden={isClone ? true : undefined}
-        />
+      <div
+        className="
+          w-full h-full
+          flex items-center justify-center
+          rounded-md
+          shadow-sm border border-gray-200
+          transition-transform duration-500 hover:scale-105
+          will-change-transform
+        "
+        style={{ backgroundColor: logo.bgColor || '#ffffff' }}
+      >
+        <div className="relative w-[70%] h-[70%]">
+          <Image
+            src={logo.src}
+            alt={isClone ? '' : `Parceiro ${logo.name}`}
+            fill
+            priority={isPriority}
+            loading="eager"
+            className="object-contain"
+            aria-hidden={isClone ? true : undefined}
+          />
+        </div>
       </div>
     </div>
   );

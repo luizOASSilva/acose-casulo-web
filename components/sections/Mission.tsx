@@ -1,4 +1,4 @@
-import { Eye, Shield, Target } from "lucide-react";
+import { Eye, Shield, Target } from 'lucide-react';
 
 export default function Mission() {
   return (

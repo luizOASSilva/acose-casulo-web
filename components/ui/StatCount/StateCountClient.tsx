@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useRef } from "react";
-import { useInView } from "@/hooks/useInView";
-import StatCounter from "@/components/ui/StatCount/StatCounter";
+import { useRef } from 'react';
+import { useInView } from '@/hooks/useInView';
+import StatCounter from '@/components/ui/StatCount/StatCounter';
 
 type Props = {
   value: number;

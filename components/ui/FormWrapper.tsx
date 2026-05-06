@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import type { ReactNode } from "react";
+import type { ReactNode } from 'react';
 
 interface FormWrapperProps {
   children: ReactNode;
@@ -26,7 +26,7 @@ export default function FormWrapper({
         disabled={loading}
         className="bg-primary text-white px-6 py-3 w-full rounded-md font-semibold cursor-pointer"
       >
-        {loading ? "Enviando..." : "Enviar mensagem"}
+        {loading ? 'Enviando...' : 'Enviar mensagem'}
       </button>
     </form>
   );

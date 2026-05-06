@@ -1,11 +1,11 @@
-import { ArrowRight } from "lucide-react";
-import Link from "next/link";
+import { ArrowRight } from 'lucide-react';
+import Link from 'next/link';
 
 interface ButtonProps {
   href: string;
   text: string;
   ariaLabel?: string;
-  variant?: "primary" | "secondary" | "outline";
+  variant?: 'primary' | 'secondary' | 'outline';
   icon?: React.ReactNode;
 }
 
@@ -13,19 +13,19 @@ export default function Button({
   href,
   text,
   ariaLabel,
-  variant = "primary",
+  variant = 'primary',
   icon,
 }: ButtonProps) {
   const base =
-    "inline-flex items-center gap-2 px-5 py-3 rounded-md font-medium transition w-fit group focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
+    'inline-flex items-center gap-2 px-5 py-3 rounded-md font-medium transition w-fit group focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
 
   const variants = {
-    primary: "bg-primary text-white hover:opacity-90",
+    primary: 'bg-primary text-white hover:opacity-90',
 
-    secondary: "bg-black text-white hover:opacity-90",
+    secondary: 'bg-black text-white hover:opacity-90',
 
     outline:
-      "border-2 border-primary text-primary hover:bg-primary hover:text-white",
+      'border-2 border-primary text-primary hover:bg-primary hover:text-white',
   };
 
   return (

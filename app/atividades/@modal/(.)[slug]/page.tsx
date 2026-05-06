@@ -1,7 +1,7 @@
-import { getActivityBySlug } from "@/services/activities";
-import ActivityModalClient from "@/components/Modals/ActivityModalClient";
-import { Metadata } from "next";
-import { Suspense } from "react";
+import { getActivityBySlug } from '@/services/activities';
+import ActivityModalClient from '@/components/Modals/ActivityModalClient';
+import { Metadata } from 'next';
+import { Suspense } from 'react';
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -11,7 +11,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const activity = await getActivityBySlug(slug);
 
-  if (!activity) return { title: "Atividade não encontrada" };
+  if (!activity) return { title: 'Atividade não encontrada' };
 
   const description = activity.content.substring(0, 160);
 
@@ -22,8 +22,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: `${activity.title} | Acose Casulo`,
       description,
       url: `/atividades/${slug}`,
-      type: "article",
-      images: [{ url: activity.media.url, width: 1200, height: 630, alt: activity.media.alt_text }],
+      type: 'article',
+      images: [
+        {
+          url: activity.media.url,
+          width: 1200,
+          height: 630,
+          alt: activity.media.alt_text,
+        },
+      ],
     },
   };
 }

@@ -5,8 +5,8 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
 
   const defaultOptions: RequestInit = {
     headers: {
-      "Content-Type": "application/json",
-      "Accept": "application/json",
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
     },
     ...options,
   };
@@ -15,7 +15,7 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || "Erro na requisição");
+    throw new Error(errorData.message || 'Erro na requisição');
   }
 
   return response.json();

@@ -1,22 +1,22 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
+import { useEffect } from 'react';
 
 export function useModalEffects(isOpen: boolean, onClose: () => void) {
   useEffect(() => {
     if (!isOpen) return;
 
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === 'Escape') onClose();
     };
 
-    document.addEventListener("keydown", handleKey);
-    
+    document.addEventListener('keydown', handleKey);
+
     const originalStyle = window.getComputedStyle(document.body).overflow;
-    document.body.style.overflow = "hidden";
+    document.body.style.overflow = 'hidden';
 
     return () => {
-      document.removeEventListener("keydown", handleKey);
+      document.removeEventListener('keydown', handleKey);
       document.body.style.overflow = originalStyle;
     };
   }, [isOpen, onClose]);

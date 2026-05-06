@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from 'next/image';
 
 type GalleryImage = {
   src: string;
@@ -24,7 +24,7 @@ export default function Gallery({ images }: Props) {
         {images.map((img, i) => (
           <div
             key={i}
-            className={`relative overflow-hidden rounded-xl ${img.wide ? "col-span-2" : "col-span-1"}`}
+            className={`relative overflow-hidden rounded-xl ${img.wide ? 'col-span-2' : 'col-span-1'}`}
           >
             <Image
               src={img.src}

@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
-import ActivityDetail from "@/components/ui/ActivityDetail";
-import type { Activity } from "@/types/activity";
+import { useRouter } from 'next/navigation';
+import ActivityDetail from '@/components/ui/ActivityDetail';
+import type { Activity } from '@/types/activity';
 
 export default function ActivityModalClient({
   activity,

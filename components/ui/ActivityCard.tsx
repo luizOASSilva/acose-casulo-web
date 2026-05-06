@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import { Heart } from "lucide-react";
-import type { Activity } from "@/types/activity";
+import Image from 'next/image';
+import { Heart } from 'lucide-react';
+import type { Activity } from '@/types/activity';
 
 interface ActivityCardProps {
   activity: Activity;
@@ -11,7 +11,7 @@ interface ActivityCardProps {
 export default function ActivityCard({ activity }: ActivityCardProps) {
   return (
     <article
-      className="group flex flex-col rounded-2xl border border-gray-100 bg-white overflow-hidden hover:shadow-lg transition-shadow h-[380px]"
+      className="group flex flex-col rounded-2xl border border-gray-100 bg-white overflow-hidden hover:shadow-lg transition-shadow h-95"
       aria-labelledby={`activity-title-${activity.id}`}
       aria-describedby={`activity-desc-${activity.id}`}
     >
@@ -19,8 +19,7 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
         <Image
           src={activity.media.url}
           alt={
-            activity.media.alt_text ||
-            `Imagem da atividade ${activity.title}`
+            activity.media.alt_text || `Imagem da atividade ${activity.title}`
           }
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
@@ -40,7 +39,7 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
           id={`activity-desc-${activity.id}`}
           className="text-sm text-gray-500 leading-relaxed line-clamp-3 flex-1"
         >
-          {activity.content.split("\n\n")[0]}
+          {activity.content.split('\n\n')[0]}
         </p>
 
         <div className="flex items-center gap-1.5 pt-1">

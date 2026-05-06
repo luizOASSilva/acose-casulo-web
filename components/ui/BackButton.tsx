@@ -1,5 +1,5 @@
-import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
+import Link from 'next/link';
+import { ChevronLeft } from 'lucide-react';
 
 interface BackButtonProps {
   href?: string;
@@ -7,8 +7,8 @@ interface BackButtonProps {
 }
 
 export default function BackButton({
-  href = "/artigos",
-  label = "Todos os artigos",
+  href = '/artigos',
+  label = 'Todos os artigos',
 }: BackButtonProps) {
   return (
     <Link

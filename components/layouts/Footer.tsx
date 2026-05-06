@@ -1,4 +1,4 @@
-import { FaWhatsapp, FaInstagram, FaFacebook, FaYoutube } from "react-icons/fa";
+import { FaWhatsapp, FaInstagram, FaFacebook, FaYoutube } from 'react-icons/fa';
 
 export default function Footer() {
   return (
@@ -23,7 +23,7 @@ export default function Footer() {
           <p className="font-medium text-gray-700">Segunda a sexta-feira</p>
 
           <p className="text-gray-600">
-            <time dateTime="08:00">08h</time> às{" "}
+            <time dateTime="08:00">08h</time> às{' '}
             <time dateTime="17:00">17h</time>
           </p>
         </div>

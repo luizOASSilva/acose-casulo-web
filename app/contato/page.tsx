@@ -1,18 +1,18 @@
-import type { Metadata } from "next";
-import ContactForm from "@/components/forms/ContactForm";
-import { Clock, MapPin, Mail, Phone } from "lucide-react";
+import type { Metadata } from 'next';
+import ContactForm from '@/components/forms/ContactForm';
+import { Clock, MapPin, Mail, Phone } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: "Contato",
+  title: 'Contato',
   description:
-    "Entre em contato com nossa equipe. Respondemos todas as mensagens o mais rápido possível.",
+    'Entre em contato com nossa equipe. Respondemos todas as mensagens o mais rápido possível.',
   alternates: {
-    canonical: "/contato",
+    canonical: '/contato',
   },
   openGraph: {
-    title: "Contato | Acose Casulo",
-    description: "Fale com nossa equipe. Estamos prontos para ajudar.",
-    type: "website",
+    title: 'Contato | Acose Casulo',
+    description: 'Fale com nossa equipe. Estamos prontos para ajudar.',
+    type: 'website',
   },
 };
 
@@ -23,12 +23,30 @@ export default function Contato() {
         className="w-full lg:w-1/2 flex flex-col justify-center px-12 py-20 relative overflow-hidden"
         aria-labelledby="contact-info-heading"
       >
-        <div aria-hidden="true" className="absolute top-10 right-10 w-32 h-32 rounded-full border border-primary/20" />
-        <div aria-hidden="true" className="absolute top-16 right-16 w-20 h-20 rounded-full border border-primary/10" />
-        <div aria-hidden="true" className="absolute bottom-20 left-6 w-48 h-48 rounded-full border border-gray-300/80" />
-        <div aria-hidden="true" className="absolute bottom-30 left-16 w-28 h-28 rounded-full border border-gray-300/60" />
-        <div aria-hidden="true" className="absolute top-1/2 -right-6 w-16 h-16 rounded-full bg-primary/5" />
-        <div aria-hidden="true" className="absolute left-0 top-1/4 h-1/2 w-0.5 bg-linear-to-b from-transparent via-primary/30 to-transparent" />
+        <div
+          aria-hidden="true"
+          className="absolute top-10 right-10 w-32 h-32 rounded-full border border-primary/20"
+        />
+        <div
+          aria-hidden="true"
+          className="absolute top-16 right-16 w-20 h-20 rounded-full border border-primary/10"
+        />
+        <div
+          aria-hidden="true"
+          className="absolute bottom-20 left-6 w-48 h-48 rounded-full border border-gray-300/80"
+        />
+        <div
+          aria-hidden="true"
+          className="absolute bottom-30 left-16 w-28 h-28 rounded-full border border-gray-300/60"
+        />
+        <div
+          aria-hidden="true"
+          className="absolute top-1/2 -right-6 w-16 h-16 rounded-full bg-primary/5"
+        />
+        <div
+          aria-hidden="true"
+          className="absolute left-0 top-1/4 h-1/2 w-0.5 bg-linear-to-b from-transparent via-primary/30 to-transparent"
+        />
 
         <div className="max-w-md w-full mx-auto space-y-10 relative z-10">
           <div className="space-y-3">
@@ -51,21 +69,31 @@ export default function Contato() {
                 <Clock size={20} aria-hidden="true" className="text-gray-500" />
               </div>
               <div className="space-y-0.5">
-                <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">Atendimento</p>
-                <p className="text-gray-700 text-sm">Segunda a Sexta-feira · 08h às 17h</p>
+                <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">
+                  Atendimento
+                </p>
+                <p className="text-gray-700 text-sm">
+                  Segunda a Sexta-feira · 08h às 17h
+                </p>
               </div>
             </div>
 
             <div className="flex flex-row items-start gap-4">
               <div className="p-3 rounded-full border border-gray-200 shrink-0 mt-0.5">
-                <MapPin size={20} aria-hidden="true" className="text-gray-500" />
+                <MapPin
+                  size={20}
+                  aria-hidden="true"
+                  className="text-gray-500"
+                />
               </div>
               <div className="space-y-0.5">
-                <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">Endereço</p>
+                <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">
+                  Endereço
+                </p>
                 <p className="text-gray-700 text-sm leading-relaxed">
                   Rua Francisco Rodrigues Dias, 80
                   <br />
-                  Ub — Bragança Paulista/SP
+                  Uberaba — Bragança Paulista/SP
                 </p>
               </div>
             </div>
@@ -75,7 +103,9 @@ export default function Contato() {
                 <Mail size={20} aria-hidden="true" className="text-gray-500" />
               </div>
               <div className="space-y-0.5">
-                <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">E-mail</p>
+                <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">
+                  E-mail
+                </p>
                 <a
                   href="mailto:contato@projetocasulobp.org.br"
                   className="text-primary text-sm hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
@@ -90,7 +120,9 @@ export default function Contato() {
                 <Phone size={20} aria-hidden="true" className="text-gray-500" />
               </div>
               <div className="space-y-0.5">
-                <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">Telefone</p>
+                <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">
+                  Telefone
+                </p>
                 <a
                   href="tel:+551124734994"
                   className="text-gray-700 text-sm hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
