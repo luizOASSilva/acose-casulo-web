@@ -36,11 +36,9 @@ export default function Footer() {
             <span>Uberaba — Bragança Paulista/SP</span>
             <span>CEP: 12908-843</span>
 
-            {/* Ajuste: apenas font-bold aqui para o link laranja passar no contraste sobre o bg-footer */}
             <a
               href="mailto:contato@projetocasulobp.org.br"
-              className="text-primary font-bold hover:underline transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary mt-1"
-              aria-label="Enviar e-mail para o Projeto Casulo"
+              className="text-orange-800 font-bold hover:underline transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-800 mt-1"              aria-label="Enviar e-mail para o Projeto Casulo"
             >
               contato@projetocasulobp.org.br
             </a>
@@ -58,8 +56,7 @@ export default function Footer() {
 
       <div className="border-t border-gray-400">
         <div className="max-w-7xl mx-auto px-4 lg:px-6 py-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          {/* Ajuste: text-gray-800 para o Lighthouse parar de reclamar do contraste do copyright */}
-          <p className="text-xs text-gray-800 text-center md:text-left font-medium">
+          <p className="text-xs text-gray-900 text-center md:text-left font-medium">
             © {new Date().getFullYear()} Projeto Casulo — Centro Dia da Pessoa
             com Deficiência. Todos os direitos reservados.
           </p>
