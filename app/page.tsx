@@ -27,7 +27,7 @@ export default function Home() {
         image="/hero.jpg"
         overlay={false}
         title={<>"E quando forem adultos?"</>}
-        description="O Centro Dia nasceu para responder essa pergunta — oferecendo acolhimento, autonomia e dignidade para jovens adultos com deficiência que o world insistia em esquecer."
+        description="O Centro Dia nasceu para responder essa pergunta — oferecendo acolhimento, autonomia e dignidade para jovens adultos com deficiência que o mundo insistia em esquecer."
       >
         <Button
           href="/centro-dia"
@@ -100,14 +100,15 @@ export default function Home() {
           <div className="flex flex-col lg:flex-row lg:items-center lg:gap-16">
             <div className="flex-1">
               <header className="max-w-xl mb-16 space-y-4">
-                <p className="text-sm text-green-700 uppercase tracking-widest font-bold">
+                {/* Ajustado para green-800 para contraste */}
+                <p className="text-sm text-green-800 uppercase tracking-widest font-bold">
                   Compromisso Ambiental
                 </p>
                 <h2
                   id="environmental-title"
                   className="text-2xl md:text-3xl font-bold leading-tight text-gray-900"
                 >
-                  Centro Dia <span className="text-green-700">Ambiental</span>
+                  Centro Dia <span className="text-green-800">Ambiental</span>
                 </h2>
                 <p className="text-gray-800 leading-relaxed font-medium">
                   A reciclagem é uma das formas que o Centro Dia encontrou de
@@ -119,7 +120,7 @@ export default function Home() {
               <ul className="pl-2 space-y-10 list-none">
                 <li className="flex gap-4">
                   <div
-                    className="text-green-700 mt-1 shrink-0"
+                    className="text-green-800 mt-1 shrink-0"
                     aria-hidden="true"
                   >
                     <Recycle size={22} />
@@ -134,7 +135,7 @@ export default function Home() {
                 </li>
                 <li className="flex gap-4">
                   <div
-                    className="text-green-700 mt-1 shrink-0"
+                    className="text-green-800 mt-1 shrink-0"
                     aria-hidden="true"
                   >
                     <Sprout size={22} />
@@ -149,7 +150,7 @@ export default function Home() {
                 </li>
                 <li className="flex gap-4">
                   <div
-                    className="text-green-700 mt-1 shrink-0"
+                    className="text-green-800 mt-1 shrink-0"
                     aria-hidden="true"
                   >
                     <Coins size={22} />
@@ -163,7 +164,7 @@ export default function Home() {
                 </li>
                 <li className="flex gap-4">
                   <div
-                    className="text-green-700 mt-1 shrink-0"
+                    className="text-green-800 mt-1 shrink-0"
                     aria-hidden="true"
                   >
                     <Briefcase size={22} />
@@ -208,13 +209,13 @@ export default function Home() {
                   Onde estamos
                 </h2>
 
-                <p className="text-gray-700 leading-relaxed font-medium">
+                <p className="text-gray-800 leading-relaxed font-medium">
                   O Projeto Casulo está localizado em Bragança Paulista, SP, em
                   um espaço preparado para promover acolhimento, inclusão e
                   desenvolvimento de jovens adultos com deficiência.
                 </p>
 
-                <div className="text-gray-700 leading-relaxed space-y-2 font-medium">
+                <div className="text-gray-800 leading-relaxed space-y-2 font-medium">
                   <p className="font-bold text-gray-900 text-lg">Endereço</p>
                   <address className="not-italic">
                     Rua Francisco Rodrigues Dias, 80
@@ -229,7 +230,7 @@ export default function Home() {
                   Centro Dia Pessoa Com Deficiência
                 </p>
 
-                <p className="text-gray-700 leading-relaxed font-medium">
+                <p className="text-gray-800 leading-relaxed font-medium">
                   Nosso espaço oferece atividades socioeducativas,
                   fortalecimento de vínculos e apoio às famílias, promovendo
                   autonomia e qualidade de vida.
