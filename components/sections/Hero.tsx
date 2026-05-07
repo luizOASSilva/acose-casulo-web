@@ -31,7 +31,7 @@ export default function Hero({
           priority
           fetchPriority="high"
           sizes="(max-width: 768px) 100vw, (max-width: 1280px) 100vw, 1335px"
-          className="object-cover blur-[0.5px]"
+          className="object-cover"
         />
       )}
 
