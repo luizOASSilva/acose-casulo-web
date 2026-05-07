@@ -29,6 +29,7 @@ export default function Hero({
           aria-hidden="true"
           fill
           priority
+          fetchPriority="high"
           sizes="100vw"
           className="object-cover blur-[0.5px]"
         />
