@@ -23,7 +23,6 @@ export default function Atividades() {
         <h1 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight">
           Atividades
         </h1>
-
         <p className="text-gray-600 text-base md:text-lg leading-relaxed">
           Conheça as atividades desenvolvidas no Centro Dia, voltadas ao
           cuidado, desenvolvimento e bem-estar das pessoas atendidas.
@@ -34,7 +33,6 @@ export default function Atividades() {
         <h2 id="activities-list" className="sr-only">
           Lista de atividades disponíveis
         </h2>
-
         <ActivityGrid />
       </section>
     </main>

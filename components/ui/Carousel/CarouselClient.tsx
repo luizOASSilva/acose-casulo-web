@@ -43,7 +43,6 @@ export default function CarouselClient({
     emblaApi.on('reInit', onInit);
     emblaApi.on('reInit', onSelect);
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     onInit();
     onSelect();
 
@@ -86,6 +85,7 @@ export default function CarouselClient({
       <div className="flex flex-row justify-center items-center gap-2 mt-5">
         <button
           onClick={() => emblaApi?.scrollPrev()}
+          aria-label="Ver atividade anterior"
           className="rounded-full p-2 bg-gray-100 text-gray-600 shrink-0 hover:bg-gray-200 transition cursor-pointer"
         >
           <ChevronLeft size={24} aria-hidden="true" />
@@ -99,6 +99,7 @@ export default function CarouselClient({
             >
               <button
                 onClick={() => scrollTo(index)}
+                aria-label={`Ir para o slide ${index + 1}`}
                 className={cn(
                   'rounded-full h-2.5 transition-all duration-300 ease-in-out',
                   index === selectedIndex
@@ -112,6 +113,7 @@ export default function CarouselClient({
 
         <button
           onClick={() => emblaApi?.scrollNext()}
+          aria-label="Ver próxima atividade"
           className="rounded-full p-2 bg-primary/10 text-primary shrink-0 hover:bg-primary/20 transition cursor-pointer"
         >
           <ChevronRight size={24} aria-hidden="true" />

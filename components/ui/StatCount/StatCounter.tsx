@@ -29,21 +29,21 @@ export default function StatCounter({
       role="group"
       aria-label={`${label}: ${prefix}${value}${suffix}`}
     >
-      <p
-        className="text-6xl md:text-7xl font-extrabold tabular-nums leading-none"
+      <dt
+        className="text-6xl md:text-7xl font-extrabold tabular-nums leading-none text-white"
         aria-hidden="true"
       >
         {prefix}
         {animatedValue}
         {suffix}
-      </p>
+      </dt>
 
-      <p
-        className="text-sm md:text-base uppercase tracking-widest opacity-85 text-center"
+      <dd
+        className="text-sm md:text-base uppercase tracking-widest text-center text-white font-medium"
         aria-hidden="true"
       >
         {label}
-      </p>
+      </dd>
     </div>
   );
 }
