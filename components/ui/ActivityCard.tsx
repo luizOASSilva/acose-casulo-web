@@ -37,7 +37,7 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
 
         <p
           id={`activity-desc-${activity.id}`}
-          className="text-sm text-gray-500 leading-relaxed line-clamp-3 flex-1"
+          className="text-sm text-gray-700 leading-relaxed line-clamp-3 flex-1"
         >
           {activity.content.split('\n\n')[0]}
         </p>
@@ -45,7 +45,7 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
         <div className="flex items-center gap-1.5 pt-1">
           <Heart size={14} aria-hidden="true" className="text-primary" />
           <span
-            className="text-xs text-gray-400"
+            className="text-xs text-gray-600 font-medium"
             aria-label={`${activity.likes} curtidas`}
           >
             {activity.likes}
