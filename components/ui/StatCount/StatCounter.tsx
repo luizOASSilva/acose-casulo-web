@@ -24,20 +24,13 @@ export default function StatCounter({
   });
 
   return (
-    <div
-      className="flex flex-col items-center gap-3"
-      role="group"
-      aria-label={`${label}: ${prefix}${value}${suffix}`}
-    >
+    <div className="flex flex-col items-center gap-3">
       <dt
         className="text-6xl md:text-7xl font-extrabold tabular-nums leading-none text-white"
         aria-hidden="true"
       >
-        {prefix}
-        {animatedValue}
-        {suffix}
+        {prefix}{animatedValue}{suffix}
       </dt>
-
       <dd
         className="text-sm md:text-base uppercase tracking-widest text-center text-white font-medium"
         aria-hidden="true"

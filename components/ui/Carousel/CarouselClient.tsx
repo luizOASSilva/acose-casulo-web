@@ -93,21 +93,19 @@ export default function CarouselClient({
 
         <div className="flex items-center justify-center">
           {scrollSnaps.map((_, index) => (
-            <div
+            <button
               key={index}
-              className="flex items-center justify-center w-4 h-5"
+              onClick={() => scrollTo(index)}
+              aria-label={`Ir para o slide ${index + 1}`}
+              className="flex items-center justify-center w-6 h-6 cursor-pointer"
             >
-              <button
-                onClick={() => scrollTo(index)}
-                aria-label={`Ir para o slide ${index + 1}`}
+              <span
                 className={cn(
-                  'rounded-full h-2.5 transition-all duration-300 ease-in-out',
-                  index === selectedIndex
-                    ? 'bg-primary w-6'
-                    : 'bg-gray-300 w-2.5'
+                  'rounded-full h-2.5 transition-all duration-300 ease-in-out pointer-events-none',
+                  index === selectedIndex ? 'bg-primary w-6' : 'bg-gray-300 w-2.5'
                 )}
               />
-            </div>
+            </button>
           ))}
         </div>
 
