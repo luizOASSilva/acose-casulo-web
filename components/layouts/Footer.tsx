@@ -38,7 +38,7 @@ export default function Footer() {
 
             <a
               href="mailto:contato@projetocasulobp.org.br"
-              className="text-orange-800 font-bold hover:underline transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-800 mt-1"              aria-label="Enviar e-mail para o Projeto Casulo"
+              className="text-primary font-bold hover:underline transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-800 mt-1"              aria-label="Enviar e-mail para o Projeto Casulo"
             >
               contato@projetocasulobp.org.br
             </a>

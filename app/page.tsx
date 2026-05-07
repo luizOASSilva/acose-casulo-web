@@ -255,7 +255,7 @@ export default function Home() {
                 href="https://www.google.com/maps?q=Rua+Francisco+Rodrigues+Dias,+80+Bragança+Paulista"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-orange-800 text-sm font-bold hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-800"
+                className="text-primary text-sm font-bold hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-800"
               >
                 Ver localização no Google Maps
               </a>
