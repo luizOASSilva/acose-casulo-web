@@ -198,7 +198,7 @@ export default function StepData({ data, isGift, onNext }: StepDataProps) {
                   )}
                 />
                 {cepLoading && (
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">
+                  <span className="text-xs text-gray-t  00">
                     Buscando...
                   </span>
                 )}
