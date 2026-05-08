@@ -50,7 +50,7 @@ export default function TransparencySection({
         {description && (
           <p
             className={`text-[10px] uppercase tracking-widest ${
-              isDark || isFeatured ? 'text-white/90' : 'text-gray-800'
+              isDark || isFeatured ? 'text-white' : 'text-gray-800'
             }`}
           >
             {description}
