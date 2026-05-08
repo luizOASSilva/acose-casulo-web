@@ -26,7 +26,7 @@ export default function TransparencySection({
         isDark
           ? 'bg-secondary text-white'
           : isFeatured
-            ? 'bg-primary-light text-white'
+            ? 'bg-primary text-white'
             : 'bg-white text-gray-900'
       }`}
     >
@@ -50,7 +50,7 @@ export default function TransparencySection({
         {description && (
           <p
             className={`text-[10px] uppercase tracking-widest ${
-              isDark || isFeatured ? 'text-white' : 'text-gray-700'
+              isDark || isFeatured ? 'text-white/90' : 'text-gray-800'
             }`}
           >
             {description}
