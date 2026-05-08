@@ -45,7 +45,7 @@ export default async function Transparencia({ searchParams }: PageProps) {
       <Hero
         title={
           <>
-            Nossa <span className="text-orange-500">transparência</span> é pública
+            Nossa <span className="text-primary-light">transparência</span> é pública
           </>
         }
         description="O Centro Dia da Pessoa com Deficiência demonstra os recursos recebidos e investidos na entidade."

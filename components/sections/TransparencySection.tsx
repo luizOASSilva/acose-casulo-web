@@ -24,9 +24,9 @@ export default function TransparencySection({
       aria-labelledby={`section-${number}`}
       className={`p-8 flex flex-col gap-6 h-full ${
         isDark
-          ? 'bg-black text-white'
+          ? 'bg-secondary text-white'
           : isFeatured
-            ? 'bg-primary text-white'
+            ? 'bg-primary-light text-white'
             : 'bg-white text-gray-900'
       }`}
     >
@@ -50,7 +50,7 @@ export default function TransparencySection({
         {description && (
           <p
             className={`text-[10px] uppercase tracking-widest ${
-              isDark || isFeatured ? 'text-white/80' : 'text-gray-600'
+              isDark || isFeatured ? 'text-white' : 'text-gray-700'
             }`}
           >
             {description}

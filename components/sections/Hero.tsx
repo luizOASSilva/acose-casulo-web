@@ -45,7 +45,7 @@ export default function Hero({
       )}
 
       <div className="relative z-10 w-full max-w-2xl px-6 py-20 space-y-5">
-        <p className={`text-sm md:text-base font-bold tracking-wide uppercase ${image ? 'text-primary' : 'text-orange-500'}`}>
+        <p className={`text-sm md:text-base font-bold tracking-wide uppercase ${image ? 'text-primary' : 'text-primary-light'}`}>
           Centro Dia da Pessoa com Deficiência • Bragança Paulista/SP
         </p>
 
