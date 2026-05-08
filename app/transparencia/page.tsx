@@ -5,7 +5,6 @@ import TransparencySection from '@/components/sections/TransparencySection';
 import SupportCTA from '@/components/sections/SupportCTA';
 import { getTransparencyData } from '@/services/transparency';
 import { TransparencyResponse } from '@/types/transparency';
-import { redirect } from 'next/navigation';
 
 export const metadata: Metadata = {
   title: 'Transparência',
@@ -30,10 +29,6 @@ interface PageProps {
 
 export default async function Transparencia({ searchParams }: PageProps) {
   const { ano } = await searchParams;
-
-  if (!ano) {
-    redirect(`/transparencia?ano=${new Date().getFullYear()}`);
-  }
 
   const anoAtual = ano ? Number(ano) : new Date().getFullYear();
 
@@ -61,9 +56,9 @@ export default async function Transparencia({ searchParams }: PageProps) {
         <Filter years={years} activeYear={currentYear} />
 
         <div className="max-w-7xl mx-auto px-4 py-10">
-          <p className="text-sm text-gray-500 mb-6" id="transparency-title">
+          <p className="text-sm text-gray-700 mb-6" id="transparency-title">
             Exibindo documentos de{' '}
-            <strong className="text-primary">{currentYear}</strong>
+            <strong className="text-orange-800">{currentYear}</strong>
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 border-t border-l border-gray-200">

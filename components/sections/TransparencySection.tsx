@@ -50,7 +50,7 @@ export default function TransparencySection({
         {description && (
           <p
             className={`text-[10px] uppercase tracking-widest ${
-              isDark || isFeatured ? 'text-white/60' : 'text-gray-400'
+              isDark || isFeatured ? 'text-white/80' : 'text-gray-600'
             }`}
           >
             {description}
@@ -73,8 +73,8 @@ export default function TransparencySection({
                   rel="noopener noreferrer"
                   className={`text-sm flex items-center gap-2 hover:underline truncate ${
                     isDark || isFeatured
-                      ? 'text-white/90'
-                      : 'text-gray-600 hover:text-primary'
+                      ? 'text-white'
+                      : 'text-gray-600 hover:text-orange-800'
                   }`}
                 >
                   <FileText size={14} className="shrink-0" />
