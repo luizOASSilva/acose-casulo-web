@@ -176,7 +176,7 @@ export default function StepData({ data, isGift, onNext }: StepDataProps) {
 
       {isGift && (
         <div className="bg-secondary p-6 space-y-6  sm:mx-0 rounded-md">
-          <h3 className="text-primary font-bold text-sm uppercase tracking-widest">
+          <h3 className="text-primary-light font-bold text-sm uppercase tracking-widest">
             Endereço para a camiseta
           </h3>
 
@@ -198,11 +198,6 @@ export default function StepData({ data, isGift, onNext }: StepDataProps) {
                   )}
                 />
               </div>
-              {cepLoading && (
-                <span className="text-xs text-white">
-                  Buscando...
-                </span>
-              )}
             </Field>
 
             <Field label="Cidade" error={e.city?.message} dark>
