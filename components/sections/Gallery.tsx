@@ -15,7 +15,7 @@ export default function Gallery({ images }: Props) {
     <section aria-labelledby="gallery-title" className="mt-16">
       <p
         id="gallery-title"
-        className="text-sm font-bold uppercase tracking-widest text-primary mb-6"
+        className="text-base font-bold uppercase tracking-widest text-orange-700 mb-6"
       >
         Galeria
       </p>
