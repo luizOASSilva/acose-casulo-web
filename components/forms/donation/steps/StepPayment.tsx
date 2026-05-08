@@ -286,7 +286,7 @@ export default function StepPayment({
           aria-label={copied ? 'Chave PIX copiada' : 'Copiar chave PIX Copia e Cola'}
           className="w-full bg-primary text-white py-3 rounded transition
                      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2
-                     focus-visible:ring-primary active:scale-[.98]"
+                     focus-visible:ring-primary active:scale-[.98] cursor-pointer"
         >
           {copied ? '✓ Copiado!' : 'Copiar chave PIX'}
         </button>
