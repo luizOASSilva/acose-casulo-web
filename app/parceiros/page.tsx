@@ -69,7 +69,7 @@ export default function Parceiros() {
       <section aria-labelledby="partners-heading">
         <div className="max-w-7xl mx-auto px-6 pt-10 pb-15 flex items-end justify-between gap-8">
           <div className="space-y-2">
-            <p className="text-primary font-bold text-md tracking-widest uppercase">
+            <p className="text-orange-700 font-bold text-md tracking-widest uppercase">
               Quem caminha com a gente
             </p>
             <h1
