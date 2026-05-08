@@ -6,6 +6,7 @@ interface HeroProps {
   overlay?: boolean;
   title: React.ReactNode;
   description: string;
+  dark?: boolean;
 }
 
 export default function Hero({
@@ -14,12 +15,13 @@ export default function Hero({
   children,
   image,
   overlay = true,
+  dark = true,
 }: HeroProps) {
   return (
     <section
       aria-labelledby="hero-title"
       className={`relative min-h-[65vh] flex items-center overflow-hidden ${
-        image ? '' : 'bg-secondary'
+        image ? '' : dark ? 'bg-secondary' : 'bg-background'
       }`}
     >
       {image && (
@@ -42,19 +44,19 @@ export default function Hero({
         />
       )}
 
-      <div className="relative z-10 w-full max-w-2xl px-6 py-20 space-y-5 text-white">
-        <p className="text-sm md:text-base text-primary font-bold tracking-wide uppercase">
+      <div className="relative z-10 w-full max-w-2xl px-6 py-20 space-y-5">
+        <p className={`text-sm md:text-base font-bold tracking-wide uppercase ${image ? 'text-primary' : 'text-orange-500'}`}>
           Centro Dia da Pessoa com Deficiência • Bragança Paulista/SP
         </p>
 
         <h1
           id="hero-title"
-          className="font-bold leading-tight text-4xl md:text-5xl lg:text-6xl text-white"
+          className={`font-bold leading-tight text-4xl md:text-5xl lg:text-6xl ${dark ? 'text-white' : 'text-gray-900'}`}
         >
           {title}
         </h1>
 
-        <p className={image ? 'text-white/90' : 'text-gray-300'}>
+        <p className={dark ? (image ? 'text-white/90' : 'text-gray-300') : 'text-gray-700'}>
           {description}
         </p>
 
