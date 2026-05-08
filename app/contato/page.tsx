@@ -69,7 +69,7 @@ export default function Contato() {
                 <Clock size={20} aria-hidden="true" className="text-gray-500" />
               </div>
               <div className="space-y-0.5">
-                <p className="text-xs font-semibold uppercase tracking-widest text-gray-600">
+                <p className="text-xs font-semibold uppercase tracking-widest text-black">
                   Atendimento
                 </p>
                 <p className="text-gray-700 text-sm">
@@ -83,7 +83,7 @@ export default function Contato() {
                 <MapPin size={20} aria-hidden="true" className="text-gray-500" />
               </div>
               <div className="space-y-0.5">
-                <p className="text-xs font-semibold uppercase tracking-widest text-gray-600">
+                <p className="text-xs font-semibold uppercase tracking-widest text-black">
                   Endereço
                 </p>
                 <p className="text-gray-700 text-sm leading-relaxed">
@@ -99,7 +99,7 @@ export default function Contato() {
                 <Mail size={20} aria-hidden="true" className="text-gray-500" />
               </div>
               <div className="space-y-0.5">
-                <p className="text-xs font-semibold uppercase tracking-widest text-gray-600">
+                <p className="text-xs font-semibold uppercase tracking-widest text-black">
                   E-mail
                 </p>
                 <a
@@ -116,7 +116,7 @@ export default function Contato() {
                 <Phone size={20} aria-hidden="true" className="text-gray-500" />
               </div>
               <div className="space-y-0.5">
-                <p className="text-xs font-semibold uppercase tracking-widest text-gray-600">
+                <p className="text-xs font-semibold uppercase tracking-widest text-black">
                   Telefone
                 </p>
                 <a
