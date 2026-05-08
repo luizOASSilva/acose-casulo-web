@@ -197,12 +197,12 @@ export default function StepData({ data, isGift, onNext }: StepDataProps) {
                     />
                   )}
                 />
-                {cepLoading && (
-                  <span className="text-xs text-gray-t  00">
-                    Buscando...
-                  </span>
-                )}
               </div>
+              {cepLoading && (
+                <span className="text-xs text-white">
+                  Buscando...
+                </span>
+              )}
             </Field>
 
             <Field label="Cidade" error={e.city?.message} dark>
