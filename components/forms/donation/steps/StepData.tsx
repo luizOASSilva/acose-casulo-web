@@ -129,7 +129,7 @@ export default function StepData({ data, isGift, onNext }: StepDataProps) {
     <form onSubmit={handleSubmit((v) => onNext(v as FormValues))} className="space-y-6 animate-in fade-in duration-500">
       <div>
         <h2 className="text-2xl font-bold text-primary">Seus dados</h2>
-        <p className="text-gray-500 text-sm mt-1">
+        <p className="text-gray-600 text-sm mt-1">
           Para o recibo fiscal, e se aplicável, envio da camiseta
         </p>
       </div>
