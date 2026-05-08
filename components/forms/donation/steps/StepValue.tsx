@@ -102,7 +102,7 @@ export default function StepValue({ initialAmount, onNext }: StepValueProps) {
               <span
                 className={cn(
                   'text-[11px] text-center mt-1 leading-tight',
-                  isSelected ? 'text-white/80' : 'text-gray-500'
+                  isSelected ? 'text-white' : 'text-gray-600'
                 )}
               >
                 {option.desc}
