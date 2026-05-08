@@ -69,12 +69,12 @@ export default function Parceiros() {
       <section aria-labelledby="partners-heading">
         <div className="max-w-7xl mx-auto px-6 pt-10 pb-15 flex items-end justify-between gap-8">
           <div className="space-y-2">
-            <p className="text-primary font-extrabold text-sm tracking-widest uppercase">
+            <p className="text-primary font-bold text-md tracking-widest uppercase">
               Quem caminha com a gente
             </p>
             <h1
               id="partners-heading"
-              className="text-3xl md:text-4xl font-bold text-gray-800 tracking-tight"
+              className="text-3xl md:text-4xl font-extrabold text-gray-800 tracking-tight"
             >
               Nossos parceiros
             </h1>
@@ -83,8 +83,8 @@ export default function Parceiros() {
             </p>
           </div>
 
-          <div className="text-right shrink-0 text-gray-800">
-            <StatCounterClient value={13} label="Parceiros ativos" />
+          <div className="text-right shrink-0">
+            <StatCounterClient value={13} label="Parceiros ativos" color="text-gray-900" />
           </div>
         </div>
       </section>

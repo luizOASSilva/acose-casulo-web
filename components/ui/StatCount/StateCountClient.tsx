@@ -10,6 +10,7 @@ type Props = {
   prefix?: string;
   suffix?: string;
   duration?: number;
+  color?: string;
 };
 
 export default function StatCounterClient(props: Props) {
