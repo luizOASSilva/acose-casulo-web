@@ -60,7 +60,7 @@ export default function CarouselClient({
 
   if (activities.length === 0) {
     return (
-      <p className="text-gray-400 italic py-8">Nenhuma atividade encontrada.</p>
+      <p className="text-gray-400 italic py-8 text-center">Nenhuma atividade encontrada.</p>
     );
   }
 
