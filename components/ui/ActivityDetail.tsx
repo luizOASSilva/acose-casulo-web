@@ -52,6 +52,7 @@ export default function ActivityDetail({
             loading="eager"
             priority
           />
+
           <button
             onClick={onClose}
             aria-label="Fechar modal"
@@ -64,32 +65,36 @@ export default function ActivityDetail({
         <div className="flex-1 overflow-y-auto p-6 sm:p-10">
           <div className="mx-auto max-w-4xl">
             <header className="mb-6">
-              <h2
+              <h1
                 id="modal-title"
                 className="mb-4 text-2xl font-bold text-gray-900 sm:text-3xl"
               >
                 {activity.title}
-              </h2>
+              </h1>
 
-              <div
+              <section
                 className="flex flex-wrap gap-3"
-                aria-label="Informações da atividade"
+                aria-labelledby="activity-info-title"
               >
+                <span id="activity-info-title" className="sr-only">
+                  Informações da atividade
+                </span>
+
                 <div className="flex items-center gap-2 rounded-lg bg-orange-50 px-3 py-1 text-sm font-semibold text-orange-700 border border-orange-100">
                   <Calendar size={14} aria-hidden="true" />
                   <span>Segunda a Sexta</span>
                 </div>
+
                 <div className="flex items-center gap-2 rounded-lg bg-orange-50 px-3 py-1 text-sm font-semibold text-orange-700 border border-orange-100">
                   <Clock size={14} aria-hidden="true" />
                   <span>08h - 11h</span>
                 </div>
-              </div>
+              </section>
             </header>
 
             <article
               id="modal-description"
               className="border-b border-gray-100 pb-8 text-gray-600 leading-relaxed"
-              aria-label={`Descrição de ${activity.title}`}
             >
               {(activity.content || '')
                 .split('\n')
@@ -102,11 +107,7 @@ export default function ActivityDetail({
             </article>
 
             <div className="mt-8 flex flex-col items-center justify-between gap-6 pb-4 sm:flex-row sm:pb-0">
-              <p
-                className="text-sm font-medium text-gray-500"
-                aria-live="polite"
-                aria-atomic="true"
-              >
+              <p className="text-sm font-medium text-gray-500">
                 <span className="font-bold text-orange-600">{likes}</span>{' '}
                 pessoas curtiram
               </p>
