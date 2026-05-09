@@ -7,11 +7,13 @@ import Footer from '@/components/layouts/Footer';
 const openSans = Open_Sans({
   variable: '--font-open-sans',
   subsets: ['latin'],
+  display: 'block',
 });
 
 const montserrat = Montserrat({
   variable: '--font-montserrat',
   subsets: ['latin'],
+  display: 'block',
 });
 
 export const metadata: Metadata = {
