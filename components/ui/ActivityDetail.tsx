@@ -72,14 +72,10 @@ export default function ActivityDetail({
                 {activity.title}
               </h1>
 
-              <section
+              <div
                 className="flex flex-wrap gap-3"
-                aria-labelledby="activity-info-title"
+                aria-label="Informações da atividade"
               >
-                <span id="activity-info-title" className="sr-only">
-                  Informações da atividade
-                </span>
-
                 <div className="flex items-center gap-2 rounded-lg bg-orange-50 px-3 py-1 text-sm font-semibold text-orange-700 border border-orange-100">
                   <Calendar size={14} aria-hidden="true" />
                   <span>Segunda a Sexta</span>
@@ -89,13 +85,15 @@ export default function ActivityDetail({
                   <Clock size={14} aria-hidden="true" />
                   <span>08h - 11h</span>
                 </div>
-              </section>
+              </div>
             </header>
 
             <article
               id="modal-description"
               className="border-b border-gray-100 pb-8 text-gray-600 leading-relaxed"
             >
+              <h2 className="sr-only">Descrição da atividade</h2>
+
               {(activity.content || '')
                 .split('\n')
                 .filter((p) => p.trim())
