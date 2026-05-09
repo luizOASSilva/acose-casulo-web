@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     type: 'website',
     images: [
       {
-        url: '/favicon.ico',
+        url: '/og-image.png',
         width: 1200,
         height: 630,
         alt: 'Acose Casulo — Centro Dia da Pessoa com Deficiência',
