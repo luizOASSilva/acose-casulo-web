@@ -7,7 +7,6 @@ export default function AtividadesLayout({
 }) {
   return (
     <>
-      <h1 className="sr-only">Atividades</h1>
       {children}
       {modal}
     </>
