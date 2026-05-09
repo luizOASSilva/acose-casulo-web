@@ -92,7 +92,7 @@ export default function DonationFlow() {
   if (!hydrated) return null;
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f0eeeb]">
+    <div className="min-h-screen flex flex-col">
       <div className="grow flex flex-col items-center py-10 px-4">
         <h1 className="sr-only">Doe Agora</h1>
 
