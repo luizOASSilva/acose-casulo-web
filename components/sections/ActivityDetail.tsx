@@ -59,12 +59,12 @@ export default function ActivityDetail({
         <div className="flex-1 overflow-y-auto p-6 sm:p-10">
           <div className="mx-auto max-w-4xl">
             <header className="mb-6">
-              <h2
+              <h1
                 id="modal-title"
                 className="mb-4 text-2xl font-bold text-gray-900 sm:text-3xl"
               >
                 {activity.title}
-              </h2>
+              </h1>
 
               <div className="flex flex-wrap gap-3">
                 <div className="flex items-center gap-2 rounded-lg bg-orange-50 px-3 py-1 text-sm font-semibold text-orange-700 border border-orange-100">
