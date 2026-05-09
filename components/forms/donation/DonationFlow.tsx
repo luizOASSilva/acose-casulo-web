@@ -51,6 +51,28 @@ function clearSession() {
   sessionStorage.removeItem(SESSION_KEY);
 }
 
+function DonationSkeleton() {
+  return (
+    <div className="min-h-screen flex flex-col">
+      <div className="grow flex flex-col items-center py-10 px-4">
+        <div className="w-full max-w-2xl animate-pulse">
+          <div className="h-10 bg-gray-200 rounded w-3/4 mb-4" />
+          <div className="h-px bg-gray-300 my-8" />
+          <div className="h-6 bg-gray-200 rounded w-1/2 mb-2" />
+          <div className="h-4 bg-gray-200 rounded w-2/3 mb-6" />
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="h-24 bg-gray-200 rounded-lg" />
+            ))}
+          </div>
+          <div className="h-14 bg-gray-200 rounded-lg mt-4" />
+          <div className="h-14 bg-primary/30 rounded-lg mt-8" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function DonationFlow() {
   const [step, setStep] = useState<DonationStep>(1);
   const [formData, setFormData] = useState<DonationData>(initialData);
@@ -89,11 +111,12 @@ export default function DonationFlow() {
     setStep(4);
   };
 
-  if (!hydrated) return null;
+  if (!hydrated) return <DonationSkeleton />;
 
   return (
     <div className="min-h-screen flex flex-col">
       <div className="grow flex flex-col items-center py-10 px-4">
+        <h1 className="sr-only">Doe Agora</h1>
 
         {step >= 2 && (
           <div className="flex items-center mb-12">
