@@ -130,7 +130,7 @@ export default function ContactForm() {
           </p>
         )}
         {status === 'error' && (
-          <p className="text-red-400 font-medium">
+          <p className="#c0292c font-medium">
             ✗ Erro ao enviar. Tente novamente ou nos contate por e-mail.
           </p>
         )}
