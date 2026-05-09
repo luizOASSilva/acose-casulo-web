@@ -74,6 +74,7 @@ export default function ActivityDetail({
 
               <div
                 className="flex flex-wrap gap-3"
+                role="group"
                 aria-label="Informações da atividade"
               >
                 <div className="flex items-center gap-2 rounded-lg bg-orange-50 px-3 py-1 text-sm font-semibold text-orange-700 border border-orange-100">
