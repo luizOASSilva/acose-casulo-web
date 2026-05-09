@@ -3,8 +3,7 @@ import { Open_Sans, Montserrat } from 'next/font/google';
 import './globals.css';
 import Navbar from '@/components/layouts/Navbar/Navbar';
 import Footer from '@/components/layouts/Footer';
-
-const SITE_URL = 'https://acose-casulo-web-qkce.vercel.app';
+import { SITE_URL, SITE_NAME, SITE_DESCRIPTION } from '@/lib/config';
 
 const openSans = Open_Sans({
   variable: '--font-open-sans',
@@ -18,20 +17,19 @@ const montserrat = Montserrat({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Acose Casulo | Centro Dia | Bragança Paulista',
-    template: '%s | Acose Casulo',
+    default: `${SITE_NAME} | Centro Dia | Bragança Paulista`,
+    template: `%s | ${SITE_NAME}`,
   },
-  description: 'Centro Dia da Pessoa com Deficiência - Acose Casulo oferece acolhimento, autonomia e dignidade para jovens adultos com deficiência em Bragança Paulista, SP.',
-  authors: [{ name: 'Acose Casulo' }],
-  creator: 'Acose Casulo',
-  publisher: 'Acose Casulo',
+  description: SITE_DESCRIPTION,
+  authors: [{ name: SITE_NAME }],
+  creator: SITE_NAME,
+  publisher: SITE_NAME,
   metadataBase: new URL(SITE_URL),
   openGraph: {
-    title: 'Acose Casulo | Centro Dia | CDPD | Bragança Paulista',
-    description:
-      'Centro Dia da Pessoa com Deficiência - Acose Casulo oferece acolhimento, autonomia e dignidade para jovens adultos com deficiência em Bragança Paulista, SP.',
+    title: `${SITE_NAME} | Centro Dia | CDPD | Bragança Paulista`,
+    description: SITE_DESCRIPTION,
     url: SITE_URL,
-    siteName: 'Acose Casulo',
+    siteName: SITE_NAME,
     locale: 'pt_BR',
     type: 'website',
     images: [
@@ -39,7 +37,7 @@ export const metadata: Metadata = {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'Acose Casulo — Centro Dia da Pessoa com Deficiência',
+        alt: `${SITE_NAME} — Centro Dia da Pessoa com Deficiência`,
       },
     ],
   },
@@ -63,7 +61,7 @@ export default function RootLayout({
             __html: JSON.stringify({
               '@context': 'https://schema.org',
               '@type': 'NGO',
-              name: 'Acose Casulo',
+              name: SITE_NAME,
               url: SITE_URL,
               telephone: '+551124734994',
               email: 'contato@projetocasulobp.org.br',
@@ -75,8 +73,7 @@ export default function RootLayout({
                 postalCode: '12908-843',
                 addressCountry: 'BR',
               },
-              description:
-                'Centro Dia da Pessoa com Deficiência — acolhimento, autonomia e dignidade para jovens adultos com deficiência em Bragança Paulista, SP.',
+              description: SITE_DESCRIPTION,
             }),
           }}
         />

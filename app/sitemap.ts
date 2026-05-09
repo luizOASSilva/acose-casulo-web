@@ -1,8 +1,7 @@
 import { MetadataRoute } from 'next';
 import { getArticles } from '@/services/articles';
 import { getActivities } from '@/services/activities';
-
-const SITE_URL = 'https://acose-casulo-web-qkce.vercel.app';
+import { SITE_URL } from '@/lib/config';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [articles, activities] = await Promise.all([
