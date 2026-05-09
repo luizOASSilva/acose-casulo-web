@@ -56,10 +56,10 @@ export default async function Transparencia({ searchParams }: PageProps) {
         <Filter years={years} activeYear={currentYear} />
 
         <div className="max-w-7xl mx-auto px-4 py-10">
-          <p className="text-sm text-gray-700 mb-6" id="transparency-title">
+          <h2 className="text-sm text-gray-700 mb-6" id="transparency-title">
             Exibindo documentos de{' '}
             <strong className="text-orange-800">{currentYear}</strong>
-          </p>
+          </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 border-t border-l border-gray-200">
             {sortedCategories.map((category, index) => (

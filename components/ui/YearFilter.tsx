@@ -34,7 +34,7 @@ export default function YearFilter({
         ANO
       </span>
 
-      <ul role="list" className="flex flex-row gap-4">
+      <ul className="flex flex-row gap-4">
         {years.map((year) => {
           const isActive = activeYear === year;
 
