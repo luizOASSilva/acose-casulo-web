@@ -4,6 +4,8 @@ import './globals.css';
 import Navbar from '@/components/layouts/Navbar/Navbar';
 import Footer from '@/components/layouts/Footer';
 
+const SITE_URL = 'https://acose-casulo-web-qkce.vercel.app';
+
 const openSans = Open_Sans({
   variable: '--font-open-sans',
   subsets: ['latin'],
@@ -23,12 +25,12 @@ export const metadata: Metadata = {
   authors: [{ name: 'Acose Casulo' }],
   creator: 'Acose Casulo',
   publisher: 'Acose Casulo',
-  metadataBase: new URL('https://acosecasulo.org.br'),
+  metadataBase: new URL(SITE_URL),
   openGraph: {
     title: 'Acose Casulo | Centro Dia | CDPD | Bragança Paulista',
     description:
       'Centro Dia da Pessoa com Deficiência - Acose Casulo oferece acolhimento, autonomia e dignidade para jovens adultos com deficiência em Bragança Paulista, SP.',
-    url: 'https://acosecasulo.org.br',
+    url: SITE_URL,
     siteName: 'Acose Casulo',
     locale: 'pt_BR',
     type: 'website',
@@ -62,7 +64,7 @@ export default function RootLayout({
               '@context': 'https://schema.org',
               '@type': 'NGO',
               name: 'Acose Casulo',
-              url: 'https://acosecasulo.org.br',
+              url: SITE_URL,
               telephone: '+551124734994',
               email: 'contato@projetocasulobp.org.br',
               address: {
