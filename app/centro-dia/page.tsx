@@ -3,8 +3,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Centro Dia',
-  description:
-    'Conheça a história do Centro Dia da Pessoa com Deficiência, idealizado pelo Projeto Casulo para oferecer acolhimento, autonomia e dignidade a jovens adultos com deficiência em Bragança Paulista.',
+  description: 'Conheça a história do Centro Dia da Pessoa com Deficiência, idealizado pelo Projeto Casulo para promover autonomia e dignidade em Bragança Paulista.',
   alternates: {
     canonical: '/centro-dia',
   },
@@ -61,7 +60,7 @@ export default function CentroDia() {
             id="article-title"
             className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight"
           >
-            Centro-Dia
+            Centro-Dia da Pessoa com Deficiência
           </h1>
         </header>
 
