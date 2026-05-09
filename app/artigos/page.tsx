@@ -32,9 +32,9 @@ export default async function Artigos() {
       </header>
 
       {articles.length > 0 ? (
-        <ul className="flex flex-col divide-y divide-gray-100" role="list">
+        <ul className="flex flex-col divide-y divide-gray-100">
           {articles.map((article) => (
-            <li key={article.id} role="listitem">
+            <li key={article.id}>
               <ArticleRow article={article} />
             </li>
           ))}
