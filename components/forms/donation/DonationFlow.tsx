@@ -93,7 +93,9 @@ export default function DonationFlow() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f0eeeb]">
-      <main className="grow flex flex-col items-center py-10 px-4">
+      <div className="grow flex flex-col items-center py-10 px-4">
+        <h1 className="sr-only">Doe Agora</h1>
+
         {step >= 2 && (
           <div className="flex items-center mb-12">
             {([1, 2, 3, 4] as DonationStep[]).map((i) => {
@@ -176,7 +178,7 @@ export default function DonationFlow() {
 
           {step === 4 && <StepConfirmation amount={formData.amount} />}
         </div>
-      </main>
+      </div>
     </div>
   );
 }

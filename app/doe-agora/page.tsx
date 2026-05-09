@@ -20,8 +20,8 @@ export const metadata: Metadata = {
 
 export default function DoeAgora() {
   return (
-    <section className="py-20">
+    <div className="py-20">
       <DonationFlow />
-    </section>
+    </div>
   );
 }
