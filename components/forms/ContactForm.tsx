@@ -92,7 +92,6 @@ export default function ContactForm() {
             name="subject"
             type="text"
             required
-            aria-required="true"
             placeholder="Como podemos ajudar?"
             className={fieldClass}
           />
@@ -113,7 +112,6 @@ export default function ContactForm() {
             name="message"
             rows={5}
             required
-            aria-required="true"
             placeholder="Descreva sua dúvida ou mensagem..."
             className={`${fieldClass} resize-none`}
           />
