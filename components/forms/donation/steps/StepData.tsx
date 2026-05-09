@@ -29,7 +29,7 @@ function maskCEP(v: string) {
   return v.replace(/\D/g, '').slice(0, 8).replace(/(\d{5})(\d)/, '$1-$2');
 }
 
-const ERROR_COLOR = '#ff6568';
+const ERROR_COLOR = '#c0292c';
 const NORMAL_COLOR = '#e5e7eb';
 
 function inputCls(hasError: boolean) {
