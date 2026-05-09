@@ -27,18 +27,17 @@ export default function StatCounter({
 
   return (
     <div className="flex flex-col items-center gap-3">
-      <dt
+      <p
         className={`text-6xl md:text-7xl font-extrabold tabular-nums leading-none ${color}`}
-        aria-hidden="true"
       >
         {prefix}{animatedValue}{suffix}
-      </dt>
-      <dd
+      </p>
+
+      <p
         className={`text-sm md:text-base uppercase tracking-widest text-center font-medium ${color}`}
-        aria-hidden="true"
       >
         {label}
-      </dd>
+      </p>
     </div>
   );
 }

@@ -66,9 +66,13 @@ export default function CarouselClient({
 
   return (
     <section
-      aria-label="Carrossel de atividades"
+      aria-labelledby="activities-carousel-title"
       className="pt-8 max-w-7xl md:mx-auto md:px-4"
     >
+      <h2 id="activities-carousel-title" className="sr-only">
+        Atividades recentes
+      </h2>
+      
       <div className="overflow-hidden" ref={emblaRef}>
         <div className="flex touch-pan-y touch-pinch-zoom gap-4 pl-4 md:pl-0">
           {activities.map((activity) => (

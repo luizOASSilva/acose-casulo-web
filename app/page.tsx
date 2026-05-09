@@ -100,7 +100,6 @@ export default function Home() {
           <div className="flex flex-col lg:flex-row lg:items-center lg:gap-16">
             <div className="flex-1">
               <header className="max-w-xl mb-16 space-y-4">
-                {/* Ajustado para green-800 para contraste */}
                 <p className="text-sm text-green-800 uppercase tracking-widest font-bold">
                   Compromisso Ambiental
                 </p>

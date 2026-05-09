@@ -16,12 +16,22 @@ export default function Impact() {
   const started = useInView(ref, 0.3);
 
   return (
-    <section ref={ref} className="w-full bg-primary py-20 px-8">
-      <dl className="grid grid-cols-2 md:grid-cols-4 gap-12 text-white text-center max-w-6xl mx-auto">
+    <section
+      ref={ref}
+      aria-labelledby="impact-title"
+      className="w-full bg-primary py-20 px-8"
+    >
+      <h2 id="impact-title" className="sr-only">
+        Estatísticas do Projeto Casulo
+      </h2>
+
+      <ul className="grid grid-cols-2 md:grid-cols-4 gap-12 text-white text-center max-w-6xl mx-auto">
         {stats.map((stat) => (
-          <StatCounter key={stat.label} {...stat} start={started} />
+          <li key={stat.label}>
+            <StatCounter {...stat} start={started} />
+          </li>
         ))}
-      </dl>
+      </ul>
     </section>
   );
 }

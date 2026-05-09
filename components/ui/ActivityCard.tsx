@@ -46,7 +46,6 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
           <Heart size={14} aria-hidden="true" className="text-primary" />
           <span
             className="text-xs text-gray-600 font-medium"
-            aria-label={`${activity.likes} curtidas`}
           >
             {activity.likes}
           </span>
