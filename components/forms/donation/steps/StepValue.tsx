@@ -69,7 +69,7 @@ export default function StepValue({ initialAmount, onNext }: StepValueProps) {
 
       <div className="mb-6">
         <h2 className="text-xl font-bold text-black">Escolha um valor</h2>
-        <p className="text-sm text-gray-500 mt-1">
+        <p className="text-sm text-gray-700 mt-1">
           Doações a partir de R$100 ganham uma camiseta da ACOSE Casulo
         </p>
       </div>
@@ -102,7 +102,7 @@ export default function StepValue({ initialAmount, onNext }: StepValueProps) {
               <span
                 className={cn(
                   'text-[11px] text-center mt-1 leading-tight',
-                  isSelected ? 'text-white/80' : 'text-gray-500'
+                  isSelected ? 'text-white' : 'text-gray-600'
                 )}
               >
                 {option.desc}
@@ -137,7 +137,7 @@ export default function StepValue({ initialAmount, onNext }: StepValueProps) {
         Continuar
       </button>
 
-      <p className="text-sm text-gray-500 text-center mt-4">
+      <p className="text-sm text-gray-700 text-center mt-4">
         Doação segura · Recibo por email
       </p>
     </div>

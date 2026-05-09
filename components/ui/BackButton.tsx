@@ -13,7 +13,7 @@ export default function BackButton({
   return (
     <Link
       href={href}
-      className="group inline-flex items-center gap-1.5 text-sm font-semibold text-gray-500 transition-colors hover:text-primary"
+      className="group inline-flex items-center gap-1.5 text-sm font-semibold text-gray-700 transition-colors hover:text-primary"
       aria-label={`Voltar para ${label}`}
     >
       <ChevronLeft

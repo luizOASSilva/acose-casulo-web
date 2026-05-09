@@ -32,7 +32,7 @@ export default function ArticleRow({ article }: { article: Article }) {
             {article.title}
           </h2>
 
-          <p className="text-sm text-gray-500 leading-relaxed line-clamp-2">
+          <p className="text-sm text-gray-700 leading-relaxed line-clamp-2">
             {article.summary}
           </p>
         </div>
@@ -45,7 +45,7 @@ export default function ArticleRow({ article }: { article: Article }) {
             >
               {article.author.name.charAt(0).toUpperCase()}
             </div>
-            <span className="text-xs text-gray-500 truncate hidden sm:block">
+            <span className="text-xs text-gray-700 truncate hidden sm:block">
               {article.author.name}
             </span>
             <span aria-hidden="true" className="text-gray-300 hidden sm:block">
@@ -53,7 +53,7 @@ export default function ArticleRow({ article }: { article: Article }) {
             </span>
             <time
               dateTime={article.created_at}
-              className="text-xs text-gray-400 shrink-0"
+              className="text-xs text-gray-600 shrink-0"
             >
               {new Date(article.created_at).toLocaleDateString('pt-BR', {
                 day: '2-digit',

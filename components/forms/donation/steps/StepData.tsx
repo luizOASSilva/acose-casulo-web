@@ -129,7 +129,7 @@ export default function StepData({ data, isGift, onNext }: StepDataProps) {
     <form onSubmit={handleSubmit((v) => onNext(v as FormValues))} className="space-y-6 animate-in fade-in duration-500">
       <div>
         <h2 className="text-2xl font-bold text-primary">Seus dados</h2>
-        <p className="text-gray-500 text-sm mt-1">
+        <p className="text-gray-600 text-sm mt-1">
           Para o recibo fiscal, e se aplicável, envio da camiseta
         </p>
       </div>
@@ -176,7 +176,7 @@ export default function StepData({ data, isGift, onNext }: StepDataProps) {
 
       {isGift && (
         <div className="bg-secondary p-6 space-y-6  sm:mx-0 rounded-md">
-          <h3 className="text-primary font-bold text-sm uppercase tracking-widest">
+          <h3 className="text-primary-light font-bold text-sm uppercase tracking-widest">
             Endereço para a camiseta
           </h3>
 
@@ -197,11 +197,6 @@ export default function StepData({ data, isGift, onNext }: StepDataProps) {
                     />
                   )}
                 />
-                {cepLoading && (
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">
-                    Buscando...
-                  </span>
-                )}
               </div>
             </Field>
 

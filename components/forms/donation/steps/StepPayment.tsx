@@ -9,6 +9,7 @@ import {
   updateDonationPix,
   updateDonation,
 } from '@/services/donation';
+import Image from 'next/image';
 
 const PIX_TTL_MS    = 15 * 60 * 1000;
 const POLL_MS       = 5_000;
@@ -144,7 +145,7 @@ export default function StepPayment({
       name:  formData.name,
       email: formData.email,
       cpf:   formData.cpf,
-    }).catch(() => {/* não bloqueia UX */});
+    }).catch(() => {});
   }, [formData.name, formData.email, formData.cpf]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -215,7 +216,8 @@ export default function StepPayment({
   if (phase.type === 'expired') {
     return (
       <section aria-label="PIX expirado" aria-live="assertive"
-               className="text-center py-20 space-y-4">
+        className="text-center py-20 space-y-4"
+      >
         <p role="alert" className="text-red-500 font-semibold">
           O código PIX expirou.
         </p>
@@ -239,7 +241,7 @@ export default function StepPayment({
       <dl className="bg-secondary rounded-md overflow-hidden">
         <div className="flex justify-between items-center px-6 py-4 border-b border-white/30">
           <dt className="text-white">Doação</dt>
-          <dd className="text-primary font-bold" aria-label={`R$ ${formatBRL(formData.amount)}`}>
+          <dd className="text-primary-light font-bold" aria-label={`R$ ${formatBRL(formData.amount)}`}>
             R$ {formatBRL(formData.amount)}
           </dd>
         </div>
@@ -253,7 +255,7 @@ export default function StepPayment({
             id={timerId}
             aria-label={`Expira em ${formatCountdown(timeLeft)}`}
             className={`text-xs font-mono transition-colors ${
-              urgentTimer ? 'text-red-300' : 'text-white/80'
+              urgentTimer ? 'text-red-600' : 'text-white'
             }`}
           >
             {formatCountdown(timeLeft)}
@@ -264,7 +266,7 @@ export default function StepPayment({
       <div className="bg-secondary rounded-md p-8 flex flex-col items-center gap-5">
         {pix.pix_qr_code ? (
           <figure className="m-0">
-            <img
+            <Image
               src={`data:image/png;base64,${pix.pix_qr_code}`}
               alt="QR Code para pagamento PIX — aponte a câmera do seu app bancário"
               width={176}
@@ -284,7 +286,7 @@ export default function StepPayment({
           aria-label={copied ? 'Chave PIX copiada' : 'Copiar chave PIX Copia e Cola'}
           className="w-full bg-primary text-white py-3 rounded transition
                      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2
-                     focus-visible:ring-primary active:scale-[.98]"
+                     focus-visible:ring-primary active:scale-[.98] cursor-pointer"
         >
           {copied ? '✓ Copiado!' : 'Copiar chave PIX'}
         </button>

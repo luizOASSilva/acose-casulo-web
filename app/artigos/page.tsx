@@ -26,7 +26,7 @@ export default async function Artigos() {
         <h1 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight">
           Artigos
         </h1>
-        <p className="text-gray-500 text-base md:text-lg max-w-xl">
+        <p className="text-gray-700 text-base md:text-lg max-w-xl">
           Um pouco do material de quem vive o cuidado no dia-a-dia.
         </p>
       </header>

@@ -30,7 +30,7 @@ export default function UserBadge({
         </p>
 
         {subtitle && (
-          <span className="text-xs text-gray-400 mt-1">{subtitle}</span>
+          <span className="text-xs text-gray-600 mt-1">{subtitle}</span>
         )}
       </div>
     </div>
