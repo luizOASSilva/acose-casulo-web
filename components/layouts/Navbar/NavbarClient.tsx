@@ -254,7 +254,10 @@ export default function NavbarClient({
               <Link
                 href="/doe-agora"
                 onClick={closeMenus}
-                className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg border-2 border-primary text-primary text-sm font-bold transition-all hover:bg-primary hover:text-white active:scale-95 w-full"
+                className={cn(
+                  'inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg border-2 border-primary text-primary text-sm font-bold transition-all hover:bg-primary hover:text-white active:scale-95 w-full',
+                  pathname === '/doe-agora' && 'bg-primary text-white'
+                )}
               >
                 <Heart size={15} fill="currentColor" aria-hidden="true" />
                 Doe agora
