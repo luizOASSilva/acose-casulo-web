@@ -16,7 +16,6 @@ function MarqueeRow({
   direction?: 'left' | 'right';
   speed?: number;
 }) {
-
   const repeated = [...items, ...items, ...items, ...items];
   const duration = items.length * (400 / speed);
 
@@ -47,7 +46,7 @@ export default function PartnerMarquee({ partners }: Props) {
   const row2 = partners.slice(Math.ceil(partners.length / 2));
 
   return (
-    <section className="overflow-hidden mb-20" aria-labelledby="partners-heading">
+    <section className="overflow-hidden mb-20" aria-label="Parceiros">
       <div className="relative w-full">
         <div
           className="absolute left-0 top-0 bottom-0 z-10 w-7.5 md:w-37.5 pointer-events-none"
