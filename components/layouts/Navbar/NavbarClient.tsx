@@ -147,7 +147,6 @@ export default function NavbarClient({
           >
             <ul
               className="flex flex-col lg:flex-row lg:gap-8 lg:items-center lg:p-0 w-full lg:w-auto"
-              role="list"
             >
               {links.map(({ href, label }) => (
                 <li key={href} className="w-full lg:w-auto">
@@ -209,7 +208,6 @@ export default function NavbarClient({
                 >
                   <ul
                     className="bg-white lg:border lg:border-gray-100 lg:shadow-xl lg:rounded-xl lg:mt-0"
-                    role="list"
                     aria-label="Artigos recentes"
                   >
                     {recentArticles.map((art) => (
