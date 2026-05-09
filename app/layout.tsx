@@ -25,6 +25,12 @@ export const metadata: Metadata = {
   creator: SITE_NAME,
   publisher: SITE_NAME,
   metadataBase: new URL(SITE_URL),
+  icons: {
+    apple: '/apple-touch-icon.png',
+  },
+  other: {
+    'theme-color': '#ffffff',
+  },
   openGraph: {
     title: `${SITE_NAME} | Centro Dia | CDPD | Bragança Paulista`,
     description: SITE_DESCRIPTION,
