@@ -48,6 +48,7 @@ export default function ActivityDetail({
             loading="eager"
             priority
           />
+
           <button
             onClick={onClose}
             className="absolute right-4 top-4 z-20 rounded-full bg-white/90 p-2 text-gray-800 shadow-md transition-transform hover:bg-white active:scale-95 cursor-pointer"
@@ -66,11 +67,12 @@ export default function ActivityDetail({
                 {activity.title}
               </h1>
 
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-3" role="group">
                 <div className="flex items-center gap-2 rounded-lg bg-orange-50 px-3 py-1 text-sm font-semibold text-orange-700 border border-orange-100">
                   <Calendar size={14} />
                   <span>Segunda a Sexta</span>
                 </div>
+
                 <div className="flex items-center gap-2 rounded-lg bg-orange-50 px-3 py-1 text-sm font-semibold text-orange-700 border border-orange-100">
                   <Clock size={14} />
                   <span>08h - 11h</span>
