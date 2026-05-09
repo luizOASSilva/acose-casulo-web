@@ -54,7 +54,6 @@ export default function ContactForm() {
             type="text"
             autoComplete="name"
             required
-            aria-required="true"
             placeholder="Seu nome completo"
             className={fieldClass}
           />
@@ -73,7 +72,6 @@ export default function ContactForm() {
             type="email"
             autoComplete="email"
             required
-            aria-required="true"
             placeholder="seu@email.com"
             className={fieldClass}
           />
