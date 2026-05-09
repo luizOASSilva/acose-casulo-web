@@ -21,7 +21,7 @@ export default function Atividades() {
     <main id="conteudo" className="w-[90%] max-w-6xl mx-auto py-12 md:py-20">
       <header className="mb-12 space-y-3 max-w-2xl">
         <h1 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight">
-          Atividades
+          Atividades do Centro Dia
         </h1>
         <p className="text-gray-600 text-base md:text-lg leading-relaxed">
           Conheça as atividades desenvolvidas no Centro Dia, voltadas ao
