@@ -20,10 +20,13 @@ export async function generateMetadata({
 
   return {
     title: article.title,
-    description: article.summary,
+    description: article.summary?.substring(0, 160),
+    alternates: {
+      canonical: `/artigos/${slug}`,
+    },
     openGraph: {
       title: article.title,
-      description: article.summary,
+      description: article.summary?.substring(0, 160),
       images: article.media?.url
         ? [{ url: article.media.url, alt: article.media.alt_text }]
         : [],

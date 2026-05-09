@@ -18,6 +18,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: activity.title,
     description,
+    robots: {
+      index: false,
+      follow: false,
+    },
     alternates: {
       canonical: `/atividades/${slug}`,
     },
