@@ -84,7 +84,7 @@ export default async function Artigo({ params }: ParamProps) {
               />
             </div>
             {article.media?.caption && (
-              <figcaption className="text-xs text-gray-500 text-center p-3">
+              <figcaption className="text-xs text-gray-700 text-center p-3">
                 {article.media.caption}
               </figcaption>
             )}
