@@ -62,7 +62,7 @@ export default function StepValue({ initialAmount, onNext }: StepValueProps) {
 
   return (
     <div className="flex flex-col w-full animate-in fade-in duration-500">
-      <div className="w-full h-px bg-gray-300 my-8" />
+      <div className="w-full h-px bg-gray-300 mb-8" />
 
       <div className="mb-6">
         <h2 className="text-xl font-bold text-black">Escolha um valor</h2>
