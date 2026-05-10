@@ -1,4 +1,4 @@
-export const SITE_URL = 'https://acose-casulo-web.vercel.app/';
+export const SITE_URL = 'https://acose-casulo-web.vercel.app';
 
 export const SITE_NAME = 'Acose Casulo';
 
