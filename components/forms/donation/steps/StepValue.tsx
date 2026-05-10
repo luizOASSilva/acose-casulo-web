@@ -62,10 +62,10 @@ export default function StepValue({ initialAmount, onNext }: StepValueProps) {
 
   return (
     <div className="flex flex-col w-full animate-in fade-in duration-500">
-      <h2 className="text-3xl md:text-4xl font-bold text-black leading-snug">
+      <h1 className="text-3xl md:text-4xl font-bold text-black leading-snug">
         Cada doação é um adulto que não fica{' '}
         <span className="text-primary">pra trás.</span>
-      </h2>
+      </h1>
 
       <div className="w-full h-px bg-gray-300 my-8" />
 

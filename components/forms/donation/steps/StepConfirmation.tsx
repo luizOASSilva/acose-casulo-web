@@ -35,7 +35,7 @@ export default function StepConfirmation({ amount }: StepConfirmationProps) {
         </svg>
       </span>
 
-      <h2 className="text-3xl font-bold text-primary">Obrigado!</h2>
+      <h1 className="text-3xl font-bold text-primary">Obrigado!</h1>
 
       <p className="text-center text-gray-700 text-base leading-relaxed max-w-sm">
         Sua doação de{' '}

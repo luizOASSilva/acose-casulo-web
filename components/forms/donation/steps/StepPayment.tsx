@@ -267,9 +267,9 @@ export default function StepPayment({
 
   return (
     <section aria-labelledby={statusId} className="space-y-4">
-      <h2 id={statusId} className="text-2xl font-bold text-black">
+      <h1 id={statusId} className="text-2xl font-bold text-black">
         Pagamento via PIX
-      </h2>
+      </h1>
 
       <dl className="bg-secondary rounded-md overflow-hidden">
         <div className="flex justify-between items-center px-6 py-4 border-b border-white/30">
