@@ -40,7 +40,7 @@ export const metadata: Metadata = {
     type: 'website',
     images: [
       {
-        url: `${SITE_URL}/og-image.png`,
+        url: `https://acose-casulo-web.vercel.app/og-image.png`,
         width: 1200,
         height: 630,
         alt: `${SITE_NAME} — Centro Dia da Pessoa com Deficiência`,
