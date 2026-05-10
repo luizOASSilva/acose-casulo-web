@@ -42,7 +42,7 @@ function loadSession(): SessionData | null {
   try {
     const raw = sessionStorage.getItem(SESSION_KEY);
     if (!raw) return null;
-    return JSON.parse(raw) as SessionData;
+    return JSON.parse(raw);
   } catch {
     return null;
   }
@@ -52,34 +52,10 @@ function clearSession() {
   sessionStorage.removeItem(SESSION_KEY);
 }
 
-function DonationSkeleton() {
-  return (
-    <div className="min-h-screen flex flex-col">
-      <div className="grow flex flex-col items-center py-10 px-4">
-        <div className="w-full max-w-2xl animate-pulse">
-          <div className="h-10 bg-gray-200 rounded w-3/4 mb-4" />
-          <div className="h-px bg-gray-300 my-8" />
-          <div className="h-6 bg-gray-200 rounded w-1/2 mb-2" />
-          <div className="h-4 bg-gray-200 rounded w-2/3 mb-6" />
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="h-24 bg-gray-200 rounded-lg" />
-            ))}
-          </div>
-          <div className="h-14 bg-gray-200 rounded-lg mt-4" />
-          <div className="h-14 bg-primary/30 rounded-lg mt-8" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function DonationFlow() {
   const [step, setStep] = useState<DonationStep>(1);
   const [formData, setFormData] = useState<DonationData>(initialData);
-  const [pix, setPix] = useState<(PixResponse & { expires_at: number }) | null>(
-    null
-  );
+  const [pix, setPix] = useState<(PixResponse & { expires_at: number }) | null>(null);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
@@ -114,14 +90,14 @@ export default function DonationFlow() {
     setStep(4);
   };
 
-  if (!hydrated) return <DonationSkeleton />;
+  if (!hydrated) return null;
 
   return (
     <div className="min-h-screen flex flex-col">
       <div className="grow flex flex-col items-center py-10 px-4">
         {step >= 2 && (
           <div className="flex items-center mb-12">
-            {([1, 2, 3, 4] as DonationStep[]).map((i) => {
+            {[1, 2, 3, 4].map((i) => {
               const isCompleted = step > i;
               const isCurrent = step === i;
               const isClickable = i < step;
@@ -129,16 +105,13 @@ export default function DonationFlow() {
               return (
                 <div key={i} className="flex items-center">
                   <button
-                    onClick={() => (isClickable ? goTo(i) : undefined)}
+                    onClick={() => (isClickable ? goTo(i as DonationStep) : undefined)}
                     disabled={!isClickable}
-                    className={cn(
-                      'flex flex-col sm:flex-row items-center gap-1 sm:gap-2',
-                      isClickable ? 'cursor-pointer' : 'cursor-default'
-                    )}
+                    className={cn('flex flex-col sm:flex-row items-center gap-1 sm:gap-2')}
                   >
                     <div
                       className={cn(
-                        'w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all shrink-0',
+                        'w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm',
                         isCompleted || isCurrent
                           ? 'bg-primary text-white'
                           : 'bg-gray-300 text-gray-500'
@@ -146,28 +119,10 @@ export default function DonationFlow() {
                     >
                       {i}
                     </div>
-                    <span
-                      className={cn(
-                        'text-sm sm:text-xs font-medium whitespace-nowrap',
-                        isCurrent
-                          ? 'text-primary'
-                          : isCompleted
-                            ? 'text-gray-700'
-                            : 'text-gray-400'
-                      )}
-                    >
+                    <span className={cn('text-sm', isCurrent ? 'text-primary' : 'text-gray-400')}>
                       {STEP_LABELS[i - 1]}
                     </span>
                   </button>
-
-                  {i < 4 && (
-                    <div
-                      className={cn(
-                        'mx-2 w-6 sm:w-16 shrink-0 h-0.75 rounded-full',
-                        step > i ? 'bg-primary' : 'bg-gray-300'
-                      )}
-                    />
-                  )}
                 </div>
               );
             })}
@@ -201,18 +156,14 @@ export default function DonationFlow() {
             <StepPayment
               formData={formData}
               cachedPix={pix}
-              onPixGenerated={(newPix) => setPix(newPix)}
+              onPixGenerated={(p) => setPix(p)}
               onConfirm={handleConfirm}
             />
           )}
 
           {step === 4 && <StepConfirmation amount={formData.amount} />}
 
-          {step !== 4 && (
-            <div className="mt-8">
-              <SecurityBadge />
-            </div>
-          )}
+          {step !== 4 && <div className="mt-8"><SecurityBadge /></div>}
         </div>
       </div>
     </div>
