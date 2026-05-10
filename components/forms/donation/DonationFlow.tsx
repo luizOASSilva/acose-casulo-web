@@ -179,6 +179,7 @@ export default function DonationFlow() {
             <StepValue
               initialAmount={formData.amount}
               onNext={(amount) => {
+                if (amount !== formData.amount) setPix(null);
                 setFormData((prev) => ({ ...prev, amount }));
                 setStep(2);
               }}
