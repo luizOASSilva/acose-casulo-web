@@ -14,7 +14,9 @@ export default function ActivityModalClient({
   const cameFromSite = useRef(false);
 
   useEffect(() => {
-    cameFromSite.current = true;
+    const referrer = document.referrer;
+    cameFromSite.current =
+      referrer.length > 0 && referrer.startsWith(window.location.origin);
   }, []);
 
   const handleClose = () => {

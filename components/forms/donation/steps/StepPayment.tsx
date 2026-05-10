@@ -51,7 +51,9 @@ export default function StepPayment({
   onConfirm,
 }: StepPaymentProps) {
   const [phase, setPhase] = useState<Phase>(
-    cachedPix ? { type: 'ready', pix: cachedPix } : { type: 'loading' }
+    cachedPix && cachedPix.expires_at > Date.now()
+      ? { type: 'ready', pix: cachedPix }
+      : { type: 'loading' }
   );
   const [timeLeft, setTimeLeft] = useState(0);
   const [copied, setCopied] = useState(false);
@@ -59,66 +61,84 @@ export default function StepPayment({
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const donationIdRef = useRef<number | null>(cachedPix?.id ?? null);
+  const phaseRef = useRef<Phase['type']>('loading');
+  const onConfirmRef = useRef(onConfirm);
+  const onPixGeneratedRef = useRef(onPixGenerated);
   const initializedRef = useRef(false);
   const regeneratingRef = useRef(false);
   const prevAmountRef = useRef(formData.amount);
+
+  useEffect(() => {
+    onConfirmRef.current = onConfirm;
+  }, [onConfirm]);
+  useEffect(() => {
+    onPixGeneratedRef.current = onPixGenerated;
+  }, [onPixGenerated]);
+  useEffect(() => {
+    phaseRef.current = phase.type;
+  }, [phase.type]);
 
   const timerId = useId();
   const statusId = useId();
 
   const clearTimers = useCallback(() => {
-    clearInterval(pollRef.current!);
-    clearInterval(timerRef.current!);
+    if (pollRef.current) clearInterval(pollRef.current);
+    if (timerRef.current) clearInterval(timerRef.current);
+    pollRef.current = null;
+    timerRef.current = null;
   }, []);
 
   const startTimer = useCallback((expiresAt: number) => {
-    clearInterval(timerRef.current!);
+    if (timerRef.current) clearInterval(timerRef.current);
+
     const tick = () => {
       const remaining = expiresAt - Date.now();
       if (remaining <= 0) {
-        clearInterval(timerRef.current!);
-        clearInterval(pollRef.current!);
+        if (timerRef.current) clearInterval(timerRef.current);
+        if (pollRef.current) clearInterval(pollRef.current);
+        timerRef.current = null;
+        pollRef.current = null;
         setPhase({ type: 'expired' });
         setTimeLeft(0);
       } else {
         setTimeLeft(remaining);
       }
     };
+
     tick();
     timerRef.current = setInterval(tick, 1000);
   }, []);
 
   const startPolling = useCallback(
     (donationId: number) => {
-      clearInterval(pollRef.current!);
+      if (pollRef.current) clearInterval(pollRef.current);
+
       pollRef.current = setInterval(async () => {
         try {
           const { status } = await getDonationStatus(donationId);
           if (status === 'approved') {
             clearTimers();
             setPhase({ type: 'confirmed' });
-            onConfirm();
+            onConfirmRef.current();
           } else if (status === 'expired') {
             clearTimers();
             setPhase({ type: 'expired' });
           }
-        } catch {
-          // Falha silenciosa no poll — o timer de expiração cobre o caso
-        }
+        } catch {}
       }, POLL_MS);
     },
-    [clearTimers, onConfirm]
+    [clearTimers]
   );
 
   const applyPix = useCallback(
     (pix: PixWithExpiry) => {
       donationIdRef.current = pix.id;
       setPhase({ type: 'ready', pix });
-      onPixGenerated(pix);
+      onPixGeneratedRef.current(pix);
       startPolling(pix.id);
       startTimer(pix.expires_at);
     },
-    [onPixGenerated, startPolling, startTimer]
+    [startPolling, startTimer]
   );
 
   useEffect(() => {
@@ -142,32 +162,33 @@ export default function StepPayment({
       } catch (err: any) {
         setPhase({
           type: 'error',
-          message: err.message ?? 'Não foi possível gerar o Pix.',
+          message: err?.message ?? 'Não foi possível gerar o Pix.',
         });
       }
     };
 
     generate();
     return clearTimers;
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const id = donationIdRef.current;
-    if (!id || phase.type !== 'ready') return;
-
+    if (!id || phaseRef.current !== 'ready') return;
     updateDonation(id, {
       name: formData.name,
       email: formData.email,
       cpf: formData.cpf,
     }).catch(() => {});
-  }, [formData.name, formData.email, formData.cpf]); // eslint-disable-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.name, formData.email, formData.cpf]);
 
   useEffect(() => {
     if (formData.amount === prevAmountRef.current) return;
     prevAmountRef.current = formData.amount;
 
     const id = donationIdRef.current;
-    if (!id || phase.type !== 'ready' || regeneratingRef.current) return;
+    if (!id || phaseRef.current !== 'ready' || regeneratingRef.current) return;
 
     const regenerate = async () => {
       regeneratingRef.current = true;
@@ -183,7 +204,7 @@ export default function StepPayment({
       } catch (err: any) {
         setPhase({
           type: 'error',
-          message: err.message ?? 'Erro ao atualizar Pix.',
+          message: err?.message ?? 'Erro ao atualizar Pix.',
         });
       } finally {
         regeneratingRef.current = false;
@@ -191,7 +212,8 @@ export default function StepPayment({
     };
 
     regenerate();
-  }, [formData.amount]); // eslint-disable-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.amount]);
 
   const handleCopy = useCallback(async () => {
     if (phase.type !== 'ready' || !phase.pix.pix_copy_paste) return;
@@ -199,9 +221,7 @@ export default function StepPayment({
       await navigator.clipboard.writeText(phase.pix.pix_copy_paste);
       setCopied(true);
       setTimeout(() => setCopied(false), COPY_RESET_MS);
-    } catch {
-      // Fallback: seleciona o texto para o usuário copiar manualmente
-    }
+    } catch {}
   }, [phase]);
 
   if (phase.type === 'loading') {
@@ -261,7 +281,9 @@ export default function StepPayment({
       </section>
     );
   }
+
   if (phase.type !== 'ready') return null;
+
   const { pix } = phase;
   const urgentTimer = timeLeft < 60_000;
 
@@ -294,7 +316,7 @@ export default function StepPayment({
             id={timerId}
             aria-label={`Expira em ${formatCountdown(timeLeft)}`}
             className={`text-xs font-mono transition-colors ${
-              urgentTimer ? 'text-red-600' : 'text-white'
+              urgentTimer ? 'text-red-300' : 'text-white'
             }`}
           >
             {formatCountdown(timeLeft)}
@@ -349,6 +371,47 @@ export default function StepPayment({
         </li>
         <li>O recibo chegará no e-mail cadastrado em até 1 dia útil.</li>
       </ol>
+
+      <div className="flex items-center justify-center gap-3 border border-gray-200 rounded-xl px-5 py-4 bg-white mt-2">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          className="w-5 h-5 text-green-500 shrink-0"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2.5}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          <polyline points="9 12 11 14 15 10" />
+        </svg>
+        <p className="text-xs text-gray-500 leading-snug">
+          Pagamento processado com segurança por
+        </p>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 120 28"
+          aria-label="Mercado Pago"
+          className="h-5 w-auto shrink-0"
+          role="img"
+        >
+          <rect width="120" height="28" rx="4" fill="#009EE3" />
+          <text
+            x="60"
+            y="19"
+            textAnchor="middle"
+            fill="white"
+            fontFamily="Arial, sans-serif"
+            fontWeight="bold"
+            fontSize="11"
+            letterSpacing="0.3"
+          >
+            Mercado Pago
+          </text>
+        </svg>
+      </div>
     </section>
   );
 }
