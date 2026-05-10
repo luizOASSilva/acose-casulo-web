@@ -26,7 +26,6 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
         'Portal da transparência: acesse documentos oficiais e prestações de contas da Acose Casulo.',
       url: ano ? `/transparencia?ano=${ano}` : '/transparencia',
       type: 'website',
-      images: [{ url: '/og-transparencia.jpg', width: 1200, height: 630 }],
     },
   };
 }

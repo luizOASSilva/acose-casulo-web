@@ -14,14 +14,6 @@ export const metadata: Metadata = {
     description: 'Fale com nossa equipe. Estamos prontos para ajudar.',
     type: 'website',
     url: '/contato',
-    images: [
-      {
-        url: 'https://acose-casulo-web.vercel.app/og-image.png',
-        width: 1200,
-        height: 630,
-        alt: 'Acose Casulo — Centro Dia da Pessoa com Deficiência',
-      },
-    ],
   },
 };
 

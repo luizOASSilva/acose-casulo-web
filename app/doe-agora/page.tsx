@@ -14,7 +14,6 @@ export const metadata: Metadata = {
       'Sua doação transforma vidas. Contribua com o Centro Dia da Pessoa com Deficiência em Bragança Paulista.',
     url: '/doe-agora',
     type: 'website',
-    images: [{ url: '/og-doe-agora.jpg', width: 1200, height: 630 }],
   },
 };
 

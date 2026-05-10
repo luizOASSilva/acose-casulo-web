@@ -13,7 +13,6 @@
       description: 'Conheça as atividades que promovem desenvolvimento, inclusão e qualidade de vida no Centro Dia da Pessoa com Deficiência em Bragança Paulista.',
       url: '/atividades',
       type: 'website',
-      images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'Acose Casulo — Atividades' }],
     },
   };
 

@@ -15,7 +15,6 @@ export const metadata: Metadata = {
       'Artigos sobre inclusão, autonomia e cuidado para pessoas com deficiência intelectual em Bragança Paulista.',
     url: '/artigos',
     type: 'website',
-    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'Acose Casulo — Artigos' }],
   },
 };
 
