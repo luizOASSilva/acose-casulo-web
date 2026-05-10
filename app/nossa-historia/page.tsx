@@ -51,7 +51,7 @@ const gallery = [
   },
 ];
 
-export default function NoassaHistoria() {
+export default function NossaHistoria() {
   return (
     <main className="w-[90%] max-w-3xl mx-auto px-6 py-20">
       <article aria-labelledby="article-title">
