@@ -22,6 +22,7 @@ export const metadata: Metadata = {
 export default function DoeAgora() {
   return (
     <div className="py-20">
+      <h1>Doe Agora — Ajude o Centro Dia Acose Casulo</h1>
       <DonationFlow />
     </div>
   );
