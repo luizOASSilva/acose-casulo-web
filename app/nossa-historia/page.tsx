@@ -4,13 +4,15 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Centro Dia',
-  description: 'Conheça a história do Centro Dia da Pessoa com Deficiência, idealizado pelo Projeto Casulo para promover autonomia e dignidade em Bragança Paulista.',
+  description:
+    'Conheça a história do Centro Dia da Pessoa com Deficiência, idealizado pelo Projeto Casulo para promover autonomia e dignidade em Bragança Paulista.',
   alternates: {
     canonical: '/nossa-historia',
   },
   openGraph: {
     title: 'Centro Dia | Acose Casulo — Bragança Paulista',
-    description: 'A história do Centro Dia da Pessoa com Deficiência e seu compromisso com a inclusão e dignidade de jovens adultos.',
+    description:
+      'A história do Centro Dia da Pessoa com Deficiência e seu compromisso com a inclusão e dignidade de jovens adultos.',
     url: '/nossa-historia',
     type: 'article',
     publishedTime: '2022-01-01T00:00:00Z',

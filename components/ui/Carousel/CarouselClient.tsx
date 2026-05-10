@@ -60,7 +60,9 @@ export default function CarouselClient({
 
   if (activities.length === 0) {
     return (
-      <p className="text-gray-400 italic py-8 text-center">Nenhuma atividade encontrada.</p>
+      <p className="text-gray-400 italic py-8 text-center">
+        Nenhuma atividade encontrada.
+      </p>
     );
   }
 
@@ -72,7 +74,7 @@ export default function CarouselClient({
       <h2 id="activities-carousel-title" className="sr-only">
         Atividades recentes
       </h2>
-      
+
       <div className="overflow-hidden" ref={emblaRef}>
         <div className="flex touch-pan-y touch-pinch-zoom gap-4 pl-4 md:pl-0">
           {activities.map((activity) => (
@@ -106,7 +108,9 @@ export default function CarouselClient({
               <span
                 className={cn(
                   'rounded-full h-2.5 transition-all duration-300 ease-in-out pointer-events-none',
-                  index === selectedIndex ? 'bg-primary w-6' : 'bg-gray-300 w-2.5'
+                  index === selectedIndex
+                    ? 'bg-primary w-6'
+                    : 'bg-gray-300 w-2.5'
                 )}
               />
             </button>

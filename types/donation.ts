@@ -13,9 +13,9 @@ export interface DonationData {
 }
 
 export interface PixResponse {
-  pix_qr_code: string;       
-  pix_copy_paste: string;    
-  pix_key?: string;          
+  pix_qr_code: string;
+  pix_copy_paste: string;
+  pix_key?: string;
   donation_id?: string;
 }
 

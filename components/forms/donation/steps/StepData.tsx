@@ -26,7 +26,10 @@ function maskCPF(v: string) {
 }
 
 function maskCEP(v: string) {
-  return v.replace(/\D/g, '').slice(0, 8).replace(/(\d{5})(\d)/, '$1-$2');
+  return v
+    .replace(/\D/g, '')
+    .slice(0, 8)
+    .replace(/(\d{5})(\d)/, '$1-$2');
 }
 
 const ERROR_COLOR = '#c0292c';
@@ -56,11 +59,20 @@ function Field({
 }) {
   return (
     <div className="flex flex-col gap-1">
-      <label className={cn('text-xs font-bold uppercase tracking-widest', dark ? 'text-gray-300' : 'text-gray-600')}>
+      <label
+        className={cn(
+          'text-xs font-bold uppercase tracking-widest',
+          dark ? 'text-gray-300' : 'text-gray-600'
+        )}
+      >
         {label}
       </label>
       {children}
-      {error && <p className="text-xs mt-1" style={{ color: ERROR_COLOR }}>{error}</p>}
+      {error && (
+        <p className="text-xs mt-1" style={{ color: ERROR_COLOR }}>
+          {error}
+        </p>
+      )}
     </div>
   );
 }
@@ -126,7 +138,10 @@ export default function StepData({ data, isGift, onNext }: StepDataProps) {
   const e = errors as any;
 
   return (
-    <form onSubmit={handleSubmit((v) => onNext(v as FormValues))} className="space-y-6 animate-in fade-in duration-500">
+    <form
+      onSubmit={handleSubmit((v) => onNext(v as FormValues))}
+      className="space-y-6 animate-in fade-in duration-500"
+    >
       <div>
         <h2 className="text-2xl font-bold text-primary">Seus dados</h2>
         <p className="text-gray-600 text-sm mt-1">
@@ -193,7 +208,9 @@ export default function StepData({ data, isGift, onNext }: StepDataProps) {
                       style={inputStyle(!!fieldState.error)}
                       placeholder="00000-000"
                       maxLength={9}
-                      onChange={(ev) => field.onChange(maskCEP(ev.target.value))}
+                      onChange={(ev) =>
+                        field.onChange(maskCEP(ev.target.value))
+                      }
                     />
                   )}
                 />
@@ -240,7 +257,9 @@ export default function StepData({ data, isGift, onNext }: StepDataProps) {
           </div>
 
           <div>
-            <p className="text-white text-xs font-bold uppercase tracking-widest mb-5">Tamanho</p>
+            <p className="text-white text-xs font-bold uppercase tracking-widest mb-5">
+              Tamanho
+            </p>
             <div className="flex gap-2 flex-wrap">
               {(['PP', 'P', 'M', 'G', 'GG', '3G'] as const).map((s) => (
                 <button
@@ -249,19 +268,28 @@ export default function StepData({ data, isGift, onNext }: StepDataProps) {
                   onClick={() => setValue('size' as keyof Schema, s as any)}
                   className={cn(
                     'w-10 h-10 rounded border font-bold text-xs transition cursor-pointer',
-                    size === s ? 'bg-primary text-white border-primary' : 'bg-white text-black border-gray-300'
+                    size === s
+                      ? 'bg-primary text-white border-primary'
+                      : 'bg-white text-black border-gray-300'
                   )}
                 >
                   {s}
                 </button>
               ))}
             </div>
-            {e.size && <p className="text-xs mt-1" style={{ color: ERROR_COLOR }}>{e.size.message}</p>}
+            {e.size && (
+              <p className="text-xs mt-1" style={{ color: ERROR_COLOR }}>
+                {e.size.message}
+              </p>
+            )}
           </div>
         </div>
       )}
 
-      <button type="submit" className="w-full bg-primary text-white font-bold py-4 rounded-lg transition active:scale-[.98] cursor-pointer">
+      <button
+        type="submit"
+        className="w-full bg-primary text-white font-bold py-4 rounded-lg transition active:scale-[.98] cursor-pointer"
+      >
         Continuar
       </button>
     </form>

@@ -36,9 +36,7 @@ export default async function ActivityGrid() {
           ))}
         </ul>
       ) : (
-        <p className="text-gray-600 italic">
-          Nenhuma atividade encontrada.
-        </p>
+        <p className="text-gray-600 italic">Nenhuma atividade encontrada.</p>
       )}
     </section>
   );

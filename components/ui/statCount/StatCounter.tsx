@@ -30,7 +30,9 @@ export default function StatCounter({
       <p
         className={`text-6xl md:text-7xl font-extrabold tabular-nums leading-none ${color}`}
       >
-        {prefix}{animatedValue}{suffix}
+        {prefix}
+        {animatedValue}
+        {suffix}
       </p>
 
       <p

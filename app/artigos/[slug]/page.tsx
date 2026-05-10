@@ -31,7 +31,12 @@ export async function generateMetadata({
       url: `/artigos/${slug}`,
       type: 'article',
       images: article.media?.url
-        ? { url: article.media.url, width: 1200, height: 630, alt: article.media.alt_text }
+        ? {
+            url: article.media.url,
+            width: 1200,
+            height: 630,
+            alt: article.media.alt_text,
+          }
         : OG_IMAGE,
     },
   };
@@ -50,7 +55,10 @@ export default async function Artigo({ params }: ParamProps) {
       <article aria-labelledby="article-title" className="mt-8">
         <header className="space-y-6 mb-10">
           {article.keywords && article.keywords.length > 0 && (
-            <ul className="flex flex-wrap gap-2" aria-label="Palavras-chave do artigo">
+            <ul
+              className="flex flex-wrap gap-2"
+              aria-label="Palavras-chave do artigo"
+            >
               {article.keywords.map((kw) => (
                 <KeywordBadge keyword={kw} key={kw} />
               ))}

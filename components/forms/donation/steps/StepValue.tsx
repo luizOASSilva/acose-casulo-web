@@ -10,17 +10,19 @@ interface StepValueProps {
 }
 
 const DONATION_OPTIONS = [
-  { value: 15,  desc: 'Materiais para uma oficina',  gift: false },
-  { value: 30,  desc: 'Transporte de um assistido',  gift: false },
-  { value: 50,  desc: 'Um dia de atividades',        gift: false },
-  { value: 75,  desc: 'Um dia de atividades',        gift: false },
-  { value: 100, desc: 'Semana de atendimento',       gift: true  },
-  { value: 500, desc: 'Mês de suporte',              gift: true  },
+  { value: 15, desc: 'Materiais para uma oficina', gift: false },
+  { value: 30, desc: 'Transporte de um assistido', gift: false },
+  { value: 50, desc: 'Um dia de atividades', gift: false },
+  { value: 75, desc: 'Um dia de atividades', gift: false },
+  { value: 100, desc: 'Semana de atendimento', gift: true },
+  { value: 500, desc: 'Mês de suporte', gift: true },
 ];
 
 export default function StepValue({ initialAmount, onNext }: StepValueProps) {
-  const preSelected = DONATION_OPTIONS.find((o) => o.value === initialAmount)?.value ?? null;
-  const preCustom = initialAmount > 0 && !preSelected ? String(initialAmount) : '';
+  const preSelected =
+    DONATION_OPTIONS.find((o) => o.value === initialAmount)?.value ?? null;
+  const preCustom =
+    initialAmount > 0 && !preSelected ? String(initialAmount) : '';
 
   const [selected, setSelected] = useState<number | null>(preSelected);
   const [custom, setCustom] = useState(preCustom);
@@ -128,7 +130,11 @@ export default function StepValue({ initialAmount, onNext }: StepValueProps) {
         />
       </div>
 
-      {error && <p className="text-sm py-4 font-medium" style={{ color: '#ef4444' }}>{error}</p>}
+      {error && (
+        <p className="text-sm py-4 font-medium" style={{ color: '#ef4444' }}>
+          {error}
+        </p>
+      )}
 
       <button
         onClick={handleContinue}

@@ -96,7 +96,9 @@ export default function Hero({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.35 }}
-          className={dark ? (image ? 'text-white/90' : 'text-gray-300') : 'text-gray-700'}
+          className={
+            dark ? (image ? 'text-white/90' : 'text-gray-300') : 'text-gray-700'
+          }
         >
           {description}
         </motion.p>

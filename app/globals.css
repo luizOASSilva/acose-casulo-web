@@ -1,11 +1,11 @@
 @import 'tailwindcss';
 
 :root {
-  --background: #F0F4F8;
+  --background: #f0f4f8;
   --foreground: #171717;
-  --primary: #BF4F00;  
-  --primary-light: #E86000;
-  --secondary: #141210; 
+  --primary: #bf4f00;
+  --primary-light: #e86000;
+  --secondary: #141210;
   --footer: #e8e0d5;
 }
 
@@ -133,11 +133,19 @@
 }
 
 @keyframes marquee-left {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }
 
 @keyframes marquee-right {
-  from { transform: translateX(-50%); }
-  to { transform: translateX(0); }
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
 }

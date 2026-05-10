@@ -18,7 +18,9 @@ export default function Footer() {
         </div>
 
         <div className="max-w-xs flex flex-col gap-3 text-left">
-          <h2 className="font-semibold text-base text-gray-900">Horário de atendimento</h2>
+          <h2 className="font-semibold text-base text-gray-900">
+            Horário de atendimento
+          </h2>
 
           <p className="font-medium text-gray-800">Segunda a sexta-feira</p>
 
@@ -29,7 +31,9 @@ export default function Footer() {
         </div>
 
         <div className="max-w-xs flex flex-col gap-3 text-left">
-          <h2 className="font-semibold text-base text-gray-900">Fale conosco</h2>
+          <h2 className="font-semibold text-base text-gray-900">
+            Fale conosco
+          </h2>
 
           <address className="flex flex-col gap-1 not-italic text-gray-700">
             <span>Rua Francisco Rodrigues Dias, 80</span>
@@ -38,7 +42,8 @@ export default function Footer() {
 
             <a
               href="mailto:contato@projetocasulobp.org.br"
-              className="text-orange-800 font-bold hover:underline transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-800 mt-1"              aria-label="Enviar e-mail para o Projeto Casulo"
+              className="text-orange-800 font-bold hover:underline transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-800 mt-1"
+              aria-label="Enviar e-mail para o Projeto Casulo"
             >
               contato@projetocasulobp.org.br
             </a>

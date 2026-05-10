@@ -5,7 +5,9 @@ interface StepConfirmationProps {
 }
 
 export default function StepConfirmation({ amount }: StepConfirmationProps) {
-  const formatted = amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+  const formatted = amount.toLocaleString('pt-BR', {
+    minimumFractionDigits: 2,
+  });
 
   return (
     <section

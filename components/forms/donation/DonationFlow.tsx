@@ -76,7 +76,9 @@ function DonationSkeleton() {
 export default function DonationFlow() {
   const [step, setStep] = useState<DonationStep>(1);
   const [formData, setFormData] = useState<DonationData>(initialData);
-  const [pix, setPix] = useState<(PixResponse & { expires_at: number }) | null>(null);
+  const [pix, setPix] = useState<(PixResponse & { expires_at: number }) | null>(
+    null
+  );
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
@@ -138,7 +140,9 @@ export default function DonationFlow() {
                     <div
                       className={cn(
                         'w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all shrink-0',
-                        isCompleted || isCurrent ? 'bg-primary text-white' : 'bg-gray-300 text-gray-500'
+                        isCompleted || isCurrent
+                          ? 'bg-primary text-white'
+                          : 'bg-gray-300 text-gray-500'
                       )}
                     >
                       {i}
@@ -146,7 +150,11 @@ export default function DonationFlow() {
                     <span
                       className={cn(
                         'text-sm sm:text-xs font-medium whitespace-nowrap',
-                        isCurrent ? 'text-primary' : isCompleted ? 'text-gray-700' : 'text-gray-400'
+                        isCurrent
+                          ? 'text-primary'
+                          : isCompleted
+                            ? 'text-gray-700'
+                            : 'text-gray-400'
                       )}
                     >
                       {STEP_LABELS[i - 1]}

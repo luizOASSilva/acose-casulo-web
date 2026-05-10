@@ -27,14 +27,20 @@ function MarqueeRow({
           animation: `marquee-${direction} ${duration}s linear infinite`,
         }}
         onMouseEnter={(e) => {
-          (e.currentTarget as HTMLDivElement).style.animationPlayState = 'paused';
+          (e.currentTarget as HTMLDivElement).style.animationPlayState =
+            'paused';
         }}
         onMouseLeave={(e) => {
-          (e.currentTarget as HTMLDivElement).style.animationPlayState = 'running';
+          (e.currentTarget as HTMLDivElement).style.animationPlayState =
+            'running';
         }}
       >
         {repeated.map((logo, i) => (
-          <LogoCard key={`${logo.name}-${i}`} logo={logo} index={i % items.length} />
+          <LogoCard
+            key={`${logo.name}-${i}`}
+            logo={logo}
+            index={i % items.length}
+          />
         ))}
       </div>
     </div>
@@ -50,7 +56,9 @@ export default function PartnerMarquee({ partners }: Props) {
       <div className="relative w-full">
         <div
           className="absolute left-0 top-0 bottom-0 z-10 w-7.5 md:w-37.5 pointer-events-none"
-          style={{ background: 'linear-gradient(to right, white, transparent)' }}
+          style={{
+            background: 'linear-gradient(to right, white, transparent)',
+          }}
           aria-hidden="true"
         />
         <div

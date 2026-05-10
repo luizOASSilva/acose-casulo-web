@@ -77,7 +77,9 @@ export default function NavbarClient({
     setDropdownOpen(false);
   };
 
-  const isDesktop = () => typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches;
+  const isDesktop = () =>
+    typeof window !== 'undefined' &&
+    window.matchMedia('(min-width: 1024px)').matches;
 
   return (
     <>

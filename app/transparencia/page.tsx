@@ -11,7 +11,9 @@ interface PageProps {
   searchParams: Promise<{ ano?: string }>;
 }
 
-export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  searchParams,
+}: PageProps): Promise<Metadata> {
   const { ano } = await searchParams;
 
   return {
@@ -50,7 +52,8 @@ export default async function Transparencia({ searchParams }: PageProps) {
       <Hero
         title={
           <>
-            Nossa <span className="text-primary-light">transparência</span> é pública
+            Nossa <span className="text-primary-light">transparência</span> é
+            pública
           </>
         }
         description="O Centro Dia da Pessoa com Deficiência demonstra os recursos recebidos e investidos na entidade."

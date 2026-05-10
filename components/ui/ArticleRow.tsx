@@ -3,11 +3,7 @@ import Image from 'next/image';
 import type { Article } from '@/types/article';
 import KeywordBadge from '@/components/ui/KeywordBadge';
 
-export default function ArticleRow({
-  article,
-}: {
-  article: Article;
-}) {
+export default function ArticleRow({ article }: { article: Article }) {
   const formattedDate = new Intl.DateTimeFormat('pt-BR', {
     day: '2-digit',
     month: 'long',
@@ -128,10 +124,7 @@ export default function ArticleRow({
               {article.author.name}
             </span>
 
-            <span
-              aria-hidden="true"
-              className="text-gray-300 hidden sm:block"
-            >
+            <span aria-hidden="true" className="text-gray-300 hidden sm:block">
               ·
             </span>
 

@@ -11,8 +11,8 @@ import {
 } from '@/services/donation';
 import Image from 'next/image';
 
-const PIX_TTL_MS    = 15 * 60 * 1000;
-const POLL_MS       = 5_000;
+const PIX_TTL_MS = 15 * 60 * 1000;
+const POLL_MS = 5_000;
 const COPY_RESET_MS = 2_500;
 
 type PixWithExpiry = PixResponse & { expires_at: number };
@@ -25,10 +25,10 @@ type Phase =
   | { type: 'confirmed' };
 
 interface StepPaymentProps {
-  formData:       DonationData;
-  cachedPix:      PixWithExpiry | null;
+  formData: DonationData;
+  cachedPix: PixWithExpiry | null;
   onPixGenerated: (pix: PixWithExpiry) => void;
-  onConfirm:      () => void;
+  onConfirm: () => void;
 }
 
 function formatBRL(value: number) {
@@ -37,7 +37,9 @@ function formatBRL(value: number) {
 
 function formatCountdown(ms: number) {
   const total = Math.max(0, Math.floor(ms / 1000));
-  const m = Math.floor(total / 60).toString().padStart(2, '0');
+  const m = Math.floor(total / 60)
+    .toString()
+    .padStart(2, '0');
   const s = (total % 60).toString().padStart(2, '0');
   return `${m}:${s}`;
 }
@@ -48,21 +50,21 @@ export default function StepPayment({
   onPixGenerated,
   onConfirm,
 }: StepPaymentProps) {
-  const [phase, setPhase]           = useState<Phase>(
+  const [phase, setPhase] = useState<Phase>(
     cachedPix ? { type: 'ready', pix: cachedPix } : { type: 'loading' }
   );
-  const [timeLeft, setTimeLeft]     = useState(0);
-  const [copied, setCopied]         = useState(false);
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [copied, setCopied] = useState(false);
 
-  const pollRef        = useRef<ReturnType<typeof setInterval> | null>(null);
-  const timerRef       = useRef<ReturnType<typeof setInterval> | null>(null);
-  const donationIdRef  = useRef<number | null>(cachedPix?.id ?? null);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const donationIdRef = useRef<number | null>(cachedPix?.id ?? null);
   const initializedRef = useRef(false);
-  const regeneratingRef= useRef(false);
-  const prevAmountRef  = useRef(formData.amount);
+  const regeneratingRef = useRef(false);
+  const prevAmountRef = useRef(formData.amount);
 
-  const timerId   = useId();
-  const statusId  = useId();
+  const timerId = useId();
+  const statusId = useId();
 
   const clearTimers = useCallback(() => {
     clearInterval(pollRef.current!);
@@ -86,32 +88,38 @@ export default function StepPayment({
     timerRef.current = setInterval(tick, 1000);
   }, []);
 
-  const startPolling = useCallback((donationId: number) => {
-    clearInterval(pollRef.current!);
-    pollRef.current = setInterval(async () => {
-      try {
-        const { status } = await getDonationStatus(donationId);
-        if (status === 'approved') {
-          clearTimers();
-          setPhase({ type: 'confirmed' });
-          onConfirm();
-        } else if (status === 'expired') {
-          clearTimers();
-          setPhase({ type: 'expired' });
+  const startPolling = useCallback(
+    (donationId: number) => {
+      clearInterval(pollRef.current!);
+      pollRef.current = setInterval(async () => {
+        try {
+          const { status } = await getDonationStatus(donationId);
+          if (status === 'approved') {
+            clearTimers();
+            setPhase({ type: 'confirmed' });
+            onConfirm();
+          } else if (status === 'expired') {
+            clearTimers();
+            setPhase({ type: 'expired' });
+          }
+        } catch {
+          // Falha silenciosa no poll — o timer de expiração cobre o caso
         }
-      } catch {
-        // Falha silenciosa no poll — o timer de expiração cobre o caso
-      }
-    }, POLL_MS);
-  }, [clearTimers, onConfirm]);
+      }, POLL_MS);
+    },
+    [clearTimers, onConfirm]
+  );
 
-  const applyPix = useCallback((pix: PixWithExpiry) => {
-    donationIdRef.current = pix.id;
-    setPhase({ type: 'ready', pix });
-    onPixGenerated(pix);
-    startPolling(pix.id);
-    startTimer(pix.expires_at);
-  }, [onPixGenerated, startPolling, startTimer]);
+  const applyPix = useCallback(
+    (pix: PixWithExpiry) => {
+      donationIdRef.current = pix.id;
+      setPhase({ type: 'ready', pix });
+      onPixGenerated(pix);
+      startPolling(pix.id);
+      startTimer(pix.expires_at);
+    },
+    [onPixGenerated, startPolling, startTimer]
+  );
 
   useEffect(() => {
     if (initializedRef.current) return;
@@ -125,11 +133,17 @@ export default function StepPayment({
     const generate = async () => {
       setPhase({ type: 'loading' });
       try {
-        const data       = await createDonation(formData);
-        const withExpiry: PixWithExpiry = { ...data, expires_at: Date.now() + PIX_TTL_MS };
+        const data = await createDonation(formData);
+        const withExpiry: PixWithExpiry = {
+          ...data,
+          expires_at: Date.now() + PIX_TTL_MS,
+        };
         applyPix(withExpiry);
       } catch (err: any) {
-        setPhase({ type: 'error', message: err.message ?? 'Não foi possível gerar o Pix.' });
+        setPhase({
+          type: 'error',
+          message: err.message ?? 'Não foi possível gerar o Pix.',
+        });
       }
     };
 
@@ -142,9 +156,9 @@ export default function StepPayment({
     if (!id || phase.type !== 'ready') return;
 
     updateDonation(id, {
-      name:  formData.name,
+      name: formData.name,
       email: formData.email,
-      cpf:   formData.cpf,
+      cpf: formData.cpf,
     }).catch(() => {});
   }, [formData.name, formData.email, formData.cpf]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -160,11 +174,17 @@ export default function StepPayment({
       setPhase({ type: 'loading' });
       clearTimers();
       try {
-        const data       = await updateDonationPix(id, formData.amount);
-        const withExpiry: PixWithExpiry = { ...data, expires_at: Date.now() + PIX_TTL_MS };
+        const data = await updateDonationPix(id, formData.amount);
+        const withExpiry: PixWithExpiry = {
+          ...data,
+          expires_at: Date.now() + PIX_TTL_MS,
+        };
         applyPix(withExpiry);
       } catch (err: any) {
-        setPhase({ type: 'error', message: err.message ?? 'Erro ao atualizar Pix.' });
+        setPhase({
+          type: 'error',
+          message: err.message ?? 'Erro ao atualizar Pix.',
+        });
       } finally {
         regeneratingRef.current = false;
       }
@@ -186,8 +206,12 @@ export default function StepPayment({
 
   if (phase.type === 'loading') {
     return (
-      <section aria-label="Gerando PIX" aria-live="polite" aria-busy="true"
-               className="flex flex-col items-center gap-4 py-20">
+      <section
+        aria-label="Gerando PIX"
+        aria-live="polite"
+        aria-busy="true"
+        className="flex flex-col items-center gap-4 py-20"
+      >
         <div
           role="status"
           className="w-8 h-8 rounded-full border-4 border-primary border-t-transparent animate-spin"
@@ -200,9 +224,14 @@ export default function StepPayment({
 
   if (phase.type === 'error') {
     return (
-      <section aria-label="Erro ao gerar PIX" aria-live="assertive"
-               className="text-center py-20 space-y-4">
-        <p role="alert" className="text-red-500">{phase.message}</p>
+      <section
+        aria-label="Erro ao gerar PIX"
+        aria-live="assertive"
+        className="text-center py-20 space-y-4"
+      >
+        <p role="alert" className="text-red-500">
+          {phase.message}
+        </p>
         <button
           onClick={() => window.location.reload()}
           className="text-primary underline text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
@@ -215,7 +244,9 @@ export default function StepPayment({
 
   if (phase.type === 'expired') {
     return (
-      <section aria-label="PIX expirado" aria-live="assertive"
+      <section
+        aria-label="PIX expirado"
+        aria-live="assertive"
         className="text-center py-20 space-y-4"
       >
         <p role="alert" className="text-red-500 font-semibold">
@@ -231,24 +262,32 @@ export default function StepPayment({
     );
   }
   if (phase.type !== 'ready') return null;
-  const { pix } = phase; 
-  const urgentTimer = timeLeft < 60_000; 
+  const { pix } = phase;
+  const urgentTimer = timeLeft < 60_000;
 
   return (
     <section aria-labelledby={statusId} className="space-y-4">
-      <h2 id={statusId} className="text-2xl font-bold text-black">Pagamento via PIX</h2>
+      <h2 id={statusId} className="text-2xl font-bold text-black">
+        Pagamento via PIX
+      </h2>
 
       <dl className="bg-secondary rounded-md overflow-hidden">
         <div className="flex justify-between items-center px-6 py-4 border-b border-white/30">
           <dt className="text-white">Doação</dt>
-          <dd className="text-primary-light font-bold" aria-label={`R$ ${formatBRL(formData.amount)}`}>
+          <dd
+            className="text-primary-light font-bold"
+            aria-label={`R$ ${formatBRL(formData.amount)}`}
+          >
             R$ {formatBRL(formData.amount)}
           </dd>
         </div>
       </dl>
 
-      <div className="flex items-center justify-between bg-primary rounded-md px-4 py-3"
-           role="status" aria-live="polite">
+      <div
+        className="flex items-center justify-between bg-primary rounded-md px-4 py-3"
+        role="status"
+        aria-live="polite"
+      >
         <span className="text-white font-bold text-sm">PIX</span>
         {timeLeft > 0 && (
           <span
@@ -283,7 +322,9 @@ export default function StepPayment({
           type="button"
           onClick={handleCopy}
           aria-pressed={copied}
-          aria-label={copied ? 'Chave PIX copiada' : 'Copiar chave PIX Copia e Cola'}
+          aria-label={
+            copied ? 'Chave PIX copiada' : 'Copiar chave PIX Copia e Cola'
+          }
           className="w-full bg-primary text-white py-3 rounded transition
                      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2
                      focus-visible:ring-primary active:scale-[.98] cursor-pointer"
@@ -298,8 +339,14 @@ export default function StepPayment({
 
       <ol className="text-sm text-gray-600 space-y-1 list-decimal list-inside leading-relaxed">
         <li>Copie o código PIX acima ou escaneie o QR Code.</li>
-        <li>Abra o aplicativo do seu banco e selecione <strong>PIX → Copia e Cola</strong>.</li>
-        <li>Cole o código e confirme o valor de <strong>R$ {formatBRL(formData.amount)}</strong>.</li>
+        <li>
+          Abra o aplicativo do seu banco e selecione{' '}
+          <strong>PIX → Copia e Cola</strong>.
+        </li>
+        <li>
+          Cole o código e confirme o valor de{' '}
+          <strong>R$ {formatBRL(formData.amount)}</strong>.
+        </li>
         <li>O recibo chegará no e-mail cadastrado em até 1 dia útil.</li>
       </ol>
     </section>

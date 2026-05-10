@@ -35,7 +35,9 @@ export const addressSchema = z.object({
   number: z.string().min(1, 'Número obrigatório'),
   neighborhood: z.string().min(2, 'Bairro obrigatório'),
   state: z.string().length(2, 'UF inválida'),
-  size: z.enum(['PP', 'P', 'M', 'G', 'GG', '3G'], { error: 'Escolha um tamanho' }),
+  size: z.enum(['PP', 'P', 'M', 'G', 'GG', '3G'], {
+    error: 'Escolha um tamanho',
+  }),
 });
 
 export const getStepDataSchema = (isGift: boolean) =>

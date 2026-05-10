@@ -127,7 +127,9 @@ export default function Home() {
                     <Recycle size={22} />
                   </div>
                   <div>
-                    <h3 className="font-bold text-lg text-gray-900">Reciclagem ativa</h3>
+                    <h3 className="font-bold text-lg text-gray-900">
+                      Reciclagem ativa
+                    </h3>
                     <p className="text-gray-800 mt-2 text-sm leading-relaxed font-medium">
                       Separação e reaproveitamento de resíduos, reduzindo
                       impactos ambientais e incentivando hábitos conscientes.
@@ -142,7 +144,9 @@ export default function Home() {
                     <Sprout size={22} />
                   </div>
                   <div>
-                    <h3 className="font-bold text-lg text-gray-900">Horta comunitária</h3>
+                    <h3 className="font-bold text-lg text-gray-900">
+                      Horta comunitária
+                    </h3>
                     <p className="text-gray-800 mt-2 text-sm leading-relaxed font-medium">
                       Cultivo coletivo de alimentos, promovendo
                       sustentabilidade.
@@ -157,7 +161,9 @@ export default function Home() {
                     <Coins size={22} />
                   </div>
                   <div>
-                    <h3 className="font-bold text-lg text-gray-900">Moeda verde</h3>
+                    <h3 className="font-bold text-lg text-gray-900">
+                      Moeda verde
+                    </h3>
                     <p className="text-gray-800 mt-2 text-sm leading-relaxed font-medium">
                       Troca de materiais recicláveis por benefícios.
                     </p>
@@ -171,7 +177,9 @@ export default function Home() {
                     <Briefcase size={22} />
                   </div>
                   <div>
-                    <h3 className="font-bold text-lg text-gray-900">Geração de renda</h3>
+                    <h3 className="font-bold text-lg text-gray-900">
+                      Geração de renda
+                    </h3>
                     <p className="text-gray-800 mt-2 text-sm leading-relaxed font-medium">
                       Criação de oportunidades através da reciclagem.
                     </p>

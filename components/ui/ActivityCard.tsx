@@ -44,9 +44,7 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
 
         <div className="flex items-center gap-1.5 pt-1">
           <Heart size={14} aria-hidden="true" className="text-primary" />
-          <span
-            className="text-xs text-gray-600 font-medium"
-          >
+          <span className="text-xs text-gray-600 font-medium">
             {activity.likes}
           </span>
         </div>

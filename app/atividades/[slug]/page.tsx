@@ -28,7 +28,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       url: `/atividades/${slug}`,
       type: 'article',
       images: activity.media?.url
-        ? { url: activity.media.url, width: 1200, height: 630, alt: activity.media.alt_text }
+        ? {
+            url: activity.media.url,
+            width: 1200,
+            height: 630,
+            alt: activity.media.alt_text,
+          }
         : OG_IMAGE,
     },
   };
