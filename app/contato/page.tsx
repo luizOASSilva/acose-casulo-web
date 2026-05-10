@@ -35,12 +35,9 @@ export default function Contato() {
 
         <div className="max-w-md w-full mx-auto space-y-10 relative z-10">
           <div className="space-y-3">
-            <h1
-              id="contact-info-heading"
-              className="text-4xl font-bold text-gray-900 leading-tight"
-            >
-              Cuidar é o que fazemos.{' '}
-              <span className="text-primary block">Fale com a gente.</span>
+            <h1 id="contact-info-heading" className="text-4xl font-bold text-gray-900 leading-tight">
+              Cuidar é o que fazemos.<br />
+              <span className="text-primary">Fale com a gente.</span>
             </h1>
             <p className="text-gray-600 text-lg leading-relaxed">
               Seja para tirar dúvidas sobre o Centro Dia, apoiar nossa causa ou

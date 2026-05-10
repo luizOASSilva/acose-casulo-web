@@ -22,7 +22,6 @@ export const metadata: Metadata = {
 export default function DoeAgora() {
   return (
     <div className="py-20">
-      <h1 className="sr-only">Doe Agora</h1>
       <DonationFlow />
     </div>
   );
