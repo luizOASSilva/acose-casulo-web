@@ -26,7 +26,7 @@ export default async function Artigos() {
     <main className="w-[90%] max-w-4xl mx-auto py-12 md:py-20">
       <header className="mb-10 space-y-2">
         <h1 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight">
-          Artigos
+          Artigos do Centro Dia
         </h1>
         <p className="text-gray-700 text-base md:text-lg max-w-xl">
           Um pouco do material de quem vive o cuidado no dia-a-dia.

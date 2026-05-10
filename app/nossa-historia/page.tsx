@@ -60,7 +60,7 @@ export default function NossaHistoria() {
             id="article-title"
             className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight"
           >
-            Centro Dia da Pessoa com Deficiência
+            Conheça a História do Centro Dia
           </h1>
         </header>
 
