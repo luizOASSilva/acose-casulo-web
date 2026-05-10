@@ -18,6 +18,8 @@ const DONATION_OPTIONS = [
   { value: 500, desc: 'Mês de suporte', gift: true },
 ];
 
+const MIN_AMOUNT = 5;
+
 export default function StepValue({ initialAmount, onNext }: StepValueProps) {
   const preSelected =
     DONATION_OPTIONS.find((o) => o.value === initialAmount)?.value ?? null;
@@ -55,6 +57,10 @@ export default function StepValue({ initialAmount, onNext }: StepValueProps) {
     const amount = getAmount();
     if (amount <= 0) {
       setError('Escolha ou informe um valor para continuar.');
+      return;
+    }
+    if (amount < MIN_AMOUNT) {
+      setError(`O valor mínimo para doação é R$ ${MIN_AMOUNT},00.`);
       return;
     }
     onNext(amount);

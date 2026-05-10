@@ -37,9 +37,7 @@ function formatBRL(value: number) {
 
 function formatCountdown(ms: number) {
   const total = Math.max(0, Math.floor(ms / 1000));
-  const m = Math.floor(total / 60)
-    .toString()
-    .padStart(2, '0');
+  const m = Math.floor(total / 60).toString().padStart(2, '0');
   const s = (total % 60).toString().padStart(2, '0');
   return `${m}:${s}`;
 }
@@ -66,17 +64,11 @@ export default function StepPayment({
   const onPixGeneratedRef = useRef(onPixGenerated);
   const initializedRef = useRef(false);
   const regeneratingRef = useRef(false);
-  const prevAmountRef = useRef(formData.amount);
+  const prevAmountRef = useRef<number | null>(null);
 
-  useEffect(() => {
-    onConfirmRef.current = onConfirm;
-  }, [onConfirm]);
-  useEffect(() => {
-    onPixGeneratedRef.current = onPixGenerated;
-  }, [onPixGenerated]);
-  useEffect(() => {
-    phaseRef.current = phase.type;
-  }, [phase.type]);
+  useEffect(() => { onConfirmRef.current = onConfirm; }, [onConfirm]);
+  useEffect(() => { onPixGeneratedRef.current = onPixGenerated; }, [onPixGenerated]);
+  useEffect(() => { phaseRef.current = phase.type; }, [phase.type]);
 
   const timerId = useId();
   const statusId = useId();
@@ -109,41 +101,36 @@ export default function StepPayment({
     timerRef.current = setInterval(tick, 1000);
   }, []);
 
-  const startPolling = useCallback(
-    (donationId: number) => {
-      if (pollRef.current) clearInterval(pollRef.current);
+  const startPolling = useCallback((donationId: number) => {
+    if (pollRef.current) clearInterval(pollRef.current);
 
-      pollRef.current = setInterval(async () => {
-        try {
-          const { status } = await getDonationStatus(donationId);
-          if (status === 'approved') {
-            clearTimers();
-            setPhase({ type: 'confirmed' });
-            onConfirmRef.current();
-          } else if (status === 'expired') {
-            clearTimers();
-            setPhase({ type: 'expired' });
-          }
-        } catch {}
-      }, POLL_MS);
-    },
-    [clearTimers]
-  );
+    pollRef.current = setInterval(async () => {
+      try {
+        const { status } = await getDonationStatus(donationId);
+        if (status === 'approved') {
+          clearTimers();
+          setPhase({ type: 'confirmed' });
+          onConfirmRef.current();
+        } else if (status === 'expired') {
+          clearTimers();
+          setPhase({ type: 'expired' });
+        }
+      } catch {}
+    }, POLL_MS);
+  }, [clearTimers]);
 
-  const applyPix = useCallback(
-    (pix: PixWithExpiry) => {
-      donationIdRef.current = pix.id;
-      setPhase({ type: 'ready', pix });
-      onPixGeneratedRef.current(pix);
-      startPolling(pix.id);
-      startTimer(pix.expires_at);
-    },
-    [startPolling, startTimer]
-  );
+  const applyPix = useCallback((pix: PixWithExpiry) => {
+    donationIdRef.current = pix.id;
+    setPhase({ type: 'ready', pix });
+    onPixGeneratedRef.current(pix);
+    startPolling(pix.id);
+    startTimer(pix.expires_at);
+  }, [startPolling, startTimer]);
 
   useEffect(() => {
     if (initializedRef.current) return;
     initializedRef.current = true;
+    prevAmountRef.current = formData.amount;
 
     if (cachedPix && cachedPix.expires_at > Date.now()) {
       applyPix(cachedPix);
@@ -169,7 +156,7 @@ export default function StepPayment({
 
     generate();
     return clearTimers;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -180,10 +167,11 @@ export default function StepPayment({
       email: formData.email,
       cpf: formData.cpf,
     }).catch(() => {});
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.name, formData.email, formData.cpf]);
 
   useEffect(() => {
+    if (prevAmountRef.current === null) return;
     if (formData.amount === prevAmountRef.current) return;
     prevAmountRef.current = formData.amount;
 
@@ -212,7 +200,7 @@ export default function StepPayment({
     };
 
     regenerate();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.amount]);
 
   const handleCopy = useCallback(async () => {
@@ -344,9 +332,7 @@ export default function StepPayment({
           type="button"
           onClick={handleCopy}
           aria-pressed={copied}
-          aria-label={
-            copied ? 'Chave PIX copiada' : 'Copiar chave PIX Copia e Cola'
-          }
+          aria-label={copied ? 'Chave PIX copiada' : 'Copiar chave PIX Copia e Cola'}
           className="w-full bg-primary text-white py-3 rounded transition
                      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2
                      focus-visible:ring-primary active:scale-[.98] cursor-pointer"
@@ -371,47 +357,6 @@ export default function StepPayment({
         </li>
         <li>O recibo chegará no e-mail cadastrado em até 1 dia útil.</li>
       </ol>
-
-      <div className="flex items-center justify-center gap-3 border border-gray-200 rounded-xl px-5 py-4 bg-white mt-2">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          className="w-5 h-5 text-green-500 shrink-0"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={2.5}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden="true"
-        >
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-          <polyline points="9 12 11 14 15 10" />
-        </svg>
-        <p className="text-xs text-gray-500 leading-snug">
-          Pagamento processado com segurança por
-        </p>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 120 28"
-          aria-label="Mercado Pago"
-          className="h-5 w-auto shrink-0"
-          role="img"
-        >
-          <rect width="120" height="28" rx="4" fill="#009EE3" />
-          <text
-            x="60"
-            y="19"
-            textAnchor="middle"
-            fill="white"
-            fontFamily="Arial, sans-serif"
-            fontWeight="bold"
-            fontSize="11"
-            letterSpacing="0.3"
-          >
-            Mercado Pago
-          </text>
-        </svg>
-      </div>
     </section>
   );
 }
