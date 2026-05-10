@@ -51,7 +51,7 @@ const gallery = [
   },
 ];
 
-export default function CentroDia() {
+export default function NoassaHistoria() {
   return (
     <main className="w-[90%] max-w-3xl mx-auto px-6 py-20">
       <article aria-labelledby="article-title">
@@ -60,7 +60,7 @@ export default function CentroDia() {
             id="article-title"
             className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight"
           >
-            Centro-Dia da Pessoa com Deficiência
+            Centro Dia da Pessoa com Deficiência
           </h1>
         </header>
 

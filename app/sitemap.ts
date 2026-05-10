@@ -31,7 +31,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 1,
     },
     {
-      url: `${SITE_URL}/centro-dia`,
+      url: `${SITE_URL}/nossa-historia`,
       lastModified: new Date('2022-01-01'),
       changeFrequency: 'yearly',
       priority: 0.8,

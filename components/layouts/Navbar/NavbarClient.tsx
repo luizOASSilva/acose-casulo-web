@@ -19,7 +19,7 @@ const links = [
   { href: '/', label: 'Home' },
   { href: '/parceiros', label: 'Parceiros' },
   { href: '/transparencia', label: 'Transparência' },
-  { href: '/centro-dia', label: 'Centro Dia' },
+  { href: '/nossa-historia', label: 'Nossa história' },
   { href: '/atividades', label: 'Atividades' },
 ];
 
