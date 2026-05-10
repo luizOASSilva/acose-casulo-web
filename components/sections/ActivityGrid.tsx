@@ -17,7 +17,17 @@ export default async function ActivityGrid() {
             <li key={activity.id}>
               <Link
                 href={`/atividades/${activity.slug}`}
-                className="block rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="
+                  group
+                  block
+                  rounded-2xl
+                  transition-transform
+                  duration-200
+                  hover:-translate-y-1
+                  focus-visible:outline-none
+                  focus-visible:ring-2
+                  focus-visible:ring-primary
+                "
                 aria-label={`Ver detalhes da atividade ${activity.title}`}
               >
                 <ActivityCard activity={activity} />
@@ -26,7 +36,9 @@ export default async function ActivityGrid() {
           ))}
         </ul>
       ) : (
-        <p className="text-gray-400 italic">Nenhuma atividade encontrada.</p>
+        <p className="text-gray-600 italic">
+          Nenhuma atividade encontrada.
+        </p>
       )}
     </section>
   );

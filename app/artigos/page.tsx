@@ -43,7 +43,7 @@ export default async function Artigos() {
           ))}
         </ul>
       ) : (
-        <p className="text-gray-400 italic">Nenhum artigo encontrado.</p>
+        <p className="text-gray-600 italic">Nenhum artigo encontrado.</p>
       )}
     </main>
   );
