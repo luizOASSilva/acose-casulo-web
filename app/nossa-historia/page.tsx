@@ -9,8 +9,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: 'Centro Dia | Acose Casulo — Bragança Paulista',
-    description:
-      'A história do Centro Dia da Pessoa com Deficiência e seu compromisso com a inclusão e dignidade de jovens adultos.',
+    description: 'A história do Centro Dia da Pessoa com Deficiência e seu compromisso com a inclusão e dignidade de jovens adultos.',
     url: '/nossa-historia',
     type: 'article',
     publishedTime: '2022-01-01T00:00:00Z',

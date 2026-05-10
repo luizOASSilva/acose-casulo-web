@@ -17,7 +17,7 @@ export default function ActivityModalClient({
         <div className="bg-white p-6 rounded-2xl shadow-xl text-center">
           <p className="font-bold text-gray-900">Atividade não encontrada!</p>
           <button
-            onClick={() => router.back()}
+            onClick={() => router.push('/atividades')}
             className="mt-4 text-primary underline font-medium"
           >
             Voltar
@@ -27,5 +27,5 @@ export default function ActivityModalClient({
     );
   }
 
-  return <ActivityDetail activity={activity} onClose={() => router.back()} />;
+  return <ActivityDetail activity={activity} onClose={() => router.push('/atividades')} />;
 }
