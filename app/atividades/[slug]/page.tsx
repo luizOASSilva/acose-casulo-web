@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import { Suspense } from 'react';
 import { getActivityBySlug } from '@/services/activities';
 import ActivityModalClient from '@/components/modals/ActivityModalClient';
+import { OG_IMAGE } from '@/lib/config';
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -26,14 +27,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description,
       url: `/atividades/${slug}`,
       type: 'article',
-      images: [
-        {
-          url: activity.media.url,
-          width: 1200,
-          height: 630,
-          alt: activity.media.alt_text,
-        },
-      ],
+      images: activity.media?.url
+        ? { url: activity.media.url, width: 1200, height: 630, alt: activity.media.alt_text }
+        : OG_IMAGE,
     },
   };
 }

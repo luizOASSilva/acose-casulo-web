@@ -5,6 +5,7 @@ import { getArticleBySlug } from '@/services/articles';
 import UserBadge from '@/components/ui/UserBadge';
 import KeywordBadge from '@/components/ui/KeywordBadge';
 import BackButton from '@/components/ui/BackButton';
+import { OG_IMAGE } from '@/lib/config';
 
 interface ParamProps {
   params: Promise<{ slug: string }>;
@@ -30,8 +31,8 @@ export async function generateMetadata({
       url: `/artigos/${slug}`,
       type: 'article',
       images: article.media?.url
-        ? [{ url: article.media.url, width: 1200, height: 630, alt: article.media.alt_text }]
-        : [],
+        ? { url: article.media.url, width: 1200, height: 630, alt: article.media.alt_text }
+        : OG_IMAGE,
     },
   };
 }
