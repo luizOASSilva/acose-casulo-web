@@ -1,4 +1,5 @@
 import Gallery from '@/components/sections/Gallery';
+import { OG_IMAGE } from '@/lib/config';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -14,6 +15,7 @@ export const metadata: Metadata = {
     type: 'article',
     publishedTime: '2022-01-01T00:00:00Z',
     authors: ['Padre José Roberto Cavasa'],
+    images: OG_IMAGE,
   },
 };
 

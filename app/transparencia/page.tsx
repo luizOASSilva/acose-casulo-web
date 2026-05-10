@@ -5,6 +5,7 @@ import TransparencySection from '@/components/sections/TransparencySection';
 import SupportCTA from '@/components/sections/SupportCTA';
 import { getTransparencyData } from '@/services/transparency';
 import { TransparencyResponse } from '@/types/transparency';
+import { OG_IMAGE } from '@/lib/config';
 
 interface PageProps {
   searchParams: Promise<{ ano?: string }>;
@@ -26,6 +27,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
         'Portal da transparência: acesse documentos oficiais e prestações de contas da Acose Casulo.',
       url: ano ? `/transparencia?ano=${ano}` : '/transparencia',
       type: 'website',
+      images: OG_IMAGE,
     },
   };
 }

@@ -1,5 +1,6 @@
   import type { Metadata } from 'next';
   import ActivityGrid from '@/components/sections/ActivityGrid';
+import { OG_IMAGE } from '@/lib/config';
 
   export const metadata: Metadata = {
     title: 'Atividades',
@@ -13,6 +14,7 @@
       description: 'Conheça as atividades que promovem desenvolvimento, inclusão e qualidade de vida no Centro Dia da Pessoa com Deficiência em Bragança Paulista.',
       url: '/atividades',
       type: 'website',
+      images: OG_IMAGE,
     },
   };
 

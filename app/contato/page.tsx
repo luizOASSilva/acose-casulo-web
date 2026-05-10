@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import ContactForm from '@/components/forms/ContactForm';
 import { Clock, MapPin, Mail, Phone } from 'lucide-react';
+import { OG_IMAGE } from '@/lib/config';
 
 export const metadata: Metadata = {
   title: 'Contato',
@@ -14,6 +15,7 @@ export const metadata: Metadata = {
     description: 'Fale com nossa equipe. Estamos prontos para ajudar.',
     type: 'website',
     url: '/contato',
+    images: OG_IMAGE,
   },
 };
 

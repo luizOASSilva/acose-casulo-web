@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import ArticleRow from '@/components/ui/ArticleRow';
 import { getArticles } from '@/services/articles';
+import { OG_IMAGE } from '@/lib/config';
 
 export const metadata: Metadata = {
   title: 'Artigos',
@@ -15,6 +16,7 @@ export const metadata: Metadata = {
       'Artigos sobre inclusão, autonomia e cuidado para pessoas com deficiência intelectual em Bragança Paulista.',
     url: '/artigos',
     type: 'website',
+    images: OG_IMAGE,
   },
 };
 

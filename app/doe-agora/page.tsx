@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import DonationFlow from '@/components/forms/donation/DonationFlow';
+import { OG_IMAGE } from '@/lib/config';
 
 export const metadata: Metadata = {
   title: 'Doe Agora',
@@ -14,6 +15,7 @@ export const metadata: Metadata = {
       'Sua doação transforma vidas. Contribua com o Centro Dia da Pessoa com Deficiência em Bragança Paulista.',
     url: '/doe-agora',
     type: 'website',
+    images: OG_IMAGE,
   },
 };
 

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import PartnerMarquee from '@/components/sections/PartnerMarquee';
 import StatCounterClient from '@/components/ui/statCount/StatCountClient';
 import SupportCTA from '@/components/sections/SupportCTA';
+import { OG_IMAGE } from '@/lib/config';
 
 export const metadata: Metadata = {
   title: 'Parceiros',
@@ -16,6 +17,7 @@ export const metadata: Metadata = {
       'Empresas e instituições que acreditam no trabalho do Centro Dia e caminham com a gente na promoção da inclusão em Bragança Paulista.',
     url: '/parceiros',
     type: 'website',
+    images: OG_IMAGE,
   },
 };
 

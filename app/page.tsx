@@ -6,6 +6,7 @@ import Mission from '@/components/sections/Mission';
 import Button from '@/components/ui/Button';
 import LeafIllustration from '@/components/ui/LeafIllustration';
 import { Briefcase, Coins, Recycle, Sprout } from 'lucide-react';
+import { OG_IMAGE } from '@/lib/config';
 
 export const metadata: Metadata = {
   alternates: {
@@ -17,6 +18,7 @@ export const metadata: Metadata = {
       'Centro Dia da Pessoa com Deficiência — acolhimento, autonomia e dignidade para jovens adultos com deficiência em Bragança Paulista, SP.',
     url: '/',
     type: 'website',
+    images: OG_IMAGE,
   },
 };
 

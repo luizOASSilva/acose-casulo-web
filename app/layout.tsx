@@ -3,7 +3,7 @@ import { Open_Sans, Montserrat } from 'next/font/google';
 import './globals.css';
 import Navbar from '@/components/layouts/navbar/Navbar';
 import Footer from '@/components/layouts/Footer';
-import { SITE_URL, SITE_NAME, SITE_DESCRIPTION } from '@/lib/config';
+import { SITE_URL, SITE_NAME, SITE_DESCRIPTION, OG_IMAGE } from '@/lib/config';
 
 const openSans = Open_Sans({
   variable: '--font-open-sans',
@@ -38,14 +38,7 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     locale: 'pt_BR',
     type: 'website',
-    images: [
-      {
-        url: `https://acose-casulo-web.vercel.app/og-image.png`,
-        width: 1200,
-        height: 630,
-        alt: `${SITE_NAME} — Centro Dia da Pessoa com Deficiência`,
-      },
-    ],
+    images: OG_IMAGE,
   },
 };
 
