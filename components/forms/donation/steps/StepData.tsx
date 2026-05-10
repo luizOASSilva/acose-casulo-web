@@ -143,7 +143,7 @@ export default function StepData({ data, isGift, onNext }: StepDataProps) {
       className="space-y-6 animate-in fade-in duration-500"
     >
       <div>
-        <h1 className="text-2xl font-bold text-primary">Seus dados</h1>
+        <h2 className="text-2xl font-bold text-primary">Seus dados</h2>
         <p className="text-gray-600 text-sm mt-1">
           Para o recibo fiscal, e se aplicável, envio da camiseta
         </p>
