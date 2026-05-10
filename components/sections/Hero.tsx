@@ -1,4 +1,7 @@
-import Image from 'next/image';
+'use client';
+
+import { useScroll, useTransform, motion } from 'framer-motion';
+import { useRef } from 'react';
 
 interface HeroProps {
   children?: React.ReactNode;
@@ -17,51 +20,97 @@ export default function Hero({
   overlay = true,
   dark = true,
 }: HeroProps) {
+  const ref = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ['start start', 'end start'],
+  });
+
+  const y = useTransform(scrollYProgress, [0, 1], ['0%', '25%']);
+  const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
+  const scale = useTransform(scrollYProgress, [0, 1], [1, 1.08]);
+  const textY = useTransform(scrollYProgress, [0, 1], ['0%', '15%']);
+
   return (
     <section
+      ref={ref}
       aria-labelledby="hero-title"
       className={`relative min-h-[65vh] flex items-center overflow-hidden ${
-        image ? '' : dark ? 'bg-secondary' : 'bg-background'
+        !image ? (dark ? 'bg-secondary' : 'bg-background') : ''
       }`}
     >
       {image && (
-        <Image
-          src={image}
-          alt=""
-          aria-hidden="true"
-          fill
-          priority
-          fetchPriority="high"
-          sizes="(max-width: 768px) 100vw, (max-width: 1280px) 100vw, 1335px"
-          className="object-cover"
+        <motion.div
+          style={{
+            y,
+            scale,
+            backgroundImage: `url(${image})`,
+          }}
+          className="absolute inset-0 bg-cover bg-center will-change-transform"
         />
       )}
 
       {image && overlay && (
-        <div
+        <motion.div
+          style={{ opacity }}
           aria-hidden="true"
-          className="absolute inset-0 bg-linear-to-r from-black/50 via-black/20 to-transparent"
+          className="absolute inset-0 bg-linear-to-r from-black/20 via-black/10 to-transparent"
         />
       )}
 
-      <div className="relative z-10 w-full max-w-2xl px-6 py-20 space-y-5">
-        <p className={`text-sm md:text-base font-bold tracking-wide uppercase ${image ? 'text-primary' : 'text-primary-light'}`}>
-          Centro Dia da Pessoa com Deficiência • Bragança Paulista/SP
-        </p>
+      {image && (
+        <div
+          aria-hidden="true"
+          className="absolute bottom-0 left-0 right-0 h-32 bg-linear-to-t from-black/60 to-transparent pointer-events-none"
+        />
+      )}
 
-        <h1
+      <motion.div
+        style={{ y: textY }}
+        className="relative z-10 w-full max-w-2xl px-6 py-20 space-y-5 will-change-transform"
+      >
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className={`text-sm md:text-base font-bold tracking-wide uppercase ${
+            image ? 'text-primary' : 'text-primary-light'
+          }`}
+        >
+          Centro Dia da Pessoa com Deficiência • Bragança Paulista/SP
+        </motion.p>
+
+        <motion.h1
           id="hero-title"
-          className={`font-bold leading-tight text-4xl md:text-5xl lg:text-6xl ${dark ? 'text-white' : 'text-gray-900'}`}
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.2 }}
+          className={`font-bold leading-tight text-4xl md:text-5xl lg:text-6xl ${
+            dark ? 'text-white' : 'text-gray-900'
+          }`}
         >
           {title}
-        </h1>
+        </motion.h1>
 
-        <p className={dark ? (image ? 'text-white/90' : 'text-gray-300') : 'text-gray-700'}>
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.35 }}
+          className={dark ? (image ? 'text-white/90' : 'text-gray-300') : 'text-gray-700'}
+        >
           {description}
-        </p>
+        </motion.p>
 
-        {children}
-      </div>
+        {children && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+          >
+            {children}
+          </motion.div>
+        )}
+      </motion.div>
     </section>
   );
 }

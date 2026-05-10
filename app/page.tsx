@@ -27,7 +27,7 @@ export default function Home() {
     <main>
       <Hero
         image="/hero.webp"
-        overlay={false}
+        overlay={true}
         title={<>"E quando forem adultos?"</>}
         description="O Centro Dia nasceu para responder essa pergunta — oferecendo acolhimento, autonomia e dignidade para jovens adultos com deficiência que o mundo insistia em esquecer."
       >
