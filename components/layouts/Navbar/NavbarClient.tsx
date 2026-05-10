@@ -110,7 +110,6 @@ export default function NavbarClient({
             <Image
               src="/logo.svg"
               alt="Acose Casulo"
-              title="Acose Casulo"
               width={100}
               height={40}
               priority

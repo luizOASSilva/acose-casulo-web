@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Open_Sans, Montserrat } from 'next/font/google';
 import './globals.css';
-import Navbar from '@/components/layouts/Navbar/Navbar';
+import Navbar from '@/components/layouts/navbar/Navbar';
 import Footer from '@/components/layouts/Footer';
 import { SITE_URL, SITE_NAME, SITE_DESCRIPTION } from '@/lib/config';
 

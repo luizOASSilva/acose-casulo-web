@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import PartnerMarquee from '@/components/sections/PartnerMarquee';
-import StatCounterClient from '@/components/ui/StatCount/StateCountClient';
+import StatCounterClient from '@/components/ui/statCount/StateCountClient';
 import SupportCTA from '@/components/sections/SupportCTA';
 
 export const metadata: Metadata = {

@@ -6,25 +6,29 @@ import SupportCTA from '@/components/sections/SupportCTA';
 import { getTransparencyData } from '@/services/transparency';
 import { TransparencyResponse } from '@/types/transparency';
 
-export const metadata: Metadata = {
-  title: 'Transparência',
-  description:
-    'Acesse documentos públicos, contratos, atas e relatórios financeiros do Centro Dia.',
-  alternates: {
-    canonical: '/transparencia',
-  },
-  openGraph: {
-    title: 'Transparência | Acose Casulo',
-    description:
-      'Portal da transparência: acesse documentos oficiais e prestações de contas da Acose Casulo.',
-    url: '/transparencia',
-    type: 'website',
-    images: [{ url: '/og-transparencia.jpg', width: 1200, height: 630 }],
-  },
-};
-
 interface PageProps {
   searchParams: Promise<{ ano?: string }>;
+}
+
+export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
+  const { ano } = await searchParams;
+
+  return {
+    title: 'Transparência',
+    description:
+      'Acesse documentos públicos, contratos, atas e relatórios financeiros do Centro Dia.',
+    alternates: {
+      canonical: ano ? `/transparencia?ano=${ano}` : '/transparencia',
+    },
+    openGraph: {
+      title: 'Transparência | Acose Casulo',
+      description:
+        'Portal da transparência: acesse documentos oficiais e prestações de contas da Acose Casulo.',
+      url: ano ? `/transparencia?ano=${ano}` : '/transparencia',
+      type: 'website',
+      images: [{ url: '/og-transparencia.jpg', width: 1200, height: 630 }],
+    },
+  };
 }
 
 export default async function Transparencia({ searchParams }: PageProps) {
