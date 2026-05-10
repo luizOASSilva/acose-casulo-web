@@ -116,7 +116,7 @@ export default function DonationFlow() {
   return (
     <div className="min-h-screen flex flex-col">
       <div className="grow flex flex-col items-center py-10 px-4">
-        <h1 className="sr-only">Doe Agora</h1>
+        <h1 className="sr-only">Doe Agora — Ajude o Centro Dia Acose Casulo</h1>
 
         {step >= 2 && (
           <div className="flex items-center mb-12">
