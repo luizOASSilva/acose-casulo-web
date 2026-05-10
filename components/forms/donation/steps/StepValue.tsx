@@ -64,7 +64,7 @@ export default function StepValue({ initialAmount, onNext }: StepValueProps) {
     <div className="flex flex-col w-full animate-in fade-in duration-500">
       <div className="w-full h-px bg-gray-300 mb-8" />
 
-      <div className="mb-6">
+      <div className="my-6">
         <h2 className="text-xl font-bold text-black">Escolha um valor</h2>
         <p className="text-sm text-gray-700 mt-1">
           Doações a partir de R$100 ganham uma camiseta da ACOSE Casulo

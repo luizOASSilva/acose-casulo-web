@@ -26,7 +26,7 @@ export default function DoeAgora() {
         Cada doação é um adulto que não fica{' '}
         <span className="text-primary">pra trás.</span>
       </h1>
-      <p className="text-center">“Você ajuda jovens adultos com deficiência em Bragança Paulista.”</p>
+      <p className="text-center">Você ajuda jovens adultos com deficiência em Bragança Paulista.</p>
       <DonationFlow />
     </div>
   );
