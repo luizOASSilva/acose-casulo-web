@@ -45,7 +45,7 @@ export default function Parceiros() {
               Quem caminha com a gente
             </p>
             <h1 className="text-3xl md:text-4xl font-extrabold text-gray-800 tracking-tight">
-              Nossos parceiros
+              Parceiros do Centro Dia da Pessoa com Deficiência
             </h1>
             <p className="text-gray-600">
               Empresas e instituições que acreditam no nosso trabalho

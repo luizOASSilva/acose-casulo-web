@@ -107,15 +107,14 @@ export default function NavbarClient({
             onClick={closeMenus}
             aria-label="Ir para a página inicial da Acose Casulo"
           >
-          <div style={{ position: 'relative', width: 100, height: 100 }}>
             <Image
               src="/logo.svg"
               alt="Acose Casulo"
-              fill
-              style={{ objectFit: 'contain' }}
+              title="Acose Casulo"
+              width={100}
+              height={40}
               priority
             />
-          </div>
           </Link>
 
           <button
@@ -145,9 +144,7 @@ export default function NavbarClient({
               open ? 'flex opacity-100 visible' : 'hidden lg:flex'
             )}
           >
-            <ul
-              className="flex flex-col lg:flex-row lg:gap-8 lg:items-center lg:p-0 w-full lg:w-auto"
-            >
+            <ul className="flex flex-col lg:flex-row lg:gap-8 lg:items-center lg:p-0 w-full lg:w-auto">
               {links.map(({ href, label }) => (
                 <li key={href} className="w-full lg:w-auto">
                   <Link
