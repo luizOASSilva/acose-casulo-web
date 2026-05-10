@@ -32,7 +32,7 @@ export default function Home() {
         description="O Centro Dia nasceu para responder essa pergunta — oferecendo acolhimento, autonomia e dignidade para jovens adultos com deficiência que o mundo insistia em esquecer."
       >
         <Button
-          href="/centro-dia"
+          href="/nossa-historia"
           ariaLabel="Conheça a história do Centro Dia da Pessoa com Deficiência"
           variant="secondary"
           text="Conheça nossa história"
