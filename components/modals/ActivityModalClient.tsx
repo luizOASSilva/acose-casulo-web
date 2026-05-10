@@ -13,7 +13,7 @@ export default function ActivityModalClient({
 
   if (!activity) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/50">
         <div className="bg-white p-6 rounded-2xl shadow-xl text-center">
           <p className="font-bold text-gray-900">Atividade não encontrada!</p>
           <button
