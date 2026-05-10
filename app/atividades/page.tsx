@@ -5,14 +5,16 @@ export const metadata: Metadata = {
   title: 'Atividades',
   description:
     'Conheça as atividades que promovem desenvolvimento, inclusão e qualidade de vida no Centro Dia da Pessoa com Deficiência em Bragança Paulista.',
+  alternates: {
+    canonical: '/atividades',
+  },
   openGraph: {
     title: 'Atividades | Acose Casulo',
     description:
       'Conheça as atividades que promovem desenvolvimento, inclusão e qualidade de vida no Centro Dia da Pessoa com Deficiência em Bragança Paulista.',
+    url: '/atividades',
     type: 'website',
-  },
-  alternates: {
-    canonical: '/atividades',
+    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'Acose Casulo — Atividades' }],
   },
 };
 

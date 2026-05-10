@@ -27,10 +27,11 @@ export async function generateMetadata({
     openGraph: {
       title: article.title,
       description: article.summary,
-      images: article.media?.url
-        ? [{ url: article.media.url, alt: article.media.alt_text }]
-        : [],
+      url: `/artigos/${slug}`,
       type: 'article',
+      images: article.media?.url
+        ? [{ url: article.media.url, width: 1200, height: 630, alt: article.media.alt_text }]
+        : [],
     },
   };
 }
