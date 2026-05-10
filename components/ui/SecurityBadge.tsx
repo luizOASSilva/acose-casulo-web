@@ -1,31 +1,20 @@
 import Image from 'next/image';
+import { ShieldCheck } from 'lucide-react';
 
 export default function SecurityBadge() {
   return (
-    <div className="flex items-center justify-center gap-3 border border-gray-200 rounded-xl px-5 py-4 bg-white">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        className="w-5 h-5 text-green-500 shrink-0"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={2.5}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-        <polyline points="9 12 11 14 15 10" />
-      </svg>
-      <p className="text-xs text-gray-500 leading-snug">
-        Pagamento processado com segurança por
+    <div className="flex items-center justify-center gap-4 border border-gray-200 rounded-2xl px-6 py-5 bg-white shadow-sm">
+      <ShieldCheck className="w-6 h-6 text-green-500 shrink-0" />
+      <div className="h-5 w-px bg-gray-200 shrink-0" />
+      <p className="text-xs text-gray-400 leading-snug">
+        Pagamento processado <br className="hidden sm:block" /> com segurança por
       </p>
       <Image
         src="/mercado-pago-logo.svg"
         alt="Mercado Pago"
-        width={100}
-        height={20}
-        className="h-5 w-auto shrink-0"
+        width={140}
+        height={28}
+        className="h-8 w-auto shrink-0"
       />
     </div>
   );
