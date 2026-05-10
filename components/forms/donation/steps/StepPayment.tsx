@@ -12,8 +12,8 @@ import {
 import Image from 'next/image';
 
 const PIX_TTL_MS = 15 * 60 * 1000;
-const POLL_MS = 5000;
-const COPY_RESET_MS = 2500;
+const POLL_MS = 5_000;
+const COPY_RESET_MS = 2_500;
 
 type PixWithExpiry = PixResponse & { expires_at: number };
 
@@ -24,17 +24,19 @@ type Phase =
   | { type: 'expired' }
   | { type: 'confirmed' };
 
+interface StepPaymentProps {
+  formData: DonationData;
+  cachedPix: PixWithExpiry | null;
+  onPixGenerated: (pix: PixWithExpiry) => void;
+  onConfirm: () => void;
+}
+
 export default function StepPayment({
   formData,
   cachedPix,
   onPixGenerated,
   onConfirm,
-}: {
-  formData: DonationData;
-  cachedPix: PixWithExpiry | null;
-  onPixGenerated: (pix: PixWithExpiry) => void;
-  onConfirm: () => void;
-}) {
+}: StepPaymentProps) {
   const [phase, setPhase] = useState<Phase>(
     cachedPix && cachedPix.expires_at > Date.now()
       ? { type: 'ready', pix: cachedPix }
@@ -44,70 +46,120 @@ export default function StepPayment({
   const [timeLeft, setTimeLeft] = useState(0);
   const [copied, setCopied] = useState(false);
 
-  const pollRef = useRef<any>(null);
-  const timerRef = useRef<any>(null);
+  const pollRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
   const donationIdRef = useRef<number | null>(cachedPix?.id ?? null);
+  const pixRef = useRef<PixWithExpiry | null>(cachedPix ?? null);
+
+  const onConfirmRef = useRef(onConfirm);
+  const onPixGeneratedRef = useRef(onPixGenerated);
+
+  const initializedRef = useRef(false);
+  const regeneratingRef = useRef(false);
+  const prevAmountRef = useRef<number | null>(null);
+
+  const timerId = useId();
+
+  useEffect(() => {
+    onConfirmRef.current = onConfirm;
+    onPixGeneratedRef.current = onPixGenerated;
+  }, [onConfirm, onPixGenerated]);
+
+  const clearTimers = useCallback(() => {
+    if (pollRef.current) clearInterval(pollRef.current);
+    if (timerRef.current) clearInterval(timerRef.current);
+    pollRef.current = null;
+    timerRef.current = null;
+  }, []);
 
   const startTimer = useCallback((expiresAt: number) => {
     if (timerRef.current) clearInterval(timerRef.current);
 
-    timerRef.current = setInterval(() => {
+    const tick = () => {
       const remaining = expiresAt - Date.now();
+
       if (remaining <= 0) {
-        clearInterval(timerRef.current);
+        clearTimers();
         setPhase({ type: 'expired' });
-      } else {
-        setTimeLeft(remaining);
+        setTimeLeft(0);
+        return;
       }
-    }, 1000);
-  }, []);
+
+      setTimeLeft(remaining);
+    };
+
+    tick();
+    timerRef.current = setInterval(tick, 1000);
+  }, [clearTimers]);
 
   const startPolling = useCallback((id: number) => {
     if (pollRef.current) clearInterval(pollRef.current);
 
     pollRef.current = setInterval(async () => {
-      const { status } = await getDonationStatus(id);
-      if (status === 'approved') {
-        clearInterval(pollRef.current);
-        setPhase({ type: 'confirmed' });
-        onConfirm();
-      }
+      try {
+        const { status } = await getDonationStatus(id);
+
+        if (status === 'approved') {
+          clearTimers();
+          setPhase({ type: 'confirmed' });
+          onConfirmRef.current();
+        }
+
+        if (status === 'expired') {
+          clearTimers();
+          setPhase({ type: 'expired' });
+        }
+      } catch {}
     }, POLL_MS);
-  }, [onConfirm]);
+  }, [clearTimers]);
 
   const applyPix = useCallback((pix: PixWithExpiry) => {
     donationIdRef.current = pix.id;
+    pixRef.current = pix;
+
     setPhase({ type: 'ready', pix });
-    onPixGenerated(pix);
+
+    onPixGeneratedRef.current(pix);
+
     startPolling(pix.id);
     startTimer(pix.expires_at);
-  }, [onPixGenerated, startPolling, startTimer]);
+  }, [startPolling, startTimer]);
 
   useEffect(() => {
+    if (initializedRef.current) return;
+    initializedRef.current = true;
+
+    prevAmountRef.current = formData.amount;
+
     if (cachedPix && cachedPix.expires_at > Date.now()) {
       applyPix(cachedPix);
       return;
     }
 
-    const run = async () => {
+    const generate = async () => {
       setPhase({ type: 'loading' });
 
-      const data = await createDonation(formData);
+      try {
+        const data = await createDonation(formData);
 
-      const pix: PixWithExpiry = {
-        ...data,
-        expires_at: Date.now() + PIX_TTL_MS,
-      };
+        const pix: PixWithExpiry = {
+          ...data,
+          expires_at: Date.now() + PIX_TTL_MS,
+        };
 
-      applyPix(pix);
+        applyPix(pix);
+      } catch (err: any) {
+        setPhase({
+          type: 'error',
+          message: err?.message ?? 'Erro ao gerar PIX',
+        });
+      }
     };
 
-    run();
+    generate();
 
-    return () => {
-      if (pollRef.current) clearInterval(pollRef.current);
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
+    return clearTimers;
   }, []);
 
   useEffect(() => {
@@ -118,15 +170,71 @@ export default function StepPayment({
       name: formData.name,
       email: formData.email,
       cpf: formData.cpf,
-    });
-  }, [formData]);
+    }).catch(() => {});
+  }, [formData.name, formData.email, formData.cpf]);
+
+  useEffect(() => {
+    if (prevAmountRef.current === null) return;
+    if (prevAmountRef.current === formData.amount) return;
+
+    prevAmountRef.current = formData.amount;
+
+    const id = donationIdRef.current;
+    if (!id || regeneratingRef.current) return;
+
+    const run = async () => {
+      regeneratingRef.current = true;
+
+      setPhase({ type: 'loading' });
+      clearTimers();
+
+      try {
+        const data = await updateDonationPix(id, formData.amount);
+
+        const pix: PixWithExpiry = {
+          ...data,
+          expires_at: Date.now() + PIX_TTL_MS,
+        };
+
+        applyPix(pix);
+      } catch (err: any) {
+        setPhase({
+          type: 'error',
+          message: err?.message ?? 'Erro ao atualizar PIX',
+        });
+      } finally {
+        regeneratingRef.current = false;
+      }
+    };
+
+    run();
+  }, [formData.amount]);
 
   const handleCopy = useCallback(async () => {
-    if (phase.type !== 'ready') return;
-    await navigator.clipboard.writeText(phase.pix.pix_copy_paste);
+    const pix = pixRef.current;
+    if (!pix?.pix_copy_paste) return;
+
+    await navigator.clipboard.writeText(pix.pix_copy_paste);
     setCopied(true);
     setTimeout(() => setCopied(false), COPY_RESET_MS);
-  }, [phase]);
+  }, []);
+
+  if (phase.type === 'loading') {
+    return (
+      <section className="flex flex-col items-center gap-4 py-20">
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+        <p className="text-gray-500">Gerando seu Pix…</p>
+      </section>
+    );
+  }
+
+  if (phase.type === 'error') {
+    return (
+      <section className="text-center py-20">
+        <p className="text-red-500">{phase.message}</p>
+      </section>
+    );
+  }
 
   if (phase.type !== 'ready') return null;
 
@@ -134,18 +242,34 @@ export default function StepPayment({
 
   return (
     <section className="space-y-4">
-      <h2>Pagamento via PIX</h2>
+      <h2 className="text-2xl font-bold">Pagamento via PIX</h2>
 
-      <Image
-        src={`data:image/png;base64,${pix.pix_qr_code}`}
-        alt="QR Code PIX"
-        width={180}
-        height={180}
-      />
+      <div className="bg-secondary rounded-md p-6">
+        <p className="text-white">R$ {formData.amount}</p>
+      </div>
 
-      <button onClick={handleCopy}>
-        {copied ? 'Copiado' : 'Copiar PIX'}
-      </button>
+      <div className="bg-primary text-white p-3 rounded-md flex justify-between">
+        <span>PIX</span>
+        <span>{Math.floor(timeLeft / 1000)}s</span>
+      </div>
+
+      <div className="bg-secondary p-8 flex flex-col items-center gap-4">
+        {pix.pix_qr_code && (
+          <Image
+            src={`data:image/png;base64,${pix.pix_qr_code}`}
+            alt="QR Code"
+            width={180}
+            height={180}
+          />
+        )}
+
+        <button
+          onClick={handleCopy}
+          className="bg-primary text-white px-4 py-2 rounded"
+        >
+          {copied ? 'Copiado!' : 'Copiar PIX'}
+        </button>
+      </div>
     </section>
   );
 }
