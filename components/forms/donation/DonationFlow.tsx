@@ -77,10 +77,9 @@ function DonationSkeleton() {
 export default function DonationFlow() {
   const [step, setStep] = useState<DonationStep>(1);
   const [formData, setFormData] = useState<DonationData>(initialData);
-  const [pix, setPix] = useState<(PixResponse & { expires_at: number }) | null>(
-    null
-  );
+  const [pix, setPix] = useState<(PixResponse & { expires_at: number }) | null>(null);
   const [hydrated, setHydrated] = useState(false);
+  const [confirmed, setConfirmed] = useState(false);
 
   useEffect(() => {
     const session = loadSession();
@@ -106,11 +105,13 @@ export default function DonationFlow() {
   }, [step, formData, pix, hydrated]);
 
   const goTo = (target: DonationStep) => {
+    if (confirmed) return;
     if (target < step) setStep(target);
   };
 
   const handleConfirm = () => {
     clearSession();
+    setConfirmed(true);
     setStep(4);
   };
 
@@ -124,7 +125,7 @@ export default function DonationFlow() {
             {([1, 2, 3, 4] as DonationStep[]).map((i) => {
               const isCompleted = step > i;
               const isCurrent = step === i;
-              const isClickable = i < step;
+              const isClickable = i < step && !confirmed;
 
               return (
                 <div key={i} className="flex items-center">

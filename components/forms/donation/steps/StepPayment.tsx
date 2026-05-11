@@ -14,11 +14,13 @@ import Image from 'next/image';
 const PIX_TTL_MS = 15 * 60 * 1000;
 const POLL_MS = 5_000;
 const COPY_RESET_MS = 2_500;
+const RETRY_429_MS = 6_000;
 
 type PixWithExpiry = PixResponse & { expires_at: number };
 
 type Phase =
   | { type: 'loading' }
+  | { type: 'retrying'; secondsLeft: number }
   | { type: 'error'; message: string }
   | { type: 'ready'; pix: PixWithExpiry }
   | { type: 'expired' }
@@ -58,6 +60,7 @@ export default function StepPayment({
 
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const retryRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const donationIdRef = useRef<number | null>(cachedPix?.id ?? null);
   const phaseRef = useRef<Phase['type']>('loading');
   const onConfirmRef = useRef(onConfirm);
@@ -76,8 +79,10 @@ export default function StepPayment({
   const clearTimers = useCallback(() => {
     if (pollRef.current) clearInterval(pollRef.current);
     if (timerRef.current) clearInterval(timerRef.current);
+    if (retryRef.current) clearInterval(retryRef.current);
     pollRef.current = null;
     timerRef.current = null;
+    retryRef.current = null;
   }, []);
 
   const startTimer = useCallback((expiresAt: number) => {
@@ -126,6 +131,24 @@ export default function StepPayment({
     startPolling(pix.id);
     startTimer(pix.expires_at);
   }, [startPolling, startTimer]);
+
+  const scheduleRetry = useCallback((fn: () => Promise<void>) => {
+    if (retryRef.current) clearInterval(retryRef.current);
+
+    let seconds = Math.ceil(RETRY_429_MS / 1000);
+    setPhase({ type: 'retrying', secondsLeft: seconds });
+
+    retryRef.current = setInterval(() => {
+      seconds -= 1;
+      if (seconds <= 0) {
+        if (retryRef.current) clearInterval(retryRef.current);
+        retryRef.current = null;
+        fn();
+      } else {
+        setPhase({ type: 'retrying', secondsLeft: seconds });
+      }
+    }, 1000);
+  }, []);
 
   useEffect(() => {
     if (initializedRef.current) return;
@@ -190,10 +213,14 @@ export default function StepPayment({
         };
         applyPix(withExpiry);
       } catch (err: any) {
-        setPhase({
-          type: 'error',
-          message: err?.message ?? 'Erro ao atualizar Pix.',
-        });
+        if (err?.message?.toLowerCase().includes('429') || err?.message?.toLowerCase().includes('aguarde')) {
+          scheduleRetry(regenerate);
+        } else {
+          setPhase({
+            type: 'error',
+            message: err?.message ?? 'Erro ao atualizar Pix.',
+          });
+        }
       } finally {
         regeneratingRef.current = false;
       }
@@ -226,6 +253,25 @@ export default function StepPayment({
           aria-label="Carregando"
         />
         <p className="text-gray-500 text-sm">Gerando seu Pix…</p>
+      </section>
+    );
+  }
+
+  if (phase.type === 'retrying') {
+    return (
+      <section
+        aria-label="Aguardando para gerar novo PIX"
+        aria-live="polite"
+        className="flex flex-col items-center gap-4 py-20"
+      >
+        <div
+          role="status"
+          className="w-8 h-8 rounded-full border-4 border-primary border-t-transparent animate-spin"
+          aria-label="Aguardando"
+        />
+        <p className="text-gray-500 text-sm">
+          Atualizando Pix em {phase.secondsLeft}s…
+        </p>
       </section>
     );
   }
