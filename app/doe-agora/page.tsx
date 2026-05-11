@@ -21,15 +21,17 @@ export const metadata: Metadata = {
 
 export default function DoeAgora() {
   return (
-    <div className="py-20">
+    <main className="py-20">
       <h1 className="text-2xl md:text-4xl font-bold text-black leading-snug text-center">
         Cada doação é um adulto que não fica{' '}
         <span className="text-primary">pra trás.</span>
       </h1>
+
       <p className="text-center">
         Você ajuda jovens adultos com deficiência em Bragança Paulista.
       </p>
+
       <DonationFlow />
-    </div>
+    </main>
   );
 }
