@@ -2,6 +2,7 @@ export interface DonationData {
   amount: number;
   name: string;
   email: string;
+  phone: string;
   cpf: string;
   zip_code: string;
   city: string;
