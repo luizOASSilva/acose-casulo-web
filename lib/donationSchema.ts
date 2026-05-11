@@ -36,9 +36,7 @@ export const stepDataBaseSchema = z.object({
   email: z.string().email('E-mail inválido'),
 
   phone: z
-    .string({
-      required_error: 'Telefone obrigatório',
-    })
+    .string()
     .min(1, 'Telefone obrigatório')
     .transform((v) => v.replace(/\D/g, ''))
     .refine(

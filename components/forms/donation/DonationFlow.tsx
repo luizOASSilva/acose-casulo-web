@@ -18,6 +18,7 @@ const initialData: DonationData = {
   amount: 0,
   name: '',
   email: '',
+  phone: '',
   cpf: '',
   zip_code: '',
   city: '',
