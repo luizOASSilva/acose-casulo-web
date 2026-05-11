@@ -288,7 +288,7 @@ export default function StepPayment({
         </p>
         <button
           onClick={() => window.location.reload()}
-          className="text-primary underline text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          className="text-primary underline text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
         >
           Tentar novamente
         </button>
