@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { Loader2 } from 'lucide-react';
 import { getStepDataSchema } from '@/lib/donationSchema';
 import { DonationData } from '@/types/donation';
 import { cn } from '@/lib/cn';
@@ -32,6 +33,14 @@ function maskCEP(v: string) {
     .replace(/(\d{5})(\d)/, '$1-$2');
 }
 
+function maskPhone(v: string) {
+  return v
+    .replace(/\D/g, '')
+    .slice(0, 11)
+    .replace(/^(\d{2})(\d)/, '($1) $2')
+    .replace(/(\d{5})(\d)/, '$1-$2');
+}
+
 const ERROR_COLOR = '#c0292c';
 const NORMAL_COLOR = '#e5e7eb';
 
@@ -43,7 +52,9 @@ function inputCls(hasError: boolean) {
 }
 
 function inputStyle(hasError: boolean): React.CSSProperties {
-  return { borderColor: hasError ? ERROR_COLOR : NORMAL_COLOR };
+  return {
+    borderColor: hasError ? ERROR_COLOR : NORMAL_COLOR,
+  };
 }
 
 function Field({
@@ -67,7 +78,9 @@ function Field({
       >
         {label}
       </label>
+
       {children}
+
       {error && (
         <p className="text-xs mt-1" style={{ color: ERROR_COLOR }}>
           {error}
@@ -77,8 +90,13 @@ function Field({
   );
 }
 
-export default function StepData({ data, isGift, onNext }: StepDataProps) {
+export default function StepData({
+  data,
+  isGift,
+  onNext,
+}: StepDataProps) {
   const schema = useMemo(() => getStepDataSchema(isGift), [isGift]);
+
   type Schema = z.infer<typeof schema>;
 
   const {
@@ -92,35 +110,49 @@ export default function StepData({ data, isGift, onNext }: StepDataProps) {
     resolver: zodResolver(schema),
     mode: 'onBlur',
     defaultValues: {
-      name: data.name,
-      email: data.email,
-      cpf: data.cpf,
+      name: data.name || '',
+      email: data.email || '',
+      phone: data.phone || '',
+      cpf: data.cpf || '',
+
       ...(isGift && {
-        zip_code: data.zip_code,
-        city: data.city,
-        street: data.street,
-        number: data.number,
-        neighborhood: data.neighborhood,
-        state: data.state,
-        size: (data.size as 'PP' | 'P' | 'M' | 'G' | 'GG' | '3G') || 'M',
+        zip_code: data.zip_code || '',
+        city: data.city || '',
+        street: data.street || '',
+        number: data.number || '',
+        neighborhood: data.neighborhood || '',
+        state: data.state || '',
+        size:
+          (data.size as 'PP' | 'P' | 'M' | 'G' | 'GG' | '3G') || 'M',
       }),
     },
   });
 
   const size = watch('size' as keyof Schema);
-  const zipCode = watch('zip_code' as keyof Schema) as string | undefined;
+
+  const zipCode = watch('zip_code' as keyof Schema) as
+    | string
+    | undefined;
+
   const [cepLoading, setCepLoading] = useState(false);
 
   useEffect(() => {
     if (!isGift || !zipCode) return;
+
     const digits = zipCode.replace(/\D/g, '');
+
     if (digits.length !== 8) return;
 
     const fetchCEP = async () => {
       setCepLoading(true);
+
       try {
-        const res = await fetch(`https://viacep.com.br/ws/${digits}/json/`);
+        const res = await fetch(
+          `https://viacep.com.br/ws/${digits}/json/`
+        );
+
         const json = await res.json();
+
         if (!json.erro) {
           setValue('city' as keyof Schema, json.localidade as any);
           setValue('street' as keyof Schema, json.logradouro as any);
@@ -132,6 +164,7 @@ export default function StepData({ data, isGift, onNext }: StepDataProps) {
         setCepLoading(false);
       }
     };
+
     fetchCEP();
   }, [zipCode, isGift, setValue]);
 
@@ -143,7 +176,10 @@ export default function StepData({ data, isGift, onNext }: StepDataProps) {
       className="space-y-6 animate-in fade-in duration-500"
     >
       <div>
-        <h2 className="text-2xl font-bold text-primary">Seus dados</h2>
+        <h2 className="text-2xl font-bold text-primary">
+          Seus dados
+        </h2>
+
         <p className="text-gray-600 text-sm mt-1">
           Para o recibo fiscal, e se aplicável, envio da camiseta
         </p>
@@ -170,27 +206,46 @@ export default function StepData({ data, isGift, onNext }: StepDataProps) {
                 style={inputStyle(!!fieldState.error)}
                 placeholder="000.000.000-00"
                 maxLength={14}
-                onChange={(ev) => field.onChange(maskCPF(ev.target.value))}
+                onChange={(ev) =>
+                  field.onChange(maskCPF(ev.target.value))
+                }
               />
             )}
           />
         </Field>
 
-        <div className="md:col-span-2">
-          <Field label="E-mail" error={e.email?.message}>
-            <input
-              {...register('email')}
-              type="email"
-              className={inputCls(!!e.email)}
-              style={inputStyle(!!e.email)}
-              placeholder="seu@email.com"
-            />
-          </Field>
-        </div>
+        <Field label="Telefone" error={e.phone?.message}>
+          <Controller
+            name={'phone' as keyof Schema}
+            control={control}
+            render={({ field, fieldState }) => (
+              <input
+                {...field}
+                className={inputCls(!!fieldState.error)}
+                style={inputStyle(!!fieldState.error)}
+                placeholder="(11) 99999-9999"
+                maxLength={15}
+                onChange={(ev) =>
+                  field.onChange(maskPhone(ev.target.value))
+                }
+              />
+            )}
+          />
+        </Field>
+
+        <Field label="E-mail" error={e.email?.message}>
+          <input
+            {...register('email')}
+            type="email"
+            className={inputCls(!!e.email)}
+            style={inputStyle(!!e.email)}
+            placeholder="seu@email.com"
+          />
+        </Field>
       </div>
 
       {isGift && (
-        <div className="bg-secondary p-6 space-y-6  sm:mx-0 rounded-md">
+        <div className="bg-secondary p-6 space-y-6 sm:mx-0 rounded-md">
           <h3 className="text-primary-light font-bold text-sm uppercase tracking-widest">
             Endereço para a camiseta
           </h3>
@@ -204,7 +259,10 @@ export default function StepData({ data, isGift, onNext }: StepDataProps) {
                   render={({ field, fieldState }) => (
                     <input
                       {...field}
-                      className={inputCls(!!fieldState.error)}
+                      className={cn(
+                        inputCls(!!fieldState.error),
+                        cepLoading && 'pr-10'
+                      )}
                       style={inputStyle(!!fieldState.error)}
                       placeholder="00000-000"
                       maxLength={9}
@@ -214,6 +272,10 @@ export default function StepData({ data, isGift, onNext }: StepDataProps) {
                     />
                   )}
                 />
+
+                {cepLoading && (
+                  <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-primary" />
+                )}
               </div>
             </Field>
 
@@ -260,12 +322,15 @@ export default function StepData({ data, isGift, onNext }: StepDataProps) {
             <p className="text-white text-xs font-bold uppercase tracking-widest mb-5">
               Tamanho
             </p>
+
             <div className="flex gap-2 flex-wrap">
               {(['PP', 'P', 'M', 'G', 'GG', '3G'] as const).map((s) => (
                 <button
                   key={s}
                   type="button"
-                  onClick={() => setValue('size' as keyof Schema, s as any)}
+                  onClick={() =>
+                    setValue('size' as keyof Schema, s as any)
+                  }
                   className={cn(
                     'w-10 h-10 rounded border font-bold text-xs transition cursor-pointer',
                     size === s
@@ -277,6 +342,7 @@ export default function StepData({ data, isGift, onNext }: StepDataProps) {
                 </button>
               ))}
             </div>
+
             {e.size && (
               <p className="text-xs mt-1" style={{ color: ERROR_COLOR }}>
                 {e.size.message}
