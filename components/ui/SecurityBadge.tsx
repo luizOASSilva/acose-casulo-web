@@ -8,7 +8,7 @@ export default function SecurityBadge() {
 
       <div className="hidden sm:block h-5 w-px bg-gray-200 shrink-0" />
 
-      <p className="text-xs text-gray-400 leading-snug">
+      <p className="text-xs text-gray-600 leading-snug">
         Pagamento processado com segurança por
       </p>
 
