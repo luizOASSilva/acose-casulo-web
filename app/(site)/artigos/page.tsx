@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import ArticleRow from '@/components/ui/ArticleRow';
 import { getArticles } from '@/services/articles';
 import { OG_IMAGE } from '@/lib/config';
+import Reveal from '@/components/ui/Reveal';
 
 export const metadata: Metadata = {
   title: 'Artigos',
@@ -34,17 +35,19 @@ export default async function Artigos() {
         </p>
       </header>
 
-      {articles.length > 0 ? (
-        <ul className="flex flex-col divide-y divide-gray-100">
-          {articles.map((article) => (
-            <li key={article.id}>
-              <ArticleRow article={article} />
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="text-gray-600 italic">Nenhum artigo encontrado.</p>
-      )}
+      <Reveal>
+        {articles.length > 0 ? (
+          <ul className="flex flex-col divide-y divide-gray-100">
+            {articles.map((article) => (
+              <li key={article.id}>
+                <ArticleRow article={article} />
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-gray-600 italic">Nenhum artigo encontrado.</p>
+        )}
+      </Reveal>
     </main>
   );
 }

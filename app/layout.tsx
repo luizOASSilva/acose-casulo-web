@@ -3,6 +3,8 @@ import { Open_Sans, Montserrat } from 'next/font/google';
 import './globals.css';
 import { SITE_URL, SITE_NAME, SITE_DESCRIPTION, OG_IMAGE } from '@/lib/config';
 
+import { MotionProvider } from '@/components/providers/MotionProvider';
+
 const openSans = Open_Sans({
   variable: '--font-open-sans',
   subsets: ['latin'],
@@ -75,8 +77,9 @@ export default function RootLayout({
           }}
         />
       </head>
+
       <body className="min-h-screen flex flex-col">
-        {children}
+        <MotionProvider>{children}</MotionProvider>
       </body>
     </html>
   );

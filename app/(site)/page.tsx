@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Carousel from '@/components/ui/Carousel/CarouselWrapper';
-import Hero from '@/components/sections/Hero';
+import Hero from '@/components/sections/Hero/Hero';
 import Impact from '@/components/sections/Impact';
 import Mission from '@/components/sections/Mission';
 import Button from '@/components/ui/Button';

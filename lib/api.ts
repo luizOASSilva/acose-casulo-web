@@ -8,11 +8,13 @@ async function getCsrfCookie(): Promise<void> {
 
 function getXsrfToken(): string {
   if (typeof document === 'undefined') return '';
-  return document.cookie
-    .split('; ')
-    .find((row) => row.startsWith('XSRF-TOKEN='))
-    ?.split('=')[1]
-    ?.replace(/%3D/g, '=') ?? '';
+  return (
+    document.cookie
+      .split('; ')
+      .find((row) => row.startsWith('XSRF-TOKEN='))
+      ?.split('=')[1]
+      ?.replace(/%3D/g, '=') ?? ''
+  );
 }
 
 export async function apiFetch<T = any>(

@@ -37,7 +37,14 @@ export default async function AcessoPage({ params }: Props) {
                 height="48"
                 patternUnits="userSpaceOnUse"
               >
-                <circle cx="24" cy="24" r="18" fill="none" stroke="white" strokeWidth="1" />
+                <circle
+                  cx="24"
+                  cy="24"
+                  r="18"
+                  fill="none"
+                  stroke="white"
+                  strokeWidth="1"
+                />
               </pattern>
             </defs>
             <rect width="100%" height="100%" fill="url(#grid)" />

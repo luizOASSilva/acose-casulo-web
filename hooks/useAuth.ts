@@ -29,14 +29,21 @@ export function useAuth(): UseAuthReturn {
       .finally(() => setLoading(false));
   }, []);
 
-  const login = useCallback(async (email: string, password: string) => {
-    const data = await apiFetch<Admin>('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
-    }, true);
-    setAdmin(data);
-    router.push('/admin');
-  }, [router]);
+  const login = useCallback(
+    async (email: string, password: string) => {
+      const data = await apiFetch<Admin>(
+        '/auth/login',
+        {
+          method: 'POST',
+          body: JSON.stringify({ email, password }),
+        },
+        true
+      );
+      setAdmin(data);
+      router.push('/admin');
+    },
+    [router]
+  );
 
   const logout = useCallback(async () => {
     await apiFetch('/auth/logout', { method: 'POST' });

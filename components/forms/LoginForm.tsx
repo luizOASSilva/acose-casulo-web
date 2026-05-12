@@ -61,7 +61,10 @@ export default function LoginForm() {
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
         <div className="space-y-2">
-          <label htmlFor={emailId} className="text-sm font-medium text-neutral-700">
+          <label
+            htmlFor={emailId}
+            className="text-sm font-medium text-neutral-700"
+          >
             E-mail
           </label>
           <div className="group relative">
@@ -80,7 +83,8 @@ export default function LoginForm() {
               aria-invalid={!!errors.email}
               placeholder="voce@exemplo.com"
               {...register('email')}
-              className="h-12 w-full rounded-md border border-neutral-200 bg-white pl-12 pr-4 text-sm text-[#141210] outline-none transition placeholder:text-neutral-400 focus:border-primary aria-[invalid=true]:border-red-300"            />
+              className="h-12 w-full rounded-md border border-neutral-200 bg-white pl-12 pr-4 text-sm text-[#141210] outline-none transition placeholder:text-neutral-400 focus:border-primary aria-[invalid=true]:border-red-300"
+            />
           </div>
           <AnimatePresence>
             {errors.email && (
@@ -99,7 +103,10 @@ export default function LoginForm() {
 
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <label htmlFor={passwordId} className="text-sm font-medium text-neutral-700">
+            <label
+              htmlFor={passwordId}
+              className="text-sm font-medium text-neutral-700"
+            >
               Senha
             </label>
             <button
@@ -166,7 +173,11 @@ export default function LoginForm() {
           className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-md bg-primary px-5 text-sm font-semibold text-white transition hover:brightness-110 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isSubmitting && (
-            <LoaderCircle size={18} className="animate-spin" aria-hidden="true" />
+            <LoaderCircle
+              size={18}
+              className="animate-spin"
+              aria-hidden="true"
+            />
           )}
           <span>{isSubmitting ? 'Entrando...' : 'Entrar'}</span>
         </button>

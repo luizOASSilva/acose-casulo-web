@@ -39,10 +39,7 @@ export const stepDataBaseSchema = z.object({
     .string()
     .min(1, 'Telefone obrigatório')
     .transform((v) => v.replace(/\D/g, ''))
-    .refine(
-      (v) => v.length === 10 || v.length === 11,
-      'Telefone inválido'
-    ),
+    .refine((v) => v.length === 10 || v.length === 11, 'Telefone inválido'),
 
   cpf: z
     .string()
@@ -73,7 +70,4 @@ export const addressSchema = z.object({
 });
 
 export const getStepDataSchema = (isGift: boolean) =>
-  isGift
-    ? stepDataBaseSchema.merge(addressSchema)
-    : stepDataBaseSchema;
-    
+  isGift ? stepDataBaseSchema.merge(addressSchema) : stepDataBaseSchema;
