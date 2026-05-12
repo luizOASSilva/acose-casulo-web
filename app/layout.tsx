@@ -1,8 +1,6 @@
 import type { Metadata } from 'next';
 import { Open_Sans, Montserrat } from 'next/font/google';
 import './globals.css';
-import Navbar from '@/components/layouts/navbar/Navbar';
-import Footer from '@/components/layouts/Footer';
 import { SITE_URL, SITE_NAME, SITE_DESCRIPTION, OG_IMAGE } from '@/lib/config';
 
 const openSans = Open_Sans({
@@ -44,9 +42,9 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html
       lang="pt-BR"
@@ -78,9 +76,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen flex flex-col">
-        <Navbar />
-        <div className="flex-1 pt-20">{children}</div>
-        <Footer />
+        {children}
       </body>
     </html>
   );

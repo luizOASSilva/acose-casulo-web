@@ -5,7 +5,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2 } from 'lucide-react';
-import { getStepDataSchema } from '@/lib/donationSchema';
+import { getStepDataSchema } from '@/lib/schemas';
 import { DonationData } from '@/types/donation';
 import { cn } from '@/lib/cn';
 

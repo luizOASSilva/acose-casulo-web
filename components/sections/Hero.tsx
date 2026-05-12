@@ -6,6 +6,7 @@ import { useRef } from 'react';
 interface HeroProps {
   children?: React.ReactNode;
   image?: string;
+  video?: string; 
   overlay?: boolean;
   title: React.ReactNode;
   description: string;
@@ -17,6 +18,7 @@ export default function Hero({
   description,
   children,
   image,
+  video, 
   overlay = true,
   dark = true,
 }: HeroProps) {
@@ -36,29 +38,43 @@ export default function Hero({
       ref={ref}
       aria-labelledby="hero-title"
       className={`relative min-h-[65vh] flex items-center overflow-hidden ${
-        !image ? (dark ? 'bg-secondary' : 'bg-background') : ''
+        !image && !video ? (dark ? 'bg-secondary' : 'bg-background') : ''
       }`}
     >
-      {image && (
+      {(image || video) && (
         <motion.div
-          style={{
-            y,
-            scale,
-            backgroundImage: `url(${image})`,
-          }}
-          className="absolute inset-0 bg-cover bg-center will-change-transform"
-        />
+          style={{ y, scale }}
+          className="absolute inset-0 will-change-transform"
+        >
+          {video ? (
+            <video
+              autoPlay
+              muted
+              loop
+              playsInline
+              poster={image}
+              className="absolute inset-0 w-full h-full object-cover"
+            >
+              <source src={video} type="video/webm" />
+            </video>
+          ) : (
+            <div
+              style={{ backgroundImage: `url(${image})` }}
+              className="absolute inset-0 bg-cover bg-center"
+            />
+          )}
+        </motion.div>
       )}
 
-      {image && overlay && (
+      {(image || video) && overlay && (
         <motion.div
           style={{ opacity }}
           aria-hidden="true"
-          className="absolute inset-0 bg-linear-to-r from-black/20 via-black/10 to-transparent"
+          className="absolute inset-0 bg-linear-to-r from-black/40 via-black/20 to-transparent"
         />
       )}
 
-      {image && (
+      {(image || video) && (
         <div
           aria-hidden="true"
           className="absolute bottom-0 left-0 right-0 h-32 bg-linear-to-t from-black/60 to-transparent pointer-events-none"
@@ -74,7 +90,7 @@ export default function Hero({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
           className={`text-sm md:text-base font-bold tracking-wide uppercase ${
-            image ? 'text-primary' : 'text-primary-light'
+            image || video ? 'text-primary' : 'text-primary-light'
           }`}
         >
           Centro Dia da Pessoa com Deficiência • Bragança Paulista/SP
@@ -97,7 +113,7 @@ export default function Hero({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.35 }}
           className={
-            dark ? (image ? 'text-white/90' : 'text-gray-300') : 'text-gray-700'
+            dark ? (image || video ? 'text-white/90' : 'text-gray-300') : 'text-gray-700'
           }
         >
           {description}
