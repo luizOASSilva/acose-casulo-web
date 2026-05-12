@@ -63,7 +63,7 @@ export default function HeroMotion({ image, overlay = true }: HeroMotionProps) {
           className="absolute inset-0 pointer-events-none"
           style={{
             background:
-              'linear-gradient(to right, rgba(0,0,0,0.45), rgba(0,0,0,0.12))',
+              'linear-gradient(to right, rgba(0,0,0,0.25), rgba(0,0,0,0.12))',
           }}
         />
       </m.div>

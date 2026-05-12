@@ -22,7 +22,8 @@ export default function Reveal({ children, delay = 0 }: RevealProps) {
       }}
       viewport={{
         once: true,
-        amount: 0.15,
+        amount: 0.1,
+        margin: '0px 0px -50px 0px',
       }}
       transition={{
         duration: 0.4,
