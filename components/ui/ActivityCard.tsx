@@ -11,26 +11,28 @@ interface ActivityCardProps {
 export default function ActivityCard({ activity }: ActivityCardProps) {
   return (
     <article
-      className="group flex flex-col rounded-2xl border border-gray-100 bg-white overflow-hidden hover:shadow-lg transition-shadow h-95"
+      className="group flex flex-col rounded-2xl border border-gray-100 bg-white overflow-hidden hover:shadow-lg transition-shadow"
       aria-labelledby={`activity-title-${activity.id}`}
       aria-describedby={`activity-desc-${activity.id}`}
     >
-      <div className="relative w-full aspect-video overflow-hidden shrink-0">
+      <div className="relative w-full aspect-video overflow-hidden">
         <Image
           src={activity.media.url}
           alt={
-            activity.media.alt_text || `Imagem da atividade ${activity.title}`
+            activity.media.alt_text ||
+            `Imagem da atividade ${activity.title}`
           }
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
           className="object-cover transition-transform duration-500 group-hover:scale-105"
+          priority={false}
         />
       </div>
 
-      <div className="flex flex-col flex-1 p-5 space-y-3 overflow-hidden">
+      <div className="flex flex-col flex-1 p-5 space-y-3">
         <h3
           id={`activity-title-${activity.id}`}
-          className="text-base font-semibold text-gray-900 leading-snug group-hover:text-primary transition-colors line-clamp-2"
+          className="text-base font-semibold text-gray-900 leading-snug line-clamp-2 group-hover:text-primary transition-colors"
         >
           {activity.title}
         </h3>
@@ -39,7 +41,7 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
           id={`activity-desc-${activity.id}`}
           className="text-sm text-gray-700 leading-relaxed line-clamp-3 flex-1"
         >
-          {activity.content.split('\n\n')[0]}
+          {activity.content?.split('\n\n')[0]}
         </p>
 
         <div className="flex items-center gap-1.5 pt-1">
