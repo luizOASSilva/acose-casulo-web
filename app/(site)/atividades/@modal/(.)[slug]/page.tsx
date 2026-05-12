@@ -1,20 +1,16 @@
 import { getActivityBySlug } from '@/services/activities';
 import ActivityModalClient from '@/components/modals/ActivityModalClient';
-import { Suspense } from 'react';
 
 type Props = {
-  params: Promise<{ slug: string }>;
+  params: { slug: string };
 };
 
 export default async function Page({ params }: Props) {
-  const { slug } = await params;
+  const { slug } = params;
+
   const activity = await getActivityBySlug(slug);
 
   if (!activity) return null;
 
-  return (
-    <Suspense fallback={null}>
-      <ActivityModalClient activity={activity} />
-    </Suspense>
-  );
+  return <ActivityModalClient activity={activity} />;
 }

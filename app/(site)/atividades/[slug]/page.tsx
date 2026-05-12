@@ -1,16 +1,14 @@
 import { Metadata } from 'next';
-import { Suspense } from 'react';
 import { getActivityBySlug } from '@/services/activities';
-import ActivityModalClient from '@/components/modals/ActivityModalClient';
+import ActivityDetail from '@/components/ui/ActivityDetail';
 import { OG_IMAGE } from '@/lib/config';
 
 type Props = {
-  params: Promise<{ slug: string }>;
+  params: { slug: string };
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params;
-  const activity = await getActivityBySlug(slug);
+  const activity = await getActivityBySlug(params.slug);
 
   if (!activity) return { title: 'Atividade não encontrada' };
 
@@ -20,12 +18,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: activity.title,
     description,
     alternates: {
-      canonical: `/atividades/${slug}`,
+      canonical: `/atividades/${params.slug}`,
     },
     openGraph: {
       title: `${activity.title} | Acose Casulo`,
       description,
-      url: `/atividades/${slug}`,
+      url: `/atividades/${params.slug}`,
       type: 'article',
       images: activity.media?.url
         ? {
@@ -40,14 +38,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function Page({ params }: Props) {
-  const { slug } = await params;
-  const activity = await getActivityBySlug(slug);
+  const activity = await getActivityBySlug(params.slug);
 
   if (!activity) return null;
 
   return (
-    <Suspense fallback={null}>
-      <ActivityModalClient activity={activity} />
-    </Suspense>
+    <main className="w-[90%] mx-auto py-20">
+      <ActivityDetail
+        activity={activity}
+        onClose={() => (window.location.href = '/atividades')}
+      />
+    </main>
   );
 }
