@@ -152,7 +152,7 @@ export default function LoginForm() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -4 }}
               transition={{ duration: 0.2 }}
-              className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600"
+              className="rounded-xl px-4 py-3 text-sm text-red-700"
             >
               {errors.root.message}
             </motion.div>
