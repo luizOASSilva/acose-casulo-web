@@ -46,9 +46,12 @@ export function useAuth(): UseAuthReturn {
   );
 
   const logout = useCallback(async () => {
-    await apiFetch('/auth/logout', { method: 'POST' });
-    setAdmin(null);
-    router.push('/');
+    try {
+      await apiFetch('/auth/logout', { method: 'POST' }, true);
+    } finally {
+      setAdmin(null);
+      router.push('/');
+    }
   }, [router]);
 
   return { admin, loading, login, logout };

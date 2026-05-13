@@ -8,13 +8,12 @@ async function getCsrfCookie(): Promise<void> {
 
 function getXsrfToken(): string {
   if (typeof document === 'undefined') return '';
-  return (
-    document.cookie
-      .split('; ')
-      .find((row) => row.startsWith('XSRF-TOKEN='))
-      ?.split('=')[1]
-      ?.replace(/%3D/g, '=') ?? ''
-  );
+  const cookie = document.cookie
+    .split('; ')
+    .find((row) => row.startsWith('XSRF-TOKEN='))
+    ?.split('=')[1];
+
+  return cookie ? decodeURIComponent(cookie) : '';
 }
 
 export async function apiFetch<T = any>(
@@ -38,6 +37,12 @@ export async function apiFetch<T = any>(
     },
     ...options,
   });
+
+  if (response.status === 401) {
+    const slug = process.env.NEXT_PUBLIC_PANEL_SLUG ?? '';
+    window.location.href = `/acesso/${slug}`;
+    throw new Error('Sessão expirada.');
+  }
 
   if (!response.ok) {
     let errorMessage = 'Erro na requisição';
