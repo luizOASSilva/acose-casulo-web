@@ -24,7 +24,7 @@ export default function Gallery({ images }: Props) {
         {images.map((img, i) => (
           <div
             key={i}
-            className={`relative overflow-hidden rounded-xl ${
+            className={`relative overflow-hidden rounded-md ${
               img.wide ? 'col-span-2' : 'col-span-1'
             }`}
           >

@@ -78,7 +78,9 @@ function DonationSkeleton() {
 export default function DonationFlow() {
   const [step, setStep] = useState<DonationStep>(1);
   const [formData, setFormData] = useState<DonationData>(initialData);
-  const [pix, setPix] = useState<(PixResponse & { expires_at: number }) | null>(null);
+  const [pix, setPix] = useState<(PixResponse & { expires_at: number }) | null>(
+    null
+  );
   const [hydrated, setHydrated] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
 

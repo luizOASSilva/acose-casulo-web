@@ -253,7 +253,7 @@ export default function NavbarClient({
                 href="/doe-agora"
                 onClick={closeMenus}
                 className={cn(
-                  'inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg border-2 border-primary text-primary text-sm font-bold transition-all hover:bg-primary hover:text-white active:scale-95 w-full',
+                  'inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-md border-2 border-primary text-primary text-sm font-bold transition-all hover:bg-primary hover:text-white active:scale-95 w-full',
                   pathname === '/doe-agora' && 'bg-primary text-white'
                 )}
               >

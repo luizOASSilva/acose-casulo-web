@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Carousel from '@/components/ui/Carousel/CarouselWrapper';
-import Hero from '@/components/sections/Hero';
+import Hero from '@/components/sections/Hero/Hero';
 import Impact from '@/components/sections/Impact';
 import Mission from '@/components/sections/Mission';
 import Button from '@/components/ui/Button';
@@ -252,7 +252,7 @@ export default function Home() {
                 Mapa mostrando a localização do Projeto Casulo em Bragança
                 Paulista, São Paulo.
               </p>
-              <div className="relative w-full h-105 rounded-3xl overflow-hidden shadow-2xl border border-gray-200">
+              <div className="relative w-full h-105 rounded-md overflow-hidden shadow-2xl border border-gray-200">
                 <iframe
                   title="Mapa de localização do Projeto Casulo"
                   src="https://maps.google.com/maps?q=Rua+Francisco+Rodrigues+Dias,+80+Bragança+Paulista&z=15&output=embed"

@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { useEffect, useRef } from 'react';
 import ActivityDetail from '@/components/ui/ActivityDetail';
 import type { Activity } from '@/types/activity';
 
@@ -11,26 +11,24 @@ export default function ActivityModalClient({
   activity: Activity | null;
 }) {
   const router = useRouter();
-  const cameFromSite = useRef(false);
+  const canGoBack = useRef(false);
 
   useEffect(() => {
-    const referrer = document.referrer;
-    cameFromSite.current =
-      referrer.length > 0 && referrer.startsWith(window.location.origin);
+    canGoBack.current = document.referrer.startsWith(window.location.origin);
   }, []);
 
   const handleClose = () => {
-    if (cameFromSite.current) {
+    if (canGoBack.current) {
       router.back();
     } else {
-      router.push('/atividades');
+      window.location.href = '/atividades';
     }
   };
 
   if (!activity) {
     return (
       <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/50">
-        <div className="bg-white p-6 rounded-2xl shadow-xl text-center">
+        <div className="bg-white p-6 rounded-md shadow-xl text-center">
           <p className="font-bold text-gray-900">Atividade não encontrada!</p>
           <button
             onClick={handleClose}

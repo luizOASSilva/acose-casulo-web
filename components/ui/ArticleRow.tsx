@@ -39,7 +39,7 @@ export default function ArticleRow({ article }: { article: Article }) {
           md:w-44
           md:h-32
           shrink-0
-          rounded-2xl
+          rounded-md
           overflow-hidden
           bg-gray-100
         "

@@ -38,14 +38,11 @@ export default function ActivityDetail({
         onClick={onClose}
       />
 
-      <div className="relative z-10 flex w-full flex-col bg-white shadow-2xl rounded-t-[2.5rem] sm:rounded-3xl sm:max-w-2xl max-h-[92svh] sm:max-h-[85vh]">
-        <div className="relative h-48 w-full shrink-0 sm:h-64 bg-gray-100 rounded-t-[2.5rem] sm:rounded-t-3xl overflow-hidden">
+      <div className="relative z-10 flex w-full flex-col bg-white shadow-2xl rounded-t-[2.5rem] sm:rounded-md sm:max-w-2xl max-h-[92svh] sm:max-h-[85vh]">
+        <div className="relative h-48 w-full shrink-0 sm:h-64 bg-gray-100 rounded-t-[2.5rem] sm:rounded-t-md overflow-hidden">
           <Image
             src={activity.media?.url || ''}
-            alt={
-              activity.media?.alt_text ||
-              `Imagem da atividade ${activity.title}`
-            }
+            alt={activity.media?.alt_text || `Imagem da atividade ${activity.title}`}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 768px"
             className="object-cover"
@@ -62,7 +59,7 @@ export default function ActivityDetail({
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 sm:p-10">
+        <div className="flex-1 overflow-y-auto p-6 sm:p-10 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-200 hover:[&::-webkit-scrollbar-thumb]:bg-gray-300">
           <div className="mx-auto max-w-4xl">
             <header className="mb-6">
               <h2
@@ -72,17 +69,13 @@ export default function ActivityDetail({
                 {activity.title}
               </h2>
 
-              <div
-                className="flex flex-wrap gap-3"
-                role="group"
-                aria-label="Informações da atividade"
-              >
-                <div className="flex items-center gap-2 rounded-lg bg-orange-50 px-3 py-1 text-sm font-semibold text-orange-700 border border-orange-100">
+              <div className="flex flex-wrap gap-3" role="group" aria-label="Informações da atividade">
+                <div className="flex items-center gap-2 rounded-md bg-orange-50 px-3 py-1 text-sm font-semibold text-orange-700 border border-orange-100">
                   <Calendar size={14} aria-hidden="true" />
                   <span>Segunda a Sexta</span>
                 </div>
 
-                <div className="flex items-center gap-2 rounded-lg bg-orange-50 px-3 py-1 text-sm font-semibold text-orange-700 border border-orange-100">
+                <div className="flex items-center gap-2 rounded-md bg-orange-50 px-3 py-1 text-sm font-semibold text-orange-700 border border-orange-100">
                   <Clock size={14} aria-hidden="true" />
                   <span>08h - 11h</span>
                 </div>
@@ -94,7 +87,6 @@ export default function ActivityDetail({
               className="border-b border-gray-100 pb-8 text-gray-600 leading-relaxed"
             >
               <h2 className="sr-only">Descrição da atividade</h2>
-
               {(activity.content || '')
                 .split('\n')
                 .filter((p) => p.trim())
@@ -116,7 +108,7 @@ export default function ActivityDetail({
                 aria-label={likeLabel}
                 aria-pressed={isLiked}
                 className={`
-                  flex w-full items-center justify-center gap-3 rounded-2xl border-2 px-8 py-3.5 font-bold transition-all active:scale-95 sm:w-auto cursor-pointer
+                  flex w-full items-center justify-center gap-3 rounded-md border-2 px-8 py-3.5 font-bold transition-all active:scale-95 sm:w-auto cursor-pointer
                   ${
                     isLiked
                       ? 'border-orange-500 bg-orange-500 text-white shadow-lg'

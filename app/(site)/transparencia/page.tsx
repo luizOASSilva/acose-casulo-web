@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import Hero from '@/components/sections/Hero';
+import Hero from '@/components/sections/Hero/Hero';
 import Filter from '@/components/ui/YearFilter';
 import TransparencySection from '@/components/sections/TransparencySection';
 import SupportCTA from '@/components/sections/SupportCTA';

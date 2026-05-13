@@ -20,7 +20,7 @@ export default async function ActivityGrid() {
                 className="
                   group
                   block
-                  rounded-2xl
+                  rounded-md
                   transition-transform
                   duration-200
                   hover:-translate-y-1

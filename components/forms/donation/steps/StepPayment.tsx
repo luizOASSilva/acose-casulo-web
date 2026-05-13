@@ -39,7 +39,9 @@ function formatBRL(value: number) {
 
 function formatCountdown(ms: number) {
   const total = Math.max(0, Math.floor(ms / 1000));
-  const m = Math.floor(total / 60).toString().padStart(2, '0');
+  const m = Math.floor(total / 60)
+    .toString()
+    .padStart(2, '0');
   const s = (total % 60).toString().padStart(2, '0');
   return `${m}:${s}`;
 }
@@ -69,9 +71,15 @@ export default function StepPayment({
   const regeneratingRef = useRef(false);
   const prevAmountRef = useRef<number | null>(null);
 
-  useEffect(() => { onConfirmRef.current = onConfirm; }, [onConfirm]);
-  useEffect(() => { onPixGeneratedRef.current = onPixGenerated; }, [onPixGenerated]);
-  useEffect(() => { phaseRef.current = phase.type; }, [phase.type]);
+  useEffect(() => {
+    onConfirmRef.current = onConfirm;
+  }, [onConfirm]);
+  useEffect(() => {
+    onPixGeneratedRef.current = onPixGenerated;
+  }, [onPixGenerated]);
+  useEffect(() => {
+    phaseRef.current = phase.type;
+  }, [phase.type]);
 
   const timerId = useId();
   const statusId = useId();
@@ -106,31 +114,37 @@ export default function StepPayment({
     timerRef.current = setInterval(tick, 1000);
   }, []);
 
-  const startPolling = useCallback((donationId: number) => {
-    if (pollRef.current) clearInterval(pollRef.current);
+  const startPolling = useCallback(
+    (donationId: number) => {
+      if (pollRef.current) clearInterval(pollRef.current);
 
-    pollRef.current = setInterval(async () => {
-      try {
-        const { status } = await getDonationStatus(donationId);
-        if (status === 'approved') {
-          clearTimers();
-          setPhase({ type: 'confirmed' });
-          onConfirmRef.current();
-        } else if (status === 'expired') {
-          clearTimers();
-          setPhase({ type: 'expired' });
-        }
-      } catch {}
-    }, POLL_MS);
-  }, [clearTimers]);
+      pollRef.current = setInterval(async () => {
+        try {
+          const { status } = await getDonationStatus(donationId);
+          if (status === 'approved') {
+            clearTimers();
+            setPhase({ type: 'confirmed' });
+            onConfirmRef.current();
+          } else if (status === 'expired') {
+            clearTimers();
+            setPhase({ type: 'expired' });
+          }
+        } catch {}
+      }, POLL_MS);
+    },
+    [clearTimers]
+  );
 
-  const applyPix = useCallback((pix: PixWithExpiry) => {
-    donationIdRef.current = pix.id;
-    setPhase({ type: 'ready', pix });
-    onPixGeneratedRef.current(pix);
-    startPolling(pix.id);
-    startTimer(pix.expires_at);
-  }, [startPolling, startTimer]);
+  const applyPix = useCallback(
+    (pix: PixWithExpiry) => {
+      donationIdRef.current = pix.id;
+      setPhase({ type: 'ready', pix });
+      onPixGeneratedRef.current(pix);
+      startPolling(pix.id);
+      startTimer(pix.expires_at);
+    },
+    [startPolling, startTimer]
+  );
 
   const scheduleRetry = useCallback((fn: () => Promise<void>) => {
     if (retryRef.current) clearInterval(retryRef.current);
@@ -179,7 +193,7 @@ export default function StepPayment({
 
     generate();
     return clearTimers;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -190,7 +204,7 @@ export default function StepPayment({
       email: formData.email,
       cpf: formData.cpf,
     }).catch(() => {});
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.name, formData.email, formData.cpf]);
 
   useEffect(() => {
@@ -213,7 +227,10 @@ export default function StepPayment({
         };
         applyPix(withExpiry);
       } catch (err: any) {
-        if (err?.message?.toLowerCase().includes('429') || err?.message?.toLowerCase().includes('aguarde')) {
+        if (
+          err?.message?.toLowerCase().includes('429') ||
+          err?.message?.toLowerCase().includes('aguarde')
+        ) {
           scheduleRetry(regenerate);
         } else {
           setPhase({
@@ -227,7 +244,7 @@ export default function StepPayment({
     };
 
     regenerate();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.amount]);
 
   const handleCopy = useCallback(async () => {
@@ -378,7 +395,9 @@ export default function StepPayment({
           type="button"
           onClick={handleCopy}
           aria-pressed={copied}
-          aria-label={copied ? 'Chave PIX copiada' : 'Copiar chave PIX Copia e Cola'}
+          aria-label={
+            copied ? 'Chave PIX copiada' : 'Copiar chave PIX Copia e Cola'
+          }
           className="w-full bg-primary text-white py-3 rounded transition
                      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2
                      focus-visible:ring-primary active:scale-[.98] cursor-pointer"

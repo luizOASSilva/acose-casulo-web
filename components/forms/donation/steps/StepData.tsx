@@ -90,11 +90,7 @@ function Field({
   );
 }
 
-export default function StepData({
-  data,
-  isGift,
-  onNext,
-}: StepDataProps) {
+export default function StepData({ data, isGift, onNext }: StepDataProps) {
   const schema = useMemo(() => getStepDataSchema(isGift), [isGift]);
 
   type Schema = z.infer<typeof schema>;
@@ -122,17 +118,14 @@ export default function StepData({
         number: data.number || '',
         neighborhood: data.neighborhood || '',
         state: data.state || '',
-        size:
-          (data.size as 'PP' | 'P' | 'M' | 'G' | 'GG' | '3G') || 'M',
+        size: (data.size as 'PP' | 'P' | 'M' | 'G' | 'GG' | '3G') || 'M',
       }),
     },
   });
 
   const size = watch('size' as keyof Schema);
 
-  const zipCode = watch('zip_code' as keyof Schema) as
-    | string
-    | undefined;
+  const zipCode = watch('zip_code' as keyof Schema) as string | undefined;
 
   const [cepLoading, setCepLoading] = useState(false);
 
@@ -147,9 +140,7 @@ export default function StepData({
       setCepLoading(true);
 
       try {
-        const res = await fetch(
-          `https://viacep.com.br/ws/${digits}/json/`
-        );
+        const res = await fetch(`https://viacep.com.br/ws/${digits}/json/`);
 
         const json = await res.json();
 
@@ -176,9 +167,7 @@ export default function StepData({
       className="space-y-6 animate-in fade-in duration-500"
     >
       <div>
-        <h2 className="text-2xl font-bold text-primary">
-          Seus dados
-        </h2>
+        <h2 className="text-2xl font-bold text-primary">Seus dados</h2>
 
         <p className="text-gray-600 text-sm mt-1">
           Para o recibo fiscal, e se aplicável, envio da camiseta
@@ -206,9 +195,7 @@ export default function StepData({
                 style={inputStyle(!!fieldState.error)}
                 placeholder="000.000.000-00"
                 maxLength={14}
-                onChange={(ev) =>
-                  field.onChange(maskCPF(ev.target.value))
-                }
+                onChange={(ev) => field.onChange(maskCPF(ev.target.value))}
               />
             )}
           />
@@ -225,9 +212,7 @@ export default function StepData({
                 style={inputStyle(!!fieldState.error)}
                 placeholder="(11) 99999-9999"
                 maxLength={15}
-                onChange={(ev) =>
-                  field.onChange(maskPhone(ev.target.value))
-                }
+                onChange={(ev) => field.onChange(maskPhone(ev.target.value))}
               />
             )}
           />
@@ -328,9 +313,7 @@ export default function StepData({
                 <button
                   key={s}
                   type="button"
-                  onClick={() =>
-                    setValue('size' as keyof Schema, s as any)
-                  }
+                  onClick={() => setValue('size' as keyof Schema, s as any)}
                   className={cn(
                     'w-10 h-10 rounded border font-bold text-xs transition cursor-pointer',
                     size === s
