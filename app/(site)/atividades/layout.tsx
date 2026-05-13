@@ -1,4 +1,4 @@
-export default function Layout({
+export default function AtividadesLayout({
   children,
   modal,
 }: {

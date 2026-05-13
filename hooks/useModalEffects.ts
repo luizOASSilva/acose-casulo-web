@@ -12,12 +12,16 @@ export function useModalEffects(isOpen: boolean, onClose: () => void) {
 
     document.addEventListener('keydown', handleKey);
 
-    const originalStyle = window.getComputedStyle(document.body).overflow;
+    const originalBody = window.getComputedStyle(document.body).overflow;
+    const originalHtml = window.getComputedStyle(document.documentElement).overflow;
+
     document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
 
     return () => {
       document.removeEventListener('keydown', handleKey);
-      document.body.style.overflow = originalStyle;
+      document.body.style.overflow = originalBody;
+      document.documentElement.style.overflow = originalHtml;
     };
   }, [isOpen, onClose]);
 }

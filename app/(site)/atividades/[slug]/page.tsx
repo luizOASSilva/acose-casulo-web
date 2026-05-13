@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
+import { Suspense } from 'react';
 import { getActivityBySlug } from '@/services/activities';
-import ActivityDetailWrapper from '@/components/ui/ActivityDetailWrapper';
+import ActivityModalClient from '@/components/modals/ActivityModalClient';
 import { OG_IMAGE } from '@/lib/config';
 
 type Props = {
@@ -44,5 +45,9 @@ export default async function Page({ params }: Props) {
 
   if (!activity) return null;
 
-  return <ActivityDetailWrapper activity={activity} />;
+  return (
+    <Suspense fallback={null}>
+      <ActivityModalClient activity={activity} />
+    </Suspense>
+  );
 }
