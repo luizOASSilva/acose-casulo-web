@@ -56,9 +56,21 @@ export default function LoginForm() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-primary"
+        transition={{ duration: 0.3 }}
+        className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-[#141210]"
       >
-        <LoaderCircle className="animate-spin text-white" size={40} />
+        <div className="absolute -left-40 -top-40 h-125 w-125 rounded-full bg-primary opacity-30 blur-[120px]" />
+
+        <div className="absolute -bottom-40 -right-40 h-125 w-125 rounded-full bg-primary opacity-20 blur-[120px]" />
+
+        <div className="relative flex flex-col items-center gap-6">
+          <div className="relative h-14 w-14">
+            <div className="absolute inset-0 animate-spin rounded-full bg-linear-to-tr from-primary via-primary/60 to-transparent p-0.75">
+              <div className="h-full w-full rounded-full bg-[#141210]" />
+            </div>
+            <div className="absolute inset-0.75 rounded-full bg-[#141210]" />
+          </div>
+        </div>
       </motion.div>
     );
   }
@@ -92,7 +104,7 @@ export default function LoginForm() {
               aria-invalid={!!errors.email}
               placeholder="voce@exemplo.com"
               {...register('email')}
-              className="h-12 w-full rounded-md border border-neutral-200 bg-white pl-12 pr-4 text-sm text-[#141210] outline-none transition placeholder:text-neutral-400 focus:border-primary aria-[invalid=true]:border-red-300"
+              className="h-12 w-full rounded-md border border-neutral-200 bg-white pl-12 pr-4 text-sm text-[#141210] outline-none transition placeholder:text-neutral-400 focus:border-primary aria-invalid:border-red-300"
             />
           </div>
           <AnimatePresence>
@@ -137,7 +149,7 @@ export default function LoginForm() {
               aria-invalid={!!errors.password}
               placeholder="Digite sua senha"
               {...register('password')}
-              className="h-12 w-full rounded-md border border-neutral-200 bg-white pl-12 pr-4 text-sm text-[#141210] outline-none transition placeholder:text-neutral-400 focus:border-primary aria-[invalid=true]:border-red-300"
+              className="h-12 w-full rounded-md border border-neutral-200 bg-white pl-12 pr-4 text-sm text-[#141210] outline-none transition placeholder:text-neutral-400 focus:border-primary aria-invalid:border-red-300"
             />
           </div>
           <AnimatePresence>
