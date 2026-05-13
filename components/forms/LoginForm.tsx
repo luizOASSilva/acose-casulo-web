@@ -36,7 +36,7 @@ export default function LoginForm() {
 
   useEffect(() => {
     if (!loading && admin) {
-      router.push('/admin');
+      router.replace('/admin');
     }
   }, [admin, loading, router]);
 
@@ -50,15 +50,18 @@ export default function LoginForm() {
     }
   };
 
-  if (loading) {
+  if (loading || admin) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <LoaderCircle className="animate-spin text-primary" size={32} />
-      </div>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-50 flex items-center justify-center bg-primary"
+      >
+        <LoaderCircle className="animate-spin text-white" size={40} />
+      </motion.div>
     );
   }
-
-  if (admin) return null;
 
   return (
     <motion.section
