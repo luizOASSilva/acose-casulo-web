@@ -42,7 +42,7 @@ export default function Mission() {
         {items.map((item, index) => (
           <Reveal key={item.title} delay={index * 0.12}>
             <article className="flex flex-col space-y-3">
-              <div className="p-3 bg-primary/10 w-fit rounded-2xl">
+              <div className="p-3 bg-primary/10 w-fit rounded-md">
                 {item.icon}
               </div>
 

@@ -11,12 +11,13 @@ interface ActivityCardProps {
 export default function ActivityCard({ activity }: ActivityCardProps) {
   return (
     <article
-      className="group flex flex-col rounded-2xl border border-gray-100 bg-white overflow-hidden hover:shadow-lg transition-shadow h-95"
+      className="group flex flex-col rounded-md border border-gray-100 bg-white overflow-hidden hover:shadow-lg transition-shadow h-95"
       aria-labelledby={`activity-title-${activity.id}`}
       aria-describedby={`activity-desc-${activity.id}`}
     >
       <div className="relative w-full aspect-video overflow-hidden shrink-0">
         <Image
+          loading="eager"
           src={activity.media.url}
           alt={
             activity.media.alt_text || `Imagem da atividade ${activity.title}`
