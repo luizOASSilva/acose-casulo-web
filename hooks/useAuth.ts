@@ -10,49 +10,81 @@ interface Admin {
   email: string;
 }
 
-interface UseAuthReturn {
-  admin: Admin | null;
-  loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => Promise<void>;
+interface LoginResponse {
+  user: Admin;
 }
 
-export function useAuth(): UseAuthReturn {
+export function useAuth() {
   const [admin, setAdmin] = useState<Admin | null>(null);
   const [loading, setLoading] = useState(true);
+
   const router = useRouter();
 
-  useEffect(() => {
-    apiFetch<Admin>('/auth/me', {}, false, true)
-      .then(setAdmin)
-      .catch(() => setAdmin(null))
-      .finally(() => setLoading(false));
+  const fetchMe = useCallback(async () => {
+    try {
+      const data = await apiFetch<Admin>('/auth/me', {}, false);
+      setAdmin(data);
+    } catch {
+      setAdmin(null);
+    }
   }, []);
 
-  const login = useCallback(
-    async (email: string, password: string) => {
-      const data = await apiFetch<Admin>(
-        '/auth/login',
-        {
-          method: 'POST',
-          body: JSON.stringify({ email, password }),
-        },
-        true,
-      );
-      setAdmin(data);
-      router.push('/admin');
-    },
-    [router]
-  );
+  useEffect(() => {
+    let mounted = true;
+
+    const init = async () => {
+      try {
+        const data = await apiFetch<Admin>('/auth/me', {}, false);
+
+        if (mounted) setAdmin(data);
+      } catch {
+        if (mounted) setAdmin(null);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    init();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const login = useCallback(async (email: string, password: string) => {
+    await apiFetch<LoginResponse>(
+      '/auth/login',
+      {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+      },
+      true,
+    );
+
+    await fetchMe();
+
+    router.push('/admin');
+  }, [router, fetchMe]);
 
   const logout = useCallback(async () => {
     try {
-      await apiFetch('/auth/logout', { method: 'POST' }, true);
+      await apiFetch(
+        '/auth/logout',
+        {
+          method: 'POST',
+        },
+        false,
+      );
     } finally {
       setAdmin(null);
       router.push('/');
     }
   }, [router]);
 
-  return { admin, loading, login, logout };
+  return {
+    admin,
+    loading,
+    login,
+    logout,
+  };
 }

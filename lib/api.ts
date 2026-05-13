@@ -1,65 +1,44 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
 
-async function getCsrfCookie(): Promise<void> {
+async function ensureCsrf(): Promise<void> {
   await fetch(`${API_URL}/sanctum/csrf-cookie`, {
     credentials: 'include',
   });
-}
-
-function getXsrfToken(): string {
-  if (typeof document === 'undefined') return '';
-  const cookie = document.cookie
-    .split('; ')
-    .find((row) => row.startsWith('XSRF-TOKEN='))
-    ?.split('=')[1];
-
-  return cookie ? decodeURIComponent(cookie) : '';
 }
 
 export async function apiFetch<T = any>(
   endpoint: string,
   options: RequestInit = {},
   withCsrf = false,
-  ignoreUnauthorized = false,
 ): Promise<T> {
   if (withCsrf) {
-    await getCsrfCookie();
+    await ensureCsrf();
   }
 
-  const xsrfToken = getXsrfToken();
-
-  const url = `${API_URL}${endpoint}`;
-
-  const response = await fetch(url, {
+  const response = await fetch(`${API_URL}${endpoint}`, {
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json',
-      ...(xsrfToken ? { 'X-XSRF-TOKEN': xsrfToken } : {}),
       ...(options.headers || {}),
     },
     ...options,
   });
 
   if (response.status === 401) {
-    if (!ignoreUnauthorized) {
-      const slug = process.env.NEXT_PUBLIC_PANEL_SLUG ?? '';
-      window.location.href = `/acesso/${slug}`;
-    }
-    throw new Error('Não autenticado.');
-  }
-
-  if (response.status === 419) { 
-    throw new Error('Erro de sessão. Tente novamente.');
+    throw new Error('Não autenticado');
   }
 
   if (!response.ok) {
-    let errorMessage = 'Erro na requisição';
+    let message = 'Erro na requisição';
+
     try {
-      const errorData = await response.json();
-      errorMessage = errorData.message || errorData.error || errorMessage;
+      const data = await response.json();
+      message = data?.message || message;
     } catch {}
-    throw new Error(errorMessage);
+
+    throw new Error(message);
   }
 
   return response.json();
