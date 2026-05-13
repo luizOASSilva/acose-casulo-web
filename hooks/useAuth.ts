@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { apiFetch } from '@/lib/api';
+import { apiFetch, getToken, setToken, clearToken } from '@/lib/api';
 
 interface Admin {
   id: number;
@@ -12,6 +12,7 @@ interface Admin {
 
 interface LoginResponse {
   user: Admin;
+  token: string;
 }
 
 export function useAuth() {
@@ -23,12 +24,17 @@ export function useAuth() {
   useEffect(() => {
     let mounted = true;
 
+    if (!getToken()) {
+      setLoading(false);
+      return;
+    }
+
     const init = async () => {
       try {
-        const data = await apiFetch<Admin>('/auth/me', {}, false);
-
+        const data = await apiFetch<Admin>('/auth/me', {}, true);
         if (mounted) setAdmin(data);
       } catch {
+        clearToken();
         if (mounted) setAdmin(null);
       } finally {
         if (mounted) setLoading(false);
@@ -49,24 +55,18 @@ export function useAuth() {
         method: 'POST',
         body: JSON.stringify({ email, password }),
       },
-      true,
     );
 
+    setToken(data.token);
     setAdmin(data.user);
-
     router.push('/admin');
   }, [router]);
 
   const logout = useCallback(async () => {
     try {
-      await apiFetch(
-        '/auth/logout',
-        {
-          method: 'POST',
-        },
-        false,
-      );
+      await apiFetch('/auth/logout', { method: 'POST' });
     } finally {
+      clearToken();
       setAdmin(null);
       router.push('/');
     }
