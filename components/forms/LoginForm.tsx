@@ -56,21 +56,10 @@ export default function LoginForm() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        transition={{ duration: 0.3 }}
-        className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-[#141210]"
+        transition={{ duration: 0.2 }}
+        className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-white/60"
       >
-        <div className="absolute -left-40 -top-40 h-125 w-125 rounded-full bg-primary opacity-30 blur-[120px]" />
-
-        <div className="absolute -bottom-40 -right-40 h-125 w-125 rounded-full bg-primary opacity-20 blur-[120px]" />
-
-        <div className="relative flex flex-col items-center gap-6">
-          <div className="relative h-14 w-14">
-            <div className="absolute inset-0 animate-spin rounded-full bg-linear-to-tr from-primary via-primary/60 to-transparent p-0.75">
-              <div className="h-full w-full rounded-full bg-[#141210]" />
-            </div>
-            <div className="absolute inset-0.75 rounded-full bg-[#141210]" />
-          </div>
-        </div>
+        <LoaderCircle className="animate-spin text-primary" size={36} strokeWidth={2.5} />
       </motion.div>
     );
   }
