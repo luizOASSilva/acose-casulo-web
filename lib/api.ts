@@ -26,6 +26,8 @@ export async function apiFetch<T = any>(
     await getCsrfCookie();
   }
 
+  const xsrfToken = getXsrfToken();
+
   const url = `${API_URL}${endpoint}`;
 
   const response = await fetch(url, {
@@ -33,7 +35,7 @@ export async function apiFetch<T = any>(
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json',
-      'X-XSRF-TOKEN': getXsrfToken(),
+      ...(xsrfToken ? { 'X-XSRF-TOKEN': xsrfToken } : {}),
       ...(options.headers || {}),
     },
     ...options,
@@ -45,6 +47,10 @@ export async function apiFetch<T = any>(
       window.location.href = `/acesso/${slug}`;
     }
     throw new Error('Não autenticado.');
+  }
+
+  if (response.status === 419) { 
+    throw new Error('Erro de sessão. Tente novamente.');
   }
 
   if (!response.ok) {
