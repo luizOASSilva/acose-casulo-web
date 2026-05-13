@@ -20,15 +20,6 @@ export function useAuth() {
 
   const router = useRouter();
 
-  const fetchMe = useCallback(async () => {
-    try {
-      const data = await apiFetch<Admin>('/auth/me', {}, false);
-      setAdmin(data);
-    } catch {
-      setAdmin(null);
-    }
-  }, []);
-
   useEffect(() => {
     let mounted = true;
 
@@ -52,7 +43,7 @@ export function useAuth() {
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    await apiFetch<LoginResponse>(
+    const data = await apiFetch<LoginResponse>(
       '/auth/login',
       {
         method: 'POST',
@@ -61,10 +52,10 @@ export function useAuth() {
       true,
     );
 
-    await fetchMe();
+    setAdmin(data.user);
 
     router.push('/admin');
-  }, [router, fetchMe]);
+  }, [router]);
 
   const logout = useCallback(async () => {
     try {
