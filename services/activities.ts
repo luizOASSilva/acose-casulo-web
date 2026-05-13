@@ -23,6 +23,7 @@ export async function getActivities(): Promise<Activity[]> {
         revalidate: Number(process.env.NEXT_CACHE_REVALIDATE_TIME) || 3600,
       },
     });
+    console.log('ACTIVITIES RESPONSE:', JSON.stringify(response, null, 2));
 
     return response.data || response || [];
   } catch (error) {

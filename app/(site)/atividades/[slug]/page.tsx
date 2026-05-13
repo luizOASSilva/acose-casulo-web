@@ -1,14 +1,15 @@
 import { Metadata } from 'next';
 import { getActivityBySlug } from '@/services/activities';
-import ActivityDetail from '@/components/ui/ActivityDetail';
+import ActivityDetailWrapper from '@/components/ui/ActivityDetailWrapper';
 import { OG_IMAGE } from '@/lib/config';
 
 type Props = {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const activity = await getActivityBySlug(params.slug);
+  const { slug } = await params;
+  const activity = await getActivityBySlug(slug);
 
   if (!activity) return { title: 'Atividade não encontrada' };
 
@@ -18,12 +19,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: activity.title,
     description,
     alternates: {
-      canonical: `/atividades/${params.slug}`,
+      canonical: `/atividades/${slug}`,
     },
     openGraph: {
       title: `${activity.title} | Acose Casulo`,
       description,
-      url: `/atividades/${params.slug}`,
+      url: `/atividades/${slug}`,
       type: 'article',
       images: activity.media?.url
         ? {
@@ -38,16 +39,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function Page({ params }: Props) {
-  const activity = await getActivityBySlug(params.slug);
+  const { slug } = await params;
+  const activity = await getActivityBySlug(slug);
 
   if (!activity) return null;
 
-  return (
-    <main className="w-[90%] mx-auto py-20">
-      <ActivityDetail
-        activity={activity}
-        onClose={() => (window.location.href = '/atividades')}
-      />
-    </main>
-  );
+  return <ActivityDetailWrapper activity={activity} />;
 }
