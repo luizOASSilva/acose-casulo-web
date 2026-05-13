@@ -23,7 +23,7 @@ export function useAuth(): UseAuthReturn {
   const router = useRouter();
 
   useEffect(() => {
-    apiFetch<Admin>('/auth/me')
+    apiFetch<Admin>('/auth/me', {}, false, true)
       .then(setAdmin)
       .catch(() => setAdmin(null))
       .finally(() => setLoading(false));
@@ -37,7 +37,7 @@ export function useAuth(): UseAuthReturn {
           method: 'POST',
           body: JSON.stringify({ email, password }),
         },
-        true
+        true,
       );
       setAdmin(data);
       router.push('/admin');

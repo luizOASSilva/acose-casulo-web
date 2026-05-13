@@ -19,7 +19,8 @@ function getXsrfToken(): string {
 export async function apiFetch<T = any>(
   endpoint: string,
   options: RequestInit = {},
-  withCsrf = false
+  withCsrf = false,
+  ignoreUnauthorized = false,
 ): Promise<T> {
   if (withCsrf) {
     await getCsrfCookie();
@@ -39,9 +40,11 @@ export async function apiFetch<T = any>(
   });
 
   if (response.status === 401) {
-    const slug = process.env.NEXT_PUBLIC_PANEL_SLUG ?? '';
-    window.location.href = `/acesso/${slug}`;
-    throw new Error('Sessão expirada.');
+    if (!ignoreUnauthorized) {
+      const slug = process.env.NEXT_PUBLIC_PANEL_SLUG ?? '';
+      window.location.href = `/acesso/${slug}`;
+    }
+    throw new Error('Não autenticado.');
   }
 
   if (!response.ok) {
