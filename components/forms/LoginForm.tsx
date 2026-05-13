@@ -1,4 +1,3 @@
-// components/forms/LoginForm.tsx
 'use client';
 
 import { useEffect, useId } from 'react';
@@ -51,6 +50,16 @@ export default function LoginForm() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <LoaderCircle className="animate-spin text-primary" size={32} />
+      </div>
+    );
+  }
+
+  if (admin) return null;
+
   return (
     <motion.section
       initial={{ opacity: 0, y: 16 }}
@@ -61,10 +70,7 @@ export default function LoginForm() {
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
         <div className="space-y-2">
-          <label
-            htmlFor={emailId}
-            className="text-sm font-medium text-neutral-700"
-          >
+          <label htmlFor={emailId} className="text-sm font-medium text-neutral-700">
             E-mail
           </label>
           <div className="group relative">
@@ -103,10 +109,7 @@ export default function LoginForm() {
 
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <label
-              htmlFor={passwordId}
-              className="text-sm font-medium text-neutral-700"
-            >
+            <label htmlFor={passwordId} className="text-sm font-medium text-neutral-700">
               Senha
             </label>
             <button
@@ -173,11 +176,7 @@ export default function LoginForm() {
           className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-md bg-primary px-5 text-sm font-semibold text-white transition hover:brightness-110 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isSubmitting && (
-            <LoaderCircle
-              size={18}
-              className="animate-spin"
-              aria-hidden="true"
-            />
+            <LoaderCircle size={18} className="animate-spin" aria-hidden="true" />
           )}
           <span>{isSubmitting ? 'Entrando...' : 'Entrar'}</span>
         </button>
