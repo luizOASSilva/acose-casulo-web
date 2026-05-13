@@ -252,7 +252,7 @@ export default function Home() {
                 Mapa mostrando a localização do Projeto Casulo em Bragança
                 Paulista, São Paulo.
               </p>
-              <div className="relative w-full h-105 rounded-3xl overflow-hidden shadow-2xl border border-gray-200">
+              <div className="relative w-full h-105 rounded-md overflow-hidden shadow-2xl border border-gray-200">
                 <iframe
                   title="Mapa de localização do Projeto Casulo"
                   src="https://maps.google.com/maps?q=Rua+Francisco+Rodrigues+Dias,+80+Bragança+Paulista&z=15&output=embed"
