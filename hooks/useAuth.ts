@@ -31,9 +31,11 @@ export function useAuth() {
 
     const init = async () => {
       try {
-        const data = await apiFetch<Admin>('/auth/me', {}, true);
+        const data = await apiFetch<Admin>('/auth/me');
+        console.log('auth/me response:', data);
         if (mounted) setAdmin(data);
-      } catch {
+      } catch (err) {
+        console.log('auth/me error:', err);
         clearToken();
         if (mounted) setAdmin(null);
       } finally {
@@ -57,6 +59,7 @@ export function useAuth() {
       },
     );
 
+    console.log('login response:', data);
     setToken(data.token);
     setAdmin(data.user);
     router.push('/admin');
