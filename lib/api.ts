@@ -24,7 +24,7 @@ export async function apiFetch<T = any>(
     await getCsrfCookie();
   }
 
-  const url = `${API_URL}/api${endpoint}`;
+  const url = `${API_URL}${endpoint}`;
 
   const response = await fetch(url, {
     credentials: 'include',

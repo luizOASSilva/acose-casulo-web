@@ -64,7 +64,7 @@ export default async function AcessoPage({ params }: Props) {
           </div>
         </aside>
 
-        <div className="relative flex items-center justify-center overflow-hidden bg-gray-50 px-6 py-12">
+        <div className="relative flex items-center justify-center overflow-hidden px-6 py-12">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,#d46c2b12,transparent_60%)]" />
 
           <div className="relative z-10 w-full max-w-sm">
