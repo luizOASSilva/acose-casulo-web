@@ -1,7 +1,5 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { apiFetch, getToken, setToken, clearToken } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 
 interface Admin {
@@ -28,38 +26,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let mounted = true;
 
     if (!getToken()) {
-      setLoading(false);
-      return;
-    }
-
-    apiFetch<Admin>('/auth/me')
+    apiFetch<Admin>('/auth/me', {
+      credentials: 'include'
+    })
       .then((data) => {
         if (mounted) setAdmin(data);
       })
-      .catch((err) => {
-        clearToken();
+      .catch(() => {
         if (mounted) setAdmin(null);
       })
-      .finally(() => { if (mounted) setLoading(false); });
+      .finally(() => {
+      });
 
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    const data = await apiFetch<{ user: Admin; token: string }>('/auth/login', {
+    await apiFetch('/auth/login', {
       method: 'POST',
+      credentials: 'include',
       body: JSON.stringify({ email, password }),
     });
-    setToken(data.token);
-    setAdmin(data.user);
+
+    const me = await apiFetch<Admin>('/auth/me', {
+      credentials: 'include'
+    });
+
+    setAdmin(me);
     router.push('/admin');
   }, [router]);
 
   const logout = useCallback(async () => {
     try {
-      await apiFetch('/auth/logout', { method: 'POST' });
+      await apiFetch('/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
     } finally {
-      clearToken();
       setAdmin(null);
       router.push('/');
     }
