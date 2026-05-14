@@ -1,5 +1,5 @@
 import HeroMotion from '@/components/sections/Hero/HeroMotion';
-import Reveal from '@/components/ui/Reveal';
+import Reveal from '@/components/animations/Reveal';
 
 interface HeroProps {
   children?: React.ReactNode;

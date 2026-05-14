@@ -1,5 +1,5 @@
 import { Eye, Shield, Target } from 'lucide-react';
-import Reveal from '@/components/ui/Reveal';
+import Reveal from '@/components/animations/Reveal';
 
 const items = [
   {
