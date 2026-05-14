@@ -8,7 +8,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { motion, AnimatePresence } from 'framer-motion';
-import LogoLoader from '../ui/LogoLoader';
+import LogoLoader from '@/components/ui/LogoLoader';
 
 const loginSchema = z.object({
   email: z.string().email('E-mail inválido'),

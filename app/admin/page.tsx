@@ -7,15 +7,13 @@ import LogoLoader from '@/components/ui/LogoLoader';
 
 export default function Admin() {
   const { admin, loading } = useAuth();
-  const router = useRouter();
+  // const router = useRouter();
 
-  console.log('passei aqui', admin);
-
-  useEffect(() => {
-    if (!loading && !admin) {
-      router.replace('/');
-    }
-  }, [admin, loading, router]);
+  // useEffect(() => {
+  //   if (!loading && !admin) {
+  //     router.replace('/');
+  //   }
+  // }, [admin, loading, router]);
 
   if (loading || !admin) return <LogoLoader />;
 
