@@ -8,7 +8,7 @@ interface Props {
   params: Promise<{ token: string }>;
 }
 
-export default async function AcessoPage({ params }: Props) {
+export default async function Acesso({ params }: Props) {
   const { token } = await params;
 
   if (!SECRET_TOKEN || token !== SECRET_TOKEN) {
