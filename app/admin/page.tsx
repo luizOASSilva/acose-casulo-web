@@ -10,8 +10,7 @@ export default function Admin() {
   const router = useRouter();
 
   useEffect(() => {
-    if (!admin) {
-      console.log('admin faltando');
+    if (!loading && !admin) {
       router.replace('/');
     }
   }, [admin, loading, router]);
