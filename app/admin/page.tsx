@@ -9,6 +9,8 @@ export default function Admin() {
   const { admin, loading } = useAuth();
   const router = useRouter();
 
+  console.log('passei aqui', admin);
+
   useEffect(() => {
     if (!loading && !admin) {
       router.replace('/');
