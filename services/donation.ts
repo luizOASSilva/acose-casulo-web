@@ -1,4 +1,4 @@
-import { apiFetch } from '@/lib/api';
+import { api } from '@/lib/api';
 
 export interface PixResponse {
   id: number;
@@ -14,31 +14,22 @@ export interface DonationStatusResponse {
 }
 
 export async function createDonation(data: unknown): Promise<PixResponse> {
-  return apiFetch('/donations', {
-    method: 'POST',
-    body: JSON.stringify(data),
-  });
+  return api.post<PixResponse>('/donations', data);
 }
 
 export async function updateDonation(id: number, data: unknown): Promise<void> {
-  await apiFetch(`/donations/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify(data),
-  });
+  await api.put(`/donations/${id}`, data);
 }
 
 export async function updateDonationPix(
   id: number,
   amount: number
 ): Promise<PixResponse> {
-  return apiFetch(`/donations/${id}/pix`, {
-    method: 'PUT',
-    body: JSON.stringify({ amount }),
-  });
+  return api.put<PixResponse>(`/donations/${id}/pix`, { amount });
 }
 
 export async function getDonationStatus(
   id: number
 ): Promise<DonationStatusResponse> {
-  return apiFetch(`/donations/${id}/status`);
+  return api.get<DonationStatusResponse>(`/donations/${id}/status`);
 }

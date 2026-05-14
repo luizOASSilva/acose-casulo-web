@@ -2,21 +2,18 @@ const API_URL =
   process.env.NEXT_PUBLIC_API_URL ?? 'https://api.luizoassilva.xyz';
 
 async function ensureCSRF() {
-  // Sanctum CSRF cookie (obrigatório pra POST/PUT/DELETE)
   await fetch(`${API_URL}/sanctum/csrf-cookie`, {
     credentials: 'include',
   });
 }
 
-export async function apiFetch<T = any>(
+async function request<T>(
   endpoint: string,
   options: RequestInit = {},
-  ignoreUnauthorized = false,
 ): Promise<T> {
 
   const method = (options.method || 'GET').toUpperCase();
 
-  // 🔥 CSRF apenas para mutações (evita overhead em GET)
   const needsCSRF = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method);
 
   if (needsCSRF) {
@@ -33,19 +30,14 @@ export async function apiFetch<T = any>(
     },
   });
 
-  // 🔐 não redireciona — só estado
   if (response.status === 401) {
-    if (!ignoreUnauthorized) {
-      throw new Error('UNAUTHORIZED');
-    }
+    throw new Error('UNAUTHORIZED');
   }
 
-  // 🔒 CSRF inválido
   if (response.status === 419) {
     throw new Error('CSRF_ERROR');
   }
 
-  // ❌ erro genérico
   if (!response.ok) {
     let message = 'Erro na requisição';
 
@@ -59,3 +51,23 @@ export async function apiFetch<T = any>(
 
   return response.json();
 }
+
+export const api = {
+  get: <T>(url: string) =>
+    request<T>(url, { method: 'GET' }),
+
+  post: <T>(url: string, body?: any) =>
+    request<T>(url, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+
+  put: <T>(url: string, body?: any) =>
+    request<T>(url, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    }),
+
+  delete: <T>(url: string) =>
+    request<T>(url, { method: 'DELETE' }),
+};

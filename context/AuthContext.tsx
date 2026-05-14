@@ -9,7 +9,7 @@ import {
   ReactNode
 } from 'react';
 
-import { apiFetch } from '@/lib/api';
+import { api } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 
 interface Admin {
@@ -32,20 +32,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  // 🔐 check login (apenas estado)
   useEffect(() => {
     let mounted = true;
 
-    apiFetch<Admin>('/auth/me', {
-      credentials: 'include'
-    })
+    api.get<Admin>('/auth/me')
       .then((data) => {
         if (mounted) setAdmin(data);
       })
-      .catch((err) => {
-        if (mounted) {
-          setAdmin(null);
-        }
+      .catch(() => {
+        if (mounted) setAdmin(null);
       })
       .finally(() => {
         if (mounted) setLoading(false);
@@ -56,30 +51,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // 🔐 login manual (depois do acesso)
   const login = useCallback(async (email: string, password: string) => {
-    await apiFetch('/auth/login', {
-      method: 'POST',
-      credentials: 'include',
-      body: JSON.stringify({ email, password }),
+    await api.post('/auth/login', {
+      email,
+      password,
     });
 
-    const me = await apiFetch<Admin>('/auth/me', {
-      credentials: 'include'
-    });
+    const me = await api.get<Admin>('/auth/me');
 
     setAdmin(me);
-
     router.push('/admin');
   }, [router]);
 
-  // 🔐 logout
   const logout = useCallback(async () => {
     try {
-      await apiFetch('/auth/logout', {
-        method: 'POST',
-        credentials: 'include',
-      });
+      await api.post('/auth/logout');
     } finally {
       setAdmin(null);
       router.push('/');
