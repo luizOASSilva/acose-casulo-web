@@ -3,7 +3,7 @@
 import { useEffect, useId } from 'react';
 import { useRouter } from 'next/navigation';
 import { Mail, Lock, LoaderCircle } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/context/AuthContext';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
