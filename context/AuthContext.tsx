@@ -1,5 +1,15 @@
 'use client';
 
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  ReactNode
+} from 'react';
+
+import { apiFetch } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 
 interface Admin {
@@ -25,7 +35,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    if (!getToken()) {
     apiFetch<Admin>('/auth/me', {
       credentials: 'include'
     })
@@ -36,6 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (mounted) setAdmin(null);
       })
       .finally(() => {
+        if (mounted) setLoading(false);
       });
 
     return () => {
