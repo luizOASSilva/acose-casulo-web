@@ -8,6 +8,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { motion, AnimatePresence } from 'framer-motion';
+import LogoLoader from '../ui/LogoLoader';
 
 const loginSchema = z.object({
   email: z.string().email('E-mail inválido'),
@@ -51,17 +52,7 @@ export default function LoginForm() {
   };
 
   if (loading || admin) {
-    return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.2 }}
-        className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-white/60"
-      >
-        <LoaderCircle className="animate-spin text-primary" size={36} strokeWidth={2.5} />
-      </motion.div>
-    );
+    return <LogoLoader />
   }
 
   return (
