@@ -32,6 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
+  // 🔐 check login (apenas estado)
   useEffect(() => {
     let mounted = true;
 
@@ -41,8 +42,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .then((data) => {
         if (mounted) setAdmin(data);
       })
-      .catch(() => {
-        if (mounted) setAdmin(null);
+      .catch((err) => {
+        if (mounted) {
+          setAdmin(null);
+        }
       })
       .finally(() => {
         if (mounted) setLoading(false);
@@ -53,6 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  // 🔐 login manual (depois do acesso)
   const login = useCallback(async (email: string, password: string) => {
     await apiFetch('/auth/login', {
       method: 'POST',
@@ -65,9 +69,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     setAdmin(me);
+
     router.push('/admin');
   }, [router]);
 
+  // 🔐 logout
   const logout = useCallback(async () => {
     try {
       await apiFetch('/auth/logout', {
