@@ -1,4 +1,5 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'https://api.luizoassilva.xyz';
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ?? 'https://api.luizoassilva.xyz';
 
 export async function apiFetch<T = any>(
   endpoint: string,
@@ -18,13 +19,12 @@ export async function apiFetch<T = any>(
 
   if (response.status === 401) {
     if (!ignoreUnauthorized) {
-      window.location.href = '/acesso';
+      throw new Error('UNAUTHORIZED');
     }
-    throw new Error('Não autenticado.');
   }
 
   if (response.status === 419) {
-    throw new Error('Erro de sessão. Tente novamente.');
+    throw new Error('CSRF_ERROR');
   }
 
   if (!response.ok) {
