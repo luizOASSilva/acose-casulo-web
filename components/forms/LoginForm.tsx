@@ -36,7 +36,7 @@ export default function LoginForm() {
   });
 
   useEffect(() => {
-    console.log('passou aqui')
+    console.log('passou aqui', admin)
     if (!loading && admin) {
       router.replace('/admin');
     }
