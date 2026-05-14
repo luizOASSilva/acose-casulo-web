@@ -6,7 +6,7 @@ import { useEffect } from 'react';
 import LogoLoader from '@/components/ui/LogoLoader';
 
 export default function Admin() {
-  const { admin, loading } = useAuth();
+  // const { admin, loading } = useAuth();
   // const router = useRouter();
 
   // useEffect(() => {
@@ -15,7 +15,7 @@ export default function Admin() {
   //   }
   // }, [admin, loading, router]);
 
-  if (loading || !admin) return <LogoLoader />;
+  // if (loading || !admin) return <LogoLoader />;
 
   return (
     <div>
