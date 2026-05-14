@@ -1,51 +1,57 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
 
-async function getCsrfCookie(): Promise<void> {
-  await fetch(`${API_URL}/sanctum/csrf-cookie`, {
-    credentials: 'include',
-  });
+const TOKEN_KEY = 'admin_token';
+
+export function getToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem(TOKEN_KEY);
 }
 
-function getXsrfToken(): string {
-  if (typeof document === 'undefined') return '';
-  return (
-    document.cookie
-      .split('; ')
-      .find((row) => row.startsWith('XSRF-TOKEN='))
-      ?.split('=')[1]
-      ?.replace(/%3D/g, '=') ?? ''
-  );
+export function setToken(token: string): void {
+  localStorage.setItem(TOKEN_KEY, token);
+}
+
+export function clearToken(): void {
+  localStorage.removeItem(TOKEN_KEY);
 }
 
 export async function apiFetch<T = any>(
   endpoint: string,
   options: RequestInit = {},
-  withCsrf = false
+  ignoreUnauthorized = false,
 ): Promise<T> {
-  if (withCsrf) {
-    await getCsrfCookie();
-  }
+  const token = getToken();
 
-  const url = `${API_URL}${endpoint}`;
-
-  const response = await fetch(url, {
-    credentials: 'include',
+  const response = await fetch(`${API_URL}${endpoint}`, {
+    ...options,
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json',
-      'X-XSRF-TOKEN': getXsrfToken(),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(options.headers || {}),
     },
-    ...options,
   });
 
+  if (response.status === 401) {
+    if (!ignoreUnauthorized) {
+      clearToken();
+      const slug = process.env.NEXT_PUBLIC_PANEL_SLUG ?? '';
+      window.location.href = `/acesso/${slug}`;
+    }
+    throw new Error('Não autenticado.');
+  }
+
+  if (response.status === 419) {
+    throw new Error('Erro de sessão. Tente novamente.');
+  }
+
   if (!response.ok) {
-    let errorMessage = 'Erro na requisição';
+    let message = 'Erro na requisição';
     try {
-      const errorData = await response.json();
-      errorMessage = errorData.message || errorData.error || errorMessage;
+      const data = await response.json();
+      message = data?.message || message;
     } catch {}
-    throw new Error(errorMessage);
+    throw new Error(message);
   }
 
   return response.json();

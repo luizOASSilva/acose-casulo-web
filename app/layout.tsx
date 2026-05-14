@@ -4,6 +4,7 @@ import './globals.css';
 import { SITE_URL, SITE_NAME, SITE_DESCRIPTION, OG_IMAGE } from '@/lib/config';
 
 import { MotionProvider } from '@/components/providers/MotionProvider';
+import { AuthProvider } from '@/context/AuthContext';
 
 const openSans = Open_Sans({
   variable: '--font-open-sans',
@@ -79,7 +80,9 @@ export default function RootLayout({
       </head>
 
       <body className="min-h-screen flex flex-col">
-        <MotionProvider>{children}</MotionProvider>
+        <AuthProvider>
+          <MotionProvider>{children}</MotionProvider>
+        </AuthProvider>
       </body>
     </html>
   );

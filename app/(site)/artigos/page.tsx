@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import ArticleRow from '@/components/ui/ArticleRow';
 import { getArticles } from '@/services/articles';
 import { OG_IMAGE } from '@/lib/config';
-import Reveal from '@/components/ui/Reveal';
+import Reveal from '@/components/animations/Reveal';
 
 export const metadata: Metadata = {
   title: 'Artigos',

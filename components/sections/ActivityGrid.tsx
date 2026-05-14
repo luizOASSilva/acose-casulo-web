@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { getActivities } from '@/services/activities';
 import ActivityCard from '@/components/ui/ActivityCard';
+import Reveal from '@/components/animations/Reveal';
 
 export default async function ActivityGrid() {
   const activities = await getActivities();
@@ -13,30 +14,37 @@ export default async function ActivityGrid() {
 
       {activities.length > 0 ? (
         <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {activities.map((activity) => (
-            <li key={activity.id}>
-              <Link
-                href={`/atividades/${activity.slug}`}
-                className="
-                  group
-                  block
-                  rounded-md
-                  transition-transform
-                  duration-200
-                  hover:-translate-y-1
-                  focus-visible:outline-none
-                  focus-visible:ring-2
-                  focus-visible:ring-primary
-                "
-                aria-label={`Ver detalhes da atividade ${activity.title}`}
-              >
-                <ActivityCard activity={activity} />
-              </Link>
-            </li>
+          {activities.map((activity, index) => (
+            <Reveal
+              key={activity.id}
+              delay={index * 0.1}
+            >
+              <li>
+                <Link
+                  href={`/atividades/${activity.slug}`}
+                  className="
+                    group
+                    block
+                    rounded-md
+                    transition-transform
+                    duration-200
+                    hover:-translate-y-1
+                    focus-visible:outline-none
+                    focus-visible:ring-2
+                    focus-visible:ring-primary
+                  "
+                  aria-label={`Ver detalhes da atividade ${activity.title}`}
+                >
+                  <ActivityCard activity={activity} />
+                </Link>
+              </li>
+            </Reveal>
           ))}
         </ul>
       ) : (
-        <p className="text-gray-600 italic">Nenhuma atividade encontrada.</p>
+        <p className="text-gray-600 italic">
+          Nenhuma atividade encontrada.
+        </p>
       )}
     </section>
   );

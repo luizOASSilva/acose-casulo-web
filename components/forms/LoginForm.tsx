@@ -1,14 +1,14 @@
-// components/forms/LoginForm.tsx
 'use client';
 
 import { useEffect, useId } from 'react';
 import { useRouter } from 'next/navigation';
 import { Mail, Lock, LoaderCircle } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/context/AuthContext';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { motion, AnimatePresence } from 'framer-motion';
+import LogoLoader from '../ui/LogoLoader';
 
 const loginSchema = z.object({
   email: z.string().email('E-mail inválido'),
@@ -37,7 +37,7 @@ export default function LoginForm() {
 
   useEffect(() => {
     if (!loading && admin) {
-      router.push('/admin');
+      router.replace('/admin');
     }
   }, [admin, loading, router]);
 
@@ -51,6 +51,10 @@ export default function LoginForm() {
     }
   };
 
+  if (loading || admin) {
+    return <LogoLoader />
+  }
+
   return (
     <motion.section
       initial={{ opacity: 0, y: 16 }}
@@ -61,10 +65,7 @@ export default function LoginForm() {
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
         <div className="space-y-2">
-          <label
-            htmlFor={emailId}
-            className="text-sm font-medium text-neutral-700"
-          >
+          <label htmlFor={emailId} className="text-sm font-medium text-neutral-700">
             E-mail
           </label>
           <div className="group relative">
@@ -83,7 +84,7 @@ export default function LoginForm() {
               aria-invalid={!!errors.email}
               placeholder="voce@exemplo.com"
               {...register('email')}
-              className="h-12 w-full rounded-md border border-neutral-200 bg-white pl-12 pr-4 text-sm text-[#141210] outline-none transition placeholder:text-neutral-400 focus:border-primary aria-[invalid=true]:border-red-300"
+              className="h-12 w-full rounded-md border border-neutral-200 bg-white pl-12 pr-4 text-sm text-[#141210] outline-none transition placeholder:text-neutral-400 focus:border-primary aria-invalid:border-red-300"
             />
           </div>
           <AnimatePresence>
@@ -103,10 +104,7 @@ export default function LoginForm() {
 
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <label
-              htmlFor={passwordId}
-              className="text-sm font-medium text-neutral-700"
-            >
+            <label htmlFor={passwordId} className="text-sm font-medium text-neutral-700">
               Senha
             </label>
             <button
@@ -131,7 +129,7 @@ export default function LoginForm() {
               aria-invalid={!!errors.password}
               placeholder="Digite sua senha"
               {...register('password')}
-              className="h-12 w-full rounded-md border border-neutral-200 bg-white pl-12 pr-4 text-sm text-[#141210] outline-none transition placeholder:text-neutral-400 focus:border-primary aria-[invalid=true]:border-red-300"
+              className="h-12 w-full rounded-md border border-neutral-200 bg-white pl-12 pr-4 text-sm text-[#141210] outline-none transition placeholder:text-neutral-400 focus:border-primary aria-invalid:border-red-300"
             />
           </div>
           <AnimatePresence>
@@ -172,7 +170,7 @@ export default function LoginForm() {
           aria-busy={isSubmitting}
           className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-md bg-primary px-5 text-sm font-semibold text-white transition hover:brightness-110 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
         >
-            <span>Entrar</span>
+          <span>Entrar</span>
         </button>
       </form>
     </motion.section>
