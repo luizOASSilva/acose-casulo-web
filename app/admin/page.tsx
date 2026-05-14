@@ -9,12 +9,8 @@ export default function Admin() {
   const { admin, loading } = useAuth();
   const router = useRouter();
 
-  console.log('[Admin] render — loading:', loading, '| admin:', admin);
-
   useEffect(() => {
-    console.log('[Admin] useEffect — loading:', loading, '| admin:', admin);
     if (!loading && !admin) {
-      console.log('[Admin] redirecionando para /');
       router.replace('/');
     }
   }, [admin, loading, router]);
