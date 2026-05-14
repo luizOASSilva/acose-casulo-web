@@ -28,19 +28,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let mounted = true;
 
     if (!getToken()) {
-      console.log('[Auth] sem token, pulando /auth/me');
       setLoading(false);
       return;
     }
 
-    console.log('[Auth] tem token, chamando /auth/me');
     apiFetch<Admin>('/auth/me')
       .then((data) => {
-        console.log('[Auth] /auth/me ok:', data);
         if (mounted) setAdmin(data);
       })
       .catch((err) => {
-        console.error('[Auth] /auth/me falhou:', err);
         clearToken();
         if (mounted) setAdmin(null);
       })
@@ -54,7 +50,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
-    console.log('[Auth] login ok, admin:', data.user);
     setToken(data.token);
     setAdmin(data.user);
     router.push('/admin');
