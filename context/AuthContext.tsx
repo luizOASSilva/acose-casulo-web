@@ -47,7 +47,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     setToken(data.token);
     setAdmin(data.user);
-    console.log(data.user, data.token);
     router.push('/admin');
   }, [router]);
 
