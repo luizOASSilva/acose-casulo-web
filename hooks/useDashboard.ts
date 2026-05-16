@@ -1,14 +1,6 @@
 import { useEffect, useState } from 'react';
-import { getDashboard, type DashboardData } from '@/services/admin/dashboard';
-
-export type { DashboardData };
-
-interface UseDashboardReturn {
-  data: DashboardData | null;
-  loading: boolean;
-  error: string | null;
-  refetch: () => void;
-}
+import { getDashboard } from '@/services/admin/dashboard';
+import type { DashboardData, UseDashboardReturn } from '@/types/dashboard';
 
 export function useDashboard(): UseDashboardReturn {
   const [data, setData] = useState<DashboardData | null>(null);
