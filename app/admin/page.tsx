@@ -26,7 +26,7 @@ import ActivityItem from '@/components/admin/dashboard/ActivityItem';
 import QuickActionCard from '@/components/admin/dashboard/QuickActionCard';
 import AnalyticsCard from '@/components/admin/dashboard/AnalyticsCard';
 
-export default function AdminPage() {
+export default function Admin() {
   const { admin, loading: authLoading } = useAuth();
   const router = useRouter();
 
