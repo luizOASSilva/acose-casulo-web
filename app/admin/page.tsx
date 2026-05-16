@@ -26,10 +26,46 @@ import ActivityItem from '@/components/admin/dashboard/ActivityItem';
 import QuickActionCard from '@/components/admin/dashboard/QuickActionCard';
 import AnalyticsCard from '@/components/admin/dashboard/AnalyticsCard';
 
-export default function Admin() {
+const skeletonCls = 'animate-pulse rounded-md bg-zinc-200 dark:bg-zinc-700';
+
+function AnalyticsSkeleton() {
+  return (
+    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div key={i} className={`${skeletonCls} h-28`} />
+      ))}
+    </div>
+  );
+}
+
+function StatsSkeleton() {
+  return (
+    <div className="space-y-4">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div key={i} className={`${skeletonCls} h-5`} />
+      ))}
+    </div>
+  );
+}
+
+function fmtGrowth(raw?: string): string {
+  if (!raw) return '—';
+  return raw.endsWith('%') ? raw : `${raw}%`;
+}
+
+function statusLabel(value: string | undefined): string {
+  if (!value) return '—';
+  const map: Record<string, string> = {
+    Online: 'Online',
+    Ativo: 'Ativo',
+    Offline: 'Offline',
+  };
+  return map[value] ?? value;
+}
+
+export default function AdminPage() {
   const { admin, loading: authLoading } = useAuth();
   const router = useRouter();
-
   const { data, loading: dataLoading, error, refetch } = useDashboard();
 
   useEffect(() => {
@@ -38,37 +74,9 @@ export default function Admin() {
     }
   }, [admin, authLoading, router]);
 
-  if (authLoading || !admin) {
-    return <LogoLoader />;
-  }
+  if (authLoading || !admin) return <LogoLoader />;
 
   const name = admin?.name?.split(' ')[0] ?? 'Admin';
-
-  const skeletonCls =
-    'animate-pulse rounded-md bg-zinc-200 dark:bg-zinc-700';
-
-  function AnalyticsSkeleton() {
-    return (
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div
-            key={i}
-            className={`${skeletonCls} h-28`}
-          />
-        ))}
-      </div>
-    );
-  }
-
-  function StatsSkeleton() {
-    return (
-      <div className="space-y-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className={`${skeletonCls} h-5`} />
-        ))}
-      </div>
-    );
-  }
 
   if (error) {
     return (
@@ -80,7 +88,7 @@ export default function Admin() {
           <p className="text-sm text-zinc-500">{error}</p>
           <button
             onClick={refetch}
-            className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white"
+            className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white cursor-pointer"
           >
             <RefreshCw size={15} />
             Tentar novamente
@@ -88,21 +96,6 @@ export default function Admin() {
         </div>
       </main>
     );
-  }
-
-  function fmtGrowth(raw?: string): string {
-    if (!raw) return '—';
-    return raw.endsWith('%') ? raw : `${raw}%`;
-  }
-
-  function statusLabel(value: string | undefined): string {
-    if (!value) return '—';
-    const map: Record<string, string> = {
-      Online: 'Online',
-      Ativo: 'Ativo',
-      Offline: 'Offline',
-    };
-    return map[value] ?? value;
   }
 
   return (
@@ -116,7 +109,6 @@ export default function Admin() {
                 Bem-vindo novamente,
                 <span className="text-primary"> {name}</span> 👋
               </h1>
-
               <p className="mt-4 max-w-2xl text-base leading-relaxed text-zinc-600">
                 Gerencie conteúdos, acompanhe métricas, monitore atividades e
                 entre no modo de edição visual do site.
@@ -129,10 +121,7 @@ export default function Admin() {
             >
               <Pencil size={18} />
               Entrar no modo edição
-              <ArrowRight
-                size={18}
-                className="transition group-hover:translate-x-1"
-              />
+              <ArrowRight size={18} className="transition group-hover:translate-x-1" />
             </Link>
           </div>
         </section>
@@ -140,12 +129,8 @@ export default function Admin() {
         <section>
           <div className="mb-5 flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-semibold text-zinc-900">
-                Analytics
-              </h2>
-              <p className="mt-1 text-sm text-zinc-500">
-                Dados gerais do projeto
-              </p>
+              <h2 className="text-2xl font-semibold text-zinc-900">Analytics</h2>
+              <p className="mt-1 text-sm text-zinc-500">Dados gerais do projeto</p>
             </div>
 
             <div className="flex items-center gap-4">
@@ -155,10 +140,7 @@ export default function Admin() {
                 aria-label="Atualizar dados"
                 className="text-zinc-400 transition hover:text-zinc-700 disabled:opacity-40"
               >
-                <RefreshCw
-                  size={16}
-                  className={dataLoading ? 'animate-spin' : ''}
-                />
+                <RefreshCw size={16} className={dataLoading ? 'animate-spin' : ''} />
               </button>
 
               <Link
@@ -181,29 +163,22 @@ export default function Admin() {
                 value={data?.analytics.visitors ?? '—'}
                 growth={fmtGrowth(data?.analytics.visitors_growth)}
               />
-
               <AnalyticsCard
                 icon={<HeartHandshake size={22} />}
                 title="Doações iniciadas"
                 value={String(data?.analytics.donations ?? '—')}
                 growth={fmtGrowth(data?.analytics.donations_growth)}
               />
-
               <AnalyticsCard
                 icon={<FileText size={22} />}
                 title="Artigos lidos"
                 value={data?.analytics.articles_read ?? '—'}
                 growth="—"
               />
-
               <AnalyticsCard
                 icon={<BarChart3 size={22} />}
                 title="Conversão"
-                value={
-                  data?.analytics.conversion
-                    ? `${data.analytics.conversion}%`
-                    : '—'
-                }
+                value={data?.analytics.conversion ? `${data.analytics.conversion}%` : '—'}
                 growth={fmtGrowth(data?.analytics.conversion_growth)}
               />
             </div>
@@ -212,9 +187,7 @@ export default function Admin() {
 
         <section className="p-4">
           <div className="mb-5">
-            <h2 className="text-2xl font-semibold text-zinc-900">
-              Ações rápidas
-            </h2>
+            <h2 className="text-2xl font-semibold text-zinc-900">Ações rápidas</h2>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -224,21 +197,18 @@ export default function Admin() {
               description="Criar novo conteúdo institucional."
               href="/admin/articles/new"
             />
-
             <QuickActionCard
               icon={<ActivityIcon size={20} />}
               title="Nova atividade"
               description="Adicionar atividade ao site."
               href="/admin/activities/new"
             />
-
             <QuickActionCard
               icon={<HeartHandshake size={20} />}
               title="Novo parceiro"
               description="Cadastrar parceiro institucional."
               href="/admin/partners/new"
             />
-
             <QuickActionCard
               icon={<ShieldCheck size={20} />}
               title="Transparência"
@@ -253,40 +223,19 @@ export default function Admin() {
           <div className="rounded-md border border-white/40 bg-white/70 p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)] backdrop-blur-xl">
             <div className="mb-6 flex items-center justify-between">
               <div>
-                <h2 className="text-2xl font-semibold text-zinc-900">
-                  Atividade recente
-                </h2>
-                <p className="mt-1 text-sm text-zinc-500">
-                  Últimas ações realizadas
-                </p>
+                <h2 className="text-2xl font-semibold text-zinc-900">Atividade recente</h2>
+                <p className="mt-1 text-sm text-zinc-500">Últimas ações realizadas</p>
               </div>
-
               <button className="text-sm font-medium text-zinc-600 transition hover:text-zinc-950">
                 Ver tudo
               </button>
             </div>
 
             <div className="space-y-4">
-              <ActivityItem
-                title="Hero atualizado"
-                description="Texto principal alterado."
-                time="Há 12 minutos"
-              />
-              <ActivityItem
-                title="Novo parceiro adicionado"
-                description="Logo institucional enviada."
-                time="Há 1 hora"
-              />
-              <ActivityItem
-                title="PDF atualizado"
-                description="Documento financeiro substituído."
-                time="Hoje às 10:42"
-              />
-              <ActivityItem
-                title="Novo artigo publicado"
-                description="Conteúdo publicado na seção artigos."
-                time="Ontem"
-              />
+              <ActivityItem title="Hero atualizado" description="Texto principal alterado." time="Há 12 minutos" />
+              <ActivityItem title="Novo parceiro adicionado" description="Logo institucional enviada." time="Há 1 hora" />
+              <ActivityItem title="PDF atualizado" description="Documento financeiro substituído." time="Hoje às 10:42" />
+              <ActivityItem title="Novo artigo publicado" description="Conteúdo publicado na seção artigos." time="Ontem" />
             </div>
           </div>
 
@@ -294,12 +243,8 @@ export default function Admin() {
 
             <div className="rounded-md border border-white/40 bg-white/70 p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)] backdrop-blur-xl">
               <div>
-                <h2 className="text-2xl font-semibold text-zinc-900">
-                  Conteúdo
-                </h2>
-                <p className="mt-1 text-sm text-zinc-500">
-                  Dados gerais do CMS
-                </p>
+                <h2 className="text-2xl font-semibold text-zinc-900">Conteúdo</h2>
+                <p className="mt-1 text-sm text-zinc-500">Dados gerais do CMS</p>
               </div>
 
               <div className="mt-6 space-y-4">
@@ -307,22 +252,10 @@ export default function Admin() {
                   <StatsSkeleton />
                 ) : (
                   <>
-                    <StatItem
-                      label="Artigos publicados"
-                      value={String(data?.cms.articles ?? '—').padStart(2, '0')}
-                    />
-                    <StatItem
-                      label="Atividades"
-                      value={String(data?.cms.activities ?? '—').padStart(2, '0')}
-                    />
-                    <StatItem
-                      label="Parceiros"
-                      value={String(data?.cms.partners ?? '—').padStart(2, '0')}
-                    />
-                    <StatItem
-                      label="Documentos"
-                      value={String(data?.cms.documents ?? '—').padStart(2, '0')}
-                    />
+                    <StatItem label="Artigos publicados" value={String(data?.cms.articles ?? '—').padStart(2, '0')} />
+                    <StatItem label="Atividades" value={String(data?.cms.activities ?? '—').padStart(2, '0')} />
+                    <StatItem label="Parceiros" value={String(data?.cms.partners ?? '—').padStart(2, '0')} />
+                    <StatItem label="Documentos" value={String(data?.cms.documents ?? '—').padStart(2, '0')} />
                   </>
                 )}
               </div>
@@ -330,12 +263,8 @@ export default function Admin() {
 
             <div className="rounded-md border border-white/40 bg-white/70 p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)] backdrop-blur-xl">
               <div>
-                <h2 className="text-2xl font-semibold text-zinc-900">
-                  Sistema
-                </h2>
-                <p className="mt-1 text-sm text-zinc-500">
-                  Estado atual da aplicação
-                </p>
+                <h2 className="text-2xl font-semibold text-zinc-900">Sistema</h2>
+                <p className="mt-1 text-sm text-zinc-500">Estado atual da aplicação</p>
               </div>
 
               <div className="mt-6 space-y-4">
@@ -343,14 +272,8 @@ export default function Admin() {
                   <StatsSkeleton />
                 ) : (
                   <>
-                    <StatusItem
-                      label="API"
-                      status={statusLabel(data?.status.api)}
-                    />
-                    <StatusItem
-                      label="Analytics"
-                      status={statusLabel(data?.status.analytics)}
-                    />
+                    <StatusItem label="API" status={statusLabel(data?.status.api)} />
+                    <StatusItem label="Analytics" status={statusLabel(data?.status.analytics)} />
                     <StatusItem label="Último deploy" status="Hoje" />
                     <StatusItem label="Drafts pendentes" status="3" />
                   </>

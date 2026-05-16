@@ -1,28 +1,7 @@
 import { useEffect, useState } from 'react';
+import { getDashboard, type DashboardData } from '@/services/admin/dashboard';
 
-export interface DashboardData {
-  analytics: {
-    visitors: string;
-    visitors_growth: string;
-    donations: number;
-    donations_growth: string;
-    articles_read: string;
-    conversion: string;
-    conversion_growth?: string;
-  };
-  cms: {
-    articles: number;
-    partners: number;
-    activities: number;
-    documents: number;
-  };
-  status: {
-    api: string;
-    analytics: string;
-    last_deploy?: string;
-    pending_drafts?: number;
-  };
-}
+export type { DashboardData };
 
 interface UseDashboardReturn {
   data: DashboardData | null;
@@ -30,8 +9,6 @@ interface UseDashboardReturn {
   error: string | null;
   refetch: () => void;
 }
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
 
 export function useDashboard(): UseDashboardReturn {
   const [data, setData] = useState<DashboardData | null>(null);
@@ -42,47 +19,25 @@ export function useDashboard(): UseDashboardReturn {
   useEffect(() => {
     let cancelled = false;
 
-    async function fetchDashboard() {
+    async function load() {
       setLoading(true);
       setError(null);
 
       try {
-        const res = await fetch(`${API_BASE_URL}/api/admin/dashboard`, {
-          headers: {
-            Accept: 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-          },
-          credentials: 'include',
-        });
-
-        if (!res.ok) {
-          throw new Error(`Erro ${res.status}: ${res.statusText}`);
-        }
-
-        const json: DashboardData = await res.json();
-
-        if (!cancelled) {
-          setData(json);
-        }
+        const json = await getDashboard();
+        if (!cancelled) setData(json);
       } catch (err) {
-        if (!cancelled) {
+        if (!cancelled)
           setError(err instanceof Error ? err.message : 'Erro ao carregar dados');
-        }
       } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
+        if (!cancelled) setLoading(false);
       }
     }
 
-    fetchDashboard();
+    load();
 
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [trigger]);
 
-  const refetch = () => setTrigger((t) => t + 1);
-
-  return { data, loading, error, refetch };
+  return { data, loading, error, refetch: () => setTrigger((t) => t + 1) };
 }
