@@ -63,15 +63,16 @@ export default function ArticleListContainer({ articles, isAdmin = false }: Arti
           {articles.map((article) => (
             <li key={article.id} className="relative group py-4 flex justify-between items-center transition-all hover:bg-gray-50/50 rounded-xl px-4">
               <div className="flex-1">
-                <ArticleRow article={article} isAdmin={false} />
+                <ArticleRow article={article} isAdmin={isAdmin} />
               </div>
 
               {isAdmin && (
                 <div className="ml-6 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200 transform translate-x-2 group-hover:translate-x-0 z-10">
                   
                   <button
-                    onClick={() => router.push(`/admin/artigos/editar/${article.id}`)}
-                    className="p-2.5 text-gray-600 bg-gray-100 hover:bg-gray-200 hover:text-gray-900 rounded-xl transition-all active:scale-95"
+                    onClick={() => { console.log('article.id', article.id) 
+                        router.push(`/admin/artigos/editar/${article.id}`) }}
+                    className="p-2.5 text-gray-600 bg-gray-100 hover:bg-gray-200 hover:text-primary rounded-xl transition-all active:scale-95"
                     title="Editar Artigo"
                   >
                     <Edit3 className="w-5 h-5" />

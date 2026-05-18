@@ -11,7 +11,7 @@ interface ArticleRowProps {
 }
 
 export default function ArticleRow({ article, isAdmin = false }: ArticleRowProps) {
-  const basePath = isAdmin ? '/admin/artigos' : '/artigos';
+  const basePath = '/artigos';
 
   const formattedDate = new Intl.DateTimeFormat('pt-BR', {
     day: '2-digit',
@@ -20,27 +20,8 @@ export default function ArticleRow({ article, isAdmin = false }: ArticleRowProps
     timeZone: 'UTC',
   }).format(new Date(article.created_at));
 
-  return (
-    <Link
-      href={`${basePath}/${article.slug}`}
-      aria-label={isAdmin ? `Editar artigo: ${article.title}` : `Ler artigo: ${article.title}, por ${article.author.name}`}
-      className="
-        group
-        flex
-        flex-row
-        gap-4
-        py-5
-        rounded-2xl
-        transition-colors
-        duration-200
-        hover:bg-black/[0.02] /* 🔥 Corrigido de 0.5 (50%) para um preto sutil de 2% */
-        focus-visible:outline-none
-        focus-visible:ring-2
-        focus-visible:ring-primary
-        focus-visible:ring-offset-2
-        w-full
-      "
-    >
+  const content = (
+    <>
       <div
         className="
           relative
@@ -66,7 +47,6 @@ export default function ArticleRow({ article, isAdmin = false }: ArticleRowProps
             group-hover:scale-[1.02]
           "
         />
-
         <div className="absolute inset-0 bg-black/5" />
       </div>
 
@@ -167,6 +147,49 @@ export default function ArticleRow({ article, isAdmin = false }: ArticleRowProps
           )}
         </div>
       </div>
+    </>
+  );
+
+  if (isAdmin) {
+    return (
+      <div
+        className="
+          group
+          flex
+          flex-row
+          gap-4
+          py-5
+          rounded-2xl
+          w-full
+        "
+      >
+        {content}
+      </div>
+    );
+  }
+
+  return (
+    <Link
+      href={`${basePath}/${article.slug}`}
+      aria-label={`Ler artigo: ${article.title}, por ${article.author.name}`}
+      className="
+        group
+        flex
+        flex-row
+        gap-4
+        py-5
+        rounded-2xl
+        transition-colors
+        duration-200
+        hover:bg-black/2
+        focus-visible:outline-none
+        focus-visible:ring-2
+        focus-visible:ring-primary
+        focus-visible:ring-offset-2
+        w-full
+      "
+    >
+      {content}
     </Link>
   );
 }

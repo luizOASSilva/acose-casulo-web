@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import PartnerMarquee from '@/components/sections/PartnerMarquee';
-import StatCounterClient from '@/components/ui/teste/StatCountClient';
+import StatCounterClient from '@/components/ui/StatCount/StatCountClient';
 import SupportCTA from '@/components/sections/SupportCTA';
 import { OG_IMAGE } from '@/lib/config';
 

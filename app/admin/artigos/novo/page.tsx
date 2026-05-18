@@ -5,14 +5,14 @@ export default function AdminCreateArticlePage() {
     id: 0,
     slug: 'new',
     title: '',
-    content: '',
     summary: '',
-    media: { url: '', alt_text: '' },
+    content: '',
+    media: { url: '', alt_text: 'Capa do artigo' },
     author: { name: 'Admin Staff' },
     created_at: new Date().toISOString(),
-    status: 'draft',
+    status: 'draft' as const,
     keywords: []
   };
 
-  return <ArticleDetailsContainer article={blankDraftSkeleton} isAdmin={true} />;
+  return <ArticleDetailsContainer article={blankDraftSkeleton} isAdmin={true} isNew={true} />;
 }

@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { AdminSidebar } from '@/components/admin/AdminSidebar'; // Ajuste o caminho conforme seu projeto
-import { EditModeProvider } from '@/context/admin/EditModeContext'; // Ajuste o caminho
+import { AdminSidebar } from '@/components/admin/AdminSidebar';
+import { EditModeProvider } from '@/context/admin/EditModeContext'; 
 
 export default function AdminLayout({
   children,

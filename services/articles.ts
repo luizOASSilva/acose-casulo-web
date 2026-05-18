@@ -43,6 +43,7 @@ export async function getArticleById(id: number): Promise<Article | null> {
 export async function getArticleBySlug(slug: string): Promise<Article | null> {
   try {
     const response = await api.get<any>(`/articles/${slug}`);
+    console.log('raw response:', JSON.stringify(response, null, 2));
     return response?.data || response || null;
   } catch (error) {
     console.error(`Erro ao buscar artigo com o slug ${slug}:`, error);
