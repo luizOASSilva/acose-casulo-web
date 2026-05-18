@@ -1,3 +1,10 @@
+interface UserBadgeProps {
+  name?: string;
+  subtitle?: string;
+  size?: 'sm' | 'md' | 'lg';
+  compact?: boolean;
+}
+
 export default function UserBadge({
   name,
   subtitle,
@@ -16,7 +23,7 @@ export default function UserBadge({
       >
         <div
           className={`rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center shrink-0
-            ${isSmall ? 'w-8 h-8 text-xs' : 'w-10 h-10 text-sm'}`}
+          ${isSmall ? 'w-8 h-8 text-xs' : 'w-10 h-10 text-sm'}`}
         >
           {initial}
         </div>

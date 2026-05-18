@@ -1,5 +1,5 @@
-import { redirect } from "next/dist/server/api-utils";
+import { redirect } from 'next/navigation';
 
-export default function adminPage() {
-  redirect('');
+export default function AdminPage() {
+  redirect('/admin/dashboard');
 }
