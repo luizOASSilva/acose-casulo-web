@@ -2,7 +2,7 @@
 
 import { useRef } from 'react';
 import { useInView } from '@/hooks/useInView';
-import StatCounter from '@/components/ui/statCount/StatCounter';
+import StatCounter from '@/components/ui/StatCount/StatCounter';
 
 const stats = [
   { value: 25, prefix: '+', label: 'anos de história', duration: 1800 },

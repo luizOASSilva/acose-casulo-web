@@ -2,7 +2,7 @@
 
 import { useRef } from 'react';
 import { useInView } from '@/hooks/useInView';
-import StatCounter from '@/components/ui/statCount/StatCounter';
+import StatCounter from '@/components/ui/StatCount/StatCounter';
 
 type Props = {
   value: number;
