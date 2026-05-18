@@ -1,9 +1,18 @@
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
 import type { Article } from '@/types/article';
 import KeywordBadge from '@/components/ui/KeywordBadge';
 
-export default function ArticleRow({ article }: { article: Article }) {
+interface ArticleRowProps {
+  article: Article;
+  isAdmin?: boolean;
+}
+
+export default function ArticleRow({ article, isAdmin = false }: ArticleRowProps) {
+  const basePath = isAdmin ? '/admin/artigos' : '/artigos';
+
   const formattedDate = new Intl.DateTimeFormat('pt-BR', {
     day: '2-digit',
     month: 'long',
@@ -13,8 +22,8 @@ export default function ArticleRow({ article }: { article: Article }) {
 
   return (
     <Link
-      href={`/artigos/${article.slug}`}
-      aria-label={`Ler artigo: ${article.title}, por ${article.author.name}`}
+      href={`${basePath}/${article.slug}`}
+      aria-label={isAdmin ? `Editar artigo: ${article.title}` : `Ler artigo: ${article.title}, por ${article.author.name}`}
       className="
         group
         flex
@@ -24,11 +33,12 @@ export default function ArticleRow({ article }: { article: Article }) {
         rounded-2xl
         transition-colors
         duration-200
-        hover:bg-black/0.5
+        hover:bg-black/[0.02] /* 🔥 Corrigido de 0.5 (50%) para um preto sutil de 2% */
         focus-visible:outline-none
         focus-visible:ring-2
         focus-visible:ring-primary
         focus-visible:ring-offset-2
+        w-full
       "
     >
       <div
@@ -46,7 +56,7 @@ export default function ArticleRow({ article }: { article: Article }) {
       >
         <Image
           src={article.media.url}
-          alt={article.media.alt_text}
+          alt={article.media.alt_text || 'Capa do artigo'}
           fill
           sizes="(max-width: 768px) 96px, 176px"
           className="
@@ -136,23 +146,25 @@ export default function ArticleRow({ article }: { article: Article }) {
             </time>
           </div>
 
-          <span
-            aria-hidden="true"
-            className="
-              hidden
-              sm:block
-              text-xs
-              font-medium
-              text-primary
-              opacity-0
-              transition-opacity
-              duration-200
-              group-hover:opacity-100
-              shrink-0
-            "
-          >
-            Ler artigo →
-          </span>
+          {!isAdmin && (
+            <span
+              aria-hidden="true"
+              className="
+                hidden
+                sm:block
+                text-xs
+                font-medium
+                text-primary
+                opacity-0
+                transition-opacity
+                duration-200
+                group-hover:opacity-100
+                shrink-0
+              "
+            >
+              Ler artigo →
+            </span>
+          )}
         </div>
       </div>
     </Link>

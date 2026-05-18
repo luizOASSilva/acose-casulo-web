@@ -23,6 +23,7 @@ import StatItem from '@/components/admin/dashboard/StatItem';
 import ActivityItem from '@/components/admin/dashboard/ActivityItem';
 import QuickActionCard from '@/components/admin/dashboard/QuickActionCard';
 import AnalyticsCard from '@/components/admin/dashboard/AnalyticsCard';
+import { useEffect } from 'react';
 
 const skeletonCls = 'animate-pulse rounded-md bg-zinc-200 dark:bg-zinc-700';
 
@@ -66,35 +67,35 @@ export default function AdminDashboard() {
   const router = useRouter();
   const { data, loading: dataLoading, error, refetch } = useDashboard();
 
-  // useEffect(() => {
-  //   if (!authLoading && !admin) {
-  //     router.replace('/');
-  //   }
-  // }, [admin, authLoading, router]);
+  useEffect(() => {
+    if (!authLoading && !admin) {
+      router.replace('/');
+    }
+  }, [admin, authLoading, router]);
 
-  // if (authLoading || !admin) return <LogoLoader />;
+  if (authLoading || !admin) return <LogoLoader />;
 
   const name = admin?.name?.split(' ')[0] ?? 'Admin';
 
-  // if (error) {
-  //   return (
-  //     <main className="min-h-screen bg-[#f5f7fa] p-6 md:p-8">
-  //       <div className="mx-auto flex max-w-7xl flex-col items-center justify-center gap-4 py-24 text-center">
-  //         <p className="text-lg font-medium text-red-600">
-  //           Falha ao carregar o painel
-  //         </p>
-  //         <p className="text-sm text-zinc-500">{error}</p>
-  //         <button
-  //           onClick={refetch}
-  //           className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white cursor-pointer"
-  //         >
-  //           <RefreshCw size={15} />
-  //           Tentar novamente
-  //         </button>
-  //       </div>
-  //     </main>
-  //   );
-  // }
+  if (error) {
+    return (
+      <main className="min-h-screen bg-[#f5f7fa] p-6 md:p-8">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-center gap-4 py-24 text-center">
+          <p className="text-lg font-medium text-red-600">
+            Falha ao carregar o painel
+          </p>
+          <p className="text-sm text-zinc-500">{error}</p>
+          <button
+            onClick={refetch}
+            className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white cursor-pointer"
+          >
+            <RefreshCw size={15} />
+            Tentar novamente
+          </button>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <div className="p-6 md:p-8">
