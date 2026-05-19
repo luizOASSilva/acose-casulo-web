@@ -11,13 +11,14 @@ interface ArticleDetailsContainerProps {
   article?: Article;
   isAdmin?: boolean;
   isNew?: boolean;
+  startInEditMode?: boolean;
 }
 
-export default function ArticleDetailsContainer({ article, isAdmin = false, isNew = false }: ArticleDetailsContainerProps) {
+export default function ArticleDetailsContainer({ article, isAdmin = false, isNew = false, startInEditMode = false }: ArticleDetailsContainerProps) {
   const router = useRouter();
   
   const isCreationFlow = isNew || !article?.id;
-  const [isEditMode, setIsEditMode] = useState(isCreationFlow);
+  const [isEditMode, setIsEditMode] = useState(isCreationFlow || startInEditMode);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const parseInitialKeywords = (art?: Article): string[] => {
@@ -117,13 +118,22 @@ export default function ArticleDetailsContainer({ article, isAdmin = false, isNe
 
   const handleBack = () => {
     if (!confirmDiscard()) return;
-    router.push('/admin/artigos');
+    if (isEditMode && !isCreationFlow) {
+      router.push(`/admin/artigos/${article?.id}`);
+    } else {
+      router.push('/admin/artigos');
+    }
   };
 
   const handleCancel = () => {
     if (!confirmDiscard()) return;
-    setIsEditMode(false);
-    resetFields();
+    if (isCreationFlow) {
+      router.push('/admin/artigos');
+    } else {
+      setIsEditMode(false);
+      resetFields();
+      router.push(`/admin/artigos/${article?.id}`);
+    }
   };
 
   const handleSave = async () => {
@@ -153,8 +163,13 @@ export default function ArticleDetailsContainer({ article, isAdmin = false, isNe
 
     if (response) {
       setIsEditMode(false);
-      router.push('/admin/artigos');
-      alert(isCreationFlow ? "Artigo criado com sucesso! 🎉" : "Alterações salvas com sucesso no Laravel! ✔");
+      if (isCreationFlow) {
+        router.push('/admin/artigos');
+        alert("Artigo criado com sucesso! 🎉");
+      } else {
+        router.push(`/admin/artigos/${article?.id}`);
+        alert("Alterações salvas com sucesso no Laravel! ✔");
+      }
     } else {
       alert("Erro ao salvar dados no Laravel. Verifique se as permissões de CORS ou as rotas da API estão corretas.");
     }
@@ -165,11 +180,12 @@ export default function ArticleDetailsContainer({ article, isAdmin = false, isNe
       
       <div className="flex items-center justify-between border-b border-gray-100 pb-4">
         <button
-            onClick={handleBack}
-            className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 font-medium transition-colors"
+          onClick={handleBack}
+          className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 font-medium transition-colors"
         >
-            {isEditMode && hasPendingChanges ? '⚠️ Cancelar Alterações' : '← Voltar para artigos'}
+          {isEditMode && hasPendingChanges ? '⚠️ Cancelar Alterações' : isEditMode && !isCreationFlow ? '← Voltar para detalhes' : '← Voltar para artigos'}
         </button>
+
         {isAdmin && !isEditMode && (
           <button
             onClick={() => setIsEditMode(true)}

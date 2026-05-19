@@ -126,25 +126,24 @@ export default function ArticleRow({ article, isAdmin = false }: ArticleRowProps
             </time>
           </div>
 
-          {!isAdmin && (
-            <span
-              aria-hidden="true"
-              className="
-                hidden
-                sm:block
-                text-xs
-                font-medium
-                text-primary
-                opacity-0
-                transition-opacity
-                duration-200
-                group-hover:opacity-100
-                shrink-0
-              "
-            >
-              Ler artigo →
-            </span>
-          )}
+
+          <span
+            aria-hidden="true"
+            className="
+              hidden
+              sm:block
+              text-xs
+              font-medium
+              text-primary
+              opacity-0
+              transition-opacity
+              duration-200
+              group-hover:opacity-100
+              shrink-0
+            "
+          >
+            Ler artigo →
+          </span>
         </div>
       </div>
     </>

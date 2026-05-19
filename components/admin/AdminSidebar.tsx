@@ -8,7 +8,7 @@ import { useAuth } from '@/context/AuthContext';
 import UserBadge from '@/components/ui/UserBadge';
 
 import {
-  Activity,       // Ajustado para o nome padrão do Lucide
+  Activity,      
   ChevronLeft,
   ChevronRight,
   FileText,
@@ -18,8 +18,8 @@ import {
   Menu,
   X,
   Settings,
-  HandHeart,      // Adicionado para Doações
-  Files,          // Adicionado para Documentos
+  HandHeart,      
+  Files,          
 } from 'lucide-react';
 import { cn } from '@/lib/cn';
 
@@ -61,7 +61,7 @@ export function AdminSidebar({ collapsed, toggleSidebar }: SidebarProps) {
     <>
       <button
         onClick={() => setMobileOpen(true)}
-        className="fixed left-4 top-4 z-[60] flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-200 bg-white shadow-sm lg:hidden"
+        className="fixed left-4 top-4 z-60 flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-200 bg-white shadow-sm lg:hidden"
       >
         <Menu size={18} />
       </button>
@@ -75,12 +75,12 @@ export function AdminSidebar({ collapsed, toggleSidebar }: SidebarProps) {
 
       <aside
         className={`
-          fixed inset-y-0 left-0 z-[80] flex h-screen flex-col
+          fixed inset-y-0 left-0 z-80 flex h-screen flex-col
           border-r border-zinc-200 bg-white
           transition-[width,transform] duration-300 ease-in-out
           ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}
           lg:translate-x-0 lg:sticky lg:top-0 lg:shrink-0
-          ${collapsed ? 'w-[88px]' : 'w-[260px]'}
+          ${collapsed ? 'w-22' : 'w-65'}
         `}  
       >
         <div className={`flex items-center justify-center transition-all duration-300
@@ -131,11 +131,12 @@ export function AdminSidebar({ collapsed, toggleSidebar }: SidebarProps) {
 
         <div className="flex-1 overflow-y-auto p-3 space-y-1">
           {nav.map(({ label, href, icon: Icon }) => {
-            const active = pathname === `/admin/${href}`;
+            const fullHref = `/admin/${href}`;
+            const active = pathname === fullHref || pathname.startsWith(`${fullHref}/`);
             return (
               <Link
                 key={href}
-                href={href}
+                href={fullHref}
                 title={collapsed ? label : undefined}
                 className={`
                   flex items-center rounded-xl py-3 text-sm font-medium

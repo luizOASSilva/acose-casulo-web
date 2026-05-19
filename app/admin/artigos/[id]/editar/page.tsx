@@ -9,9 +9,9 @@ interface ParamProps {
 export default async function AdminEditArticlePage({ params }: ParamProps) {
   const { id } = await params;
   
-  const article = await getArticleById(Number(id)); 
+  const article = await getArticleById(Number(id));
 
   if (!article) notFound();
 
-  return <ArticleDetailsContainer article={article} isAdmin={true} isNew={false} />;
+  return <ArticleDetailsContainer key={`edit-${article.id}`} article={article} isAdmin={true} isNew={false} startInEditMode={true} />;
 }
