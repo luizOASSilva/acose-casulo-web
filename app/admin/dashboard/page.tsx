@@ -104,7 +104,7 @@ export default function AdminDashboard() {
         <section className="relative overflow-hidden py-4">
           <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-3xl">
-              <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 md:text-5xl">
+              <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 md:text-4xl">
                 Bem-vindo novamente,
                 <span className="text-primary"> {name}</span>
               </h1>
@@ -179,18 +179,18 @@ export default function AdminDashboard() {
             <h2 className="text-2xl font-semibold text-zinc-900">Ações rápidas</h2>
           </div>
 
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
             <QuickActionCard
               icon={<FileText size={20} />}
               title="Novo artigo"
               description="Criar novo conteúdo institucional."
-              href="/admin/articles/new"
+              href="/admin/artigos/novo"
             />
             <QuickActionCard
               icon={<ActivityIcon size={20} />}
               title="Nova atividade"
               description="Adicionar atividade ao site."
-              href="/admin/activities/new"
+              href="/admin/atividades/novo"
             />
             <QuickActionCard
               icon={<HeartHandshake size={20} />}

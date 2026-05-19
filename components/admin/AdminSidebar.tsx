@@ -139,7 +139,7 @@ export function AdminSidebar({ collapsed, toggleSidebar }: SidebarProps) {
                 href={fullHref}
                 title={collapsed ? label : undefined}
                 className={`
-                  flex items-center rounded-xl py-3 text-sm font-medium
+                  flex items-center rounded-md py-3 text-sm font-medium
                   transition-all duration-200 overflow-hidden
                   ${collapsed ? 'lg:justify-center lg:px-0 lg:h-12 lg:w-12 lg:mx-auto' : 'px-3 gap-3'}
                   ${

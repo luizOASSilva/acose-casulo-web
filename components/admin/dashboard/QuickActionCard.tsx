@@ -1,11 +1,12 @@
-import { ArrowRight, Link } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 interface QuickActionCardProps {
   icon: React.ReactNode;
   title: string;
   description: string;
   href: string;
-};
+}
 
 export default function QuickActionCard({
   icon,
@@ -16,28 +17,24 @@ export default function QuickActionCard({
   return (
     <Link
       href={href}
-      className="group rounded-md border border-black/50 bg-secondary p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)] backdrop-blur-xl transition hover:-translate-y-1"
+      className="group flex items-center gap-4 rounded-md border border-black/50 bg-secondary p-4 shadow-[0_8px_30px_rgba(0,0,0,0.04)] backdrop-blur-xl transition hover:-translate-y-0.5 md:p-5"
     >
-      <div className="flex h-12 w-12 items-center justify-center rounded-md bg-primary-light/10 text-primary-light">
+      <div className="flex size-12 shrink-0 items-center justify-center rounded-md bg-primary-light/10 text-primary-light">
         {icon}
       </div>
 
-      <h3 className="mt-5 text-xl font-semibold text-zinc-100">
-        {title}
-      </h3>
+      <div className="flex-1 min-w-0">
+        <h3 className="text-md font-semibold text-zinc-100 truncate">
+          {title}
+        </h3>
+        <p className="text-xs text-zinc-300 mt-0.5 line-clamp-1">
+          {description}
+        </p>
+      </div>
 
-      <p className="mt-3 text-sm leading-relaxed text-zinc-300">
-        {description}
-      </p>
-
-      <span className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-zinc-300">
-        Acessar
-
-        <ArrowRight
-          size={16}
-          className="transition group-hover:translate-x-1"
-        />
-      </span>
+      <div className="text-zinc-300 transition group-hover:translate-x-1 pl-2 shrink-0">
+        <ArrowRight size={18} />
+      </div>
     </Link>
   );
 }
