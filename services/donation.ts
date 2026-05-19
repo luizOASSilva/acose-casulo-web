@@ -13,11 +13,47 @@ export interface DonationStatusResponse {
   pix_expires_at: string | null;
 }
 
-export async function createDonation(data: unknown): Promise<PixResponse> {
+export interface Donation {
+  id: number;
+  name: string;
+  email: string;
+  amount: number;
+  status: 'pending' | 'approved' | 'expired' | 'cancelled';
+  size: string | null;
+  has_gift: boolean;
+  gift_status: string | null;
+  created_at: string;
+  pix_expires_at: string | null;
+}
+
+export interface PaginatedDonationsResponse {
+  data: Donation[];
+
+  links: {
+    first: string | null;
+    last: string | null;
+    prev: string | null;
+    next: string | null;
+  };
+
+  meta: {
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+  };
+}
+
+export async function createDonation(
+  data: unknown
+): Promise<PixResponse> {
   return api.post<PixResponse>('/donations', data);
 }
 
-export async function updateDonation(id: number, data: unknown): Promise<void> {
+export async function updateDonation(
+  id: number,
+  data: unknown
+): Promise<void> {
   await api.put(`/donations/${id}`, data);
 }
 
@@ -25,15 +61,26 @@ export async function updateDonationPix(
   id: number,
   amount: number
 ): Promise<PixResponse> {
-  return api.put<PixResponse>(`/donations/${id}/pix`, { amount });
+  return api.put<PixResponse>(
+    `/donations/${id}/pix`,
+    {
+      amount,
+    }
+  );
 }
 
 export async function getDonationStatus(
   id: number
 ): Promise<DonationStatusResponse> {
-  return api.get<DonationStatusResponse>(`/donations/${id}/status`);
+  return api.get<DonationStatusResponse>(
+    `/donations/${id}/status`
+  );
 }
 
-export async function getAllDonations() {
-  return api.get()
+export async function getDonations(
+  page = 1
+): Promise<PaginatedDonationsResponse> {
+  return api.get<PaginatedDonationsResponse>(
+    `/donations?page=${page}`
+  );
 }
