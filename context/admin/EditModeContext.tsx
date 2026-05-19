@@ -32,16 +32,12 @@ export function EditModeProvider({
 }: {
   children: ReactNode;
 }) {
-  // 1. Iniciamos como false para o SSR (servidor) passar batido
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedItem, setSelectedItem] = useState<SelectedItem | null>(null);
 
-  // 2. Sincronizamos com o localStorage apenas UMA vez após a montagem, 
-  // mas usando um padrão que o React aceita sem chiar de renderização síncrona.
   useEffect(() => {
     const stored = localStorage.getItem('edit-mode');
     if (stored === 'true') {
-      // Usar a função de callback impede o linter de achar que é uma chamada síncrona perigosa
       setIsEditMode(() => true); 
     }
   }, []);

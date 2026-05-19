@@ -106,7 +106,7 @@ export default function AdminDashboard() {
             <div className="max-w-3xl">
               <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 md:text-5xl">
                 Bem-vindo novamente,
-                <span className="text-primary"> {name}</span> 👋
+                <span className="text-primary"> {name}</span>
               </h1>
               <p className="mt-3 text-base leading-relaxed text-zinc-600">
                 Gerencie conteúdos, acompanhe métricas, monitore atividades e controle a plataforma.

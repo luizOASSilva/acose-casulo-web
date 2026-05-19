@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import type { Article } from '@/types/article';
 import KeywordBadge from '@/components/ui/KeywordBadge';
 import { updateArticle, createArticle, getArticles } from '@/services/articles';
@@ -16,6 +16,8 @@ interface ArticleDetailsContainerProps {
 
 export default function ArticleDetailsContainer({ article, isAdmin = false, isNew = false, startInEditMode = false }: ArticleDetailsContainerProps) {
   const router = useRouter();
+
+  const pathname = usePathname();
   
   const isCreationFlow = isNew || !article?.id;
   const [isEditMode, setIsEditMode] = useState(isCreationFlow || startInEditMode);
@@ -188,7 +190,7 @@ export default function ArticleDetailsContainer({ article, isAdmin = false, isNe
 
         {isAdmin && !isEditMode && (
           <button
-            onClick={() => setIsEditMode(true)}
+            onClick={() => router.push(`${pathname}/editar`)}
             className="text-xs bg-primary-light hover:bg-primary text-white font-semibold px-4 py-2 rounded-md transition-all cursor-pointer"
           >
             Editar Artigo

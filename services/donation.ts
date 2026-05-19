@@ -33,3 +33,7 @@ export async function getDonationStatus(
 ): Promise<DonationStatusResponse> {
   return api.get<DonationStatusResponse>(`/donations/${id}/status`);
 }
+
+export async function getAllDonations() {
+  return api.get()
+}
