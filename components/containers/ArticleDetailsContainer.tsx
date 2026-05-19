@@ -25,7 +25,6 @@ export default function ArticleDetailsContainer({ article, isAdmin = false, isNe
     return art.keywords.map((k: any) => typeof k === 'object' ? k.word : k);
   };
 
-  // Estados locais sincronizados com as propriedades recebidas
   const [title, setTitle] = useState(article?.title || '');
   const [summary, setSummary] = useState(article?.summary || '');
   const [content, setContent] = useState(article?.content || '');
@@ -36,7 +35,6 @@ export default function ArticleDetailsContainer({ article, isAdmin = false, isNe
   const [keywordSearch, setKeywordSearch] = useState('');
   const [allDatabaseKeywords, setAllDatabaseKeywords] = useState<string[]>([]);
 
-  // 🔥 SOLUÇÃO DA VOLTA NO NAVEGADOR: Garante atualização dos inputs se o artigo mudar
   useEffect(() => {
     if (article) {
       setTitle(article.title || '');
@@ -103,23 +101,29 @@ export default function ArticleDetailsContainer({ article, isAdmin = false, isNe
     setKeywordsArray(keywordsArray.filter(w => w !== wordToRemove));
   };
 
-  const handleBackOrCancel = () => {
-    if (hasPendingChanges) {
-      const confirmExit = window.confirm("Zezão, você tem alterações pendentes que não foram salvas! Deseja realmente descartar tudo?");
-      if (!confirmExit) return;
-    }
-    
-    if (isCreationFlow) {
-      router.push('/admin/artigos');
-    } else {
-      setIsEditMode(false);
-      setTitle(article?.title || '');
-      setSummary(article?.summary || '');
-      setContent(article?.content || '');
-      setImageUrl(article?.media?.url || '');
-      setImageAlt(article?.media?.alt_text || '');
-      setKeywordsArray(parseInitialKeywords(article));
-    }
+  const resetFields = () => {
+    setTitle(article?.title || '');
+    setSummary(article?.summary || '');
+    setContent(article?.content || '');
+    setImageUrl(article?.media?.url || '');
+    setImageAlt(article?.media?.alt_text || '');
+    setKeywordsArray(parseInitialKeywords(article));
+  };
+
+  const confirmDiscard = (): boolean => {
+    if (!hasPendingChanges) return true;
+    return window.confirm("Zezão, você tem alterações pendentes que não foram salvas! Deseja realmente descartar tudo?");
+  };
+
+  const handleBack = () => {
+    if (!confirmDiscard()) return;
+    router.push('/admin/artigos');
+  };
+
+  const handleCancel = () => {
+    if (!confirmDiscard()) return;
+    setIsEditMode(false);
+    resetFields();
   };
 
   const handleSave = async () => {
@@ -149,13 +153,7 @@ export default function ArticleDetailsContainer({ article, isAdmin = false, isNe
 
     if (response) {
       setIsEditMode(false);
-      
-      // Força o Next a revalidar os dados do servidor e limpa estados mortos de cache
-      router.refresh(); 
-      
-      if (isAdmin) {
-        router.push('/admin/artigos');
-      }
+      router.push('/admin/artigos');
       alert(isCreationFlow ? "Artigo criado com sucesso! 🎉" : "Alterações salvas com sucesso no Laravel! ✔");
     } else {
       alert("Erro ao salvar dados no Laravel. Verifique se as permissões de CORS ou as rotas da API estão corretas.");
@@ -163,20 +161,19 @@ export default function ArticleDetailsContainer({ article, isAdmin = false, isNe
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto py-10 px-4 md:px-6 space-y-8">
+    <div className="w-full max-w-4xl mx-auto py-20 px-4 md:px-6 space-y-8">
       
       <div className="flex items-center justify-between border-b border-gray-100 pb-4">
         <button
-          onClick={handleBackOrCancel}
-          className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 font-medium transition-colors"
+            onClick={handleBack}
+            className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 font-medium transition-colors"
         >
-          {hasPendingChanges ? '⚠️ Cancelar Alterações' : '← Voltar para artigos'}
+            {isEditMode && hasPendingChanges ? '⚠️ Cancelar Alterações' : '← Voltar para artigos'}
         </button>
-
         {isAdmin && !isEditMode && (
           <button
             onClick={() => setIsEditMode(true)}
-            className="text-xs bg-gray-900 hover:bg-gray-800 text-white font-semibold px-4 py-2 rounded-full transition-all"
+            className="text-xs bg-primary-light hover:bg-primary text-white font-semibold px-4 py-2 rounded-md transition-all cursor-pointer"
           >
             Editar Artigo
           </button>
@@ -212,7 +209,7 @@ export default function ArticleDetailsContainer({ article, isAdmin = false, isNe
       )}
 
       {imageUrl && (
-        <div className="relative w-full h-64 md:h-[420px] rounded-2xl overflow-hidden bg-gray-50 border border-gray-100">
+        <div className="relative w-full h-64 md:h-105 rounded-md overflow-hidden bg-gray-50 border border-gray-100">
           <Image src={imageUrl} alt={imageAlt || 'Capa'} fill className="object-cover" priority unoptimized />
         </div>
       )}
@@ -291,7 +288,7 @@ export default function ArticleDetailsContainer({ article, isAdmin = false, isNe
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            className="w-full min-h-[350px] border border-gray-300 rounded-xl p-4 focus:outline-none focus:border-gray-900 text-base"
+            className="w-full min-h-87.5 border border-gray-300 rounded-xl p-4 focus:outline-none focus:border-gray-900 text-base"
             placeholder="Conteúdo completo..."
           />
         ) : (
@@ -302,9 +299,9 @@ export default function ArticleDetailsContainer({ article, isAdmin = false, isNe
       {isAdmin && isEditMode && (
         <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
           <button
-            onClick={handleBackOrCancel}
+            onClick={handleCancel}
             disabled={isSubmitting}
-            className="text-xs bg-white hover:bg-gray-50 text-gray-700 font-semibold px-4 py-2.5 rounded-lg border border-gray-300 transition-colors"
+            className="text-xs bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-2.5 rounded-lg border border-gray-300 transition-colors cursor-pointer"
           >
             Descartar
           </button>
@@ -313,7 +310,7 @@ export default function ArticleDetailsContainer({ article, isAdmin = false, isNe
             <button
               onClick={handleSave}
               disabled={isSubmitting}
-              className="text-xs bg-gray-900 hover:bg-gray-800 text-white font-semibold px-5 py-2.5 rounded-lg transition-all"
+              className="text-xs bg-green-600 hover:bg-green-700 text-white font-semibold px-5 py-2.5 rounded-lg transition-all cursor-pointer"
             >
               {isSubmitting ? 'Salvando...' : isCreationFlow ? 'Criar Artigo ✔' : 'Confirmar e Salvar no Banco ✔'}
             </button>

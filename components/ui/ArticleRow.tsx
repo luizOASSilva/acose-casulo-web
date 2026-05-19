@@ -181,7 +181,6 @@ export default function ArticleRow({ article, isAdmin = false }: ArticleRowProps
         rounded-2xl
         transition-colors
         duration-200
-        hover:bg-black/2
         focus-visible:outline-none
         focus-visible:ring-2
         focus-visible:ring-primary
