@@ -27,7 +27,7 @@ const nav = [
   { label: 'Dashboard', href: 'dashboard', icon: LayoutDashboard },
   { label: 'Doações', href: 'doacoes', icon: HandHeart },
   { label: 'Parceiros', href: 'parceiros', icon: HeartHandshake },
-  { label: 'Documentos', href: 'documentos', icon: Files },
+  { label: 'Transparência', href: 'transparencia', icon: Files },
   { label: 'Atividades', href: 'atividades', icon: Activity },
   { label: 'Artigos', href: 'artigos', icon: FileText },
   { label: 'Configurações', href: 'configuracoes', icon: Settings },

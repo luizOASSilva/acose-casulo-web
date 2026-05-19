@@ -1,7 +1,6 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 
 import { useAuth } from '@/context/AuthContext';
 import { useDashboard } from '@/hooks/useDashboard';
@@ -127,18 +126,10 @@ export default function AdminDashboard() {
                 onClick={refetch}
                 disabled={dataLoading}
                 aria-label="Atualizar dados"
-                className="text-zinc-400 transition hover:text-zinc-700 disabled:opacity-40"
+                className="text-zinc-600 transition hover:text-zinc-900 disabled:opacity-40 "
               >
                 <RefreshCw size={16} className={dataLoading ? 'animate-spin' : ''} />
               </button>
-
-              <Link
-                href="/admin/analytics"
-                className="inline-flex items-center gap-2 text-sm font-medium text-zinc-700 transition hover:text-zinc-950"
-              >
-                Ver detalhes
-                <ArrowRight size={16} />
-              </Link>
             </div>
           </div>
 

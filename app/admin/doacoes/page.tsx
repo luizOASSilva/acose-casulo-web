@@ -1,5 +1,6 @@
 import { getDonations } from '@/services/donation';
 import DonationCard from '@/components/admin/DonationCard';
+import DonationCardFilter from '@/components/admin/DonationCardFilter';
 
 import {
   BadgeDollarSign,
@@ -43,27 +44,37 @@ function statusLabel(status: string) {
   return labels[status] || status;
 }
 
-export default async function AdminDonationsPage() {
-  const response = await getDonations();
+export default async function AdminDonationsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string; page?: string }>;
+}) {
+  const params = await searchParams;
+  const status = params.status;
+  const page = params.page ? Number(params.page) : 1;
 
+  const response = await getDonations(page, status);
   const donations = response.data ?? [];
 
+  const allResponse = await getDonations(1);
+  const all = allResponse.data ?? [];
+
   const stats = {
-    total: donations.reduce(
+    total: all.reduce(
       (acc: number, item: any) =>
         acc + Number(item.amount),
       0
     ),
 
-    approved: donations.filter(
+    approved: all.filter(
       (item: any) => item.status === 'approved'
     ).length,
 
-    pending: donations.filter(
+    pending: all.filter(
       (item: any) => item.status === 'pending'
     ).length,
 
-    gifts: donations.filter(
+    gifts: all.filter(
       (item: any) => item.has_gift
     ).length,
   };
@@ -75,7 +86,7 @@ export default async function AdminDonationsPage() {
         <section className="relative overflow-hidden py-4">
           <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-3xl">
-              <h1 className="text-2xl font-semibold tracking-tight text-primary md:text-4xl">
+              <h1 className="text-3xl font-semibold tracking-tight text-primary md:text-4xl">
                 Gestão de Doações
               </h1>
 
@@ -94,7 +105,10 @@ export default async function AdminDonationsPage() {
             </h2>
 
             <p className="text-sm text-zinc-500">
-              Dados gerais das doações
+              Dados gerais das doações •{' '}
+              <span className="text-primary">
+                clique em um card para filtrar
+              </span>
             </p>
           </div>
 
@@ -113,29 +127,35 @@ export default async function AdminDonationsPage() {
               iconWrapperClassName="bg-primary/20"
             />
 
-            <DonationCard
-              icon={<CheckCircle2 size={22} className="text-green-900"/>}
-              title="Aprovadas"
-              value={String(stats.approved)}
-              helper="Pagamentos confirmados"
-              iconWrapperClassName="bg-green-500/30"
-            />
+            <DonationCardFilter filterKey="approved">
+              <DonationCard
+                icon={<CheckCircle2 size={22} className="text-green-900"/>}
+                title="Aprovadas"
+                value={String(stats.approved)}
+                helper="Pagamentos confirmados"
+                iconWrapperClassName="bg-green-500/30"
+              />
+            </DonationCardFilter>
 
-            <DonationCard
-              icon={<Clock3 size={22} className="text-yellow-900"/>}
-              title="Pendentes"
-              value={String(stats.pending)}
-              helper="Aguardando pagamento"
-              iconWrapperClassName="bg-yellow-500/30"
-            />
+            <DonationCardFilter filterKey="pending">
+              <DonationCard
+                icon={<Clock3 size={22} className="text-yellow-900"/>}
+                title="Pendentes"
+                value={String(stats.pending)}
+                helper="Aguardando pagamento"
+                iconWrapperClassName="bg-yellow-500/30"
+              />
+            </DonationCardFilter>
 
-            <DonationCard
-              icon={<Gift size={22}/>}
-              title="Brindes"
-              value={String(stats.gifts)}
-              helper="Doações com brindes"
-              iconWrapperClassName="bg-secondary/30"
-            />
+            <DonationCardFilter filterKey="has_gift">
+              <DonationCard
+                icon={<Gift size={22}/>}
+                title="Brindes"
+                value={String(stats.gifts)}
+                helper="Doações com brindes"
+                iconWrapperClassName="bg-secondary/30"
+              />
+            </DonationCardFilter>
           </div>
         </section>
 

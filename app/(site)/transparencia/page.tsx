@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Hero from '@/components/sections/Hero/Hero';
-import Filter from '@/components/ui/YearFilter';
+import YearFilter from '@/components/ui/YearFilter';
 import TransparencySection from '@/components/sections/TransparencySection';
 import SupportCTA from '@/components/sections/SupportCTA';
 import { getTransparencyData } from '@/services/transparency';
@@ -61,7 +61,7 @@ export default async function Transparencia({ searchParams }: PageProps) {
       />
 
       <section aria-labelledby="transparency-title">
-        <Filter years={years} activeYear={currentYear} />
+        <YearFilter years={years} activeYear={currentYear} />
 
         <div className="max-w-7xl mx-auto px-4 py-10">
           <h2 className="text-sm text-gray-700 mb-6" id="transparency-title">

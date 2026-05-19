@@ -78,9 +78,13 @@ export async function getDonationStatus(
 }
 
 export async function getDonations(
-  page = 1
+  page = 1,
+  status?: string
 ): Promise<PaginatedDonationsResponse> {
+  const params = new URLSearchParams({ page: String(page) });
+  if (status) params.set('status', status);
+
   return api.get<PaginatedDonationsResponse>(
-    `/donations?page=${page}`
+    `/donations?${params.toString()}`
   );
 }
