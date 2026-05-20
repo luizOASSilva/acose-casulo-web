@@ -19,7 +19,7 @@ export default function QuickActionCard({
       href={href}
       className="group flex items-center gap-4 rounded-md border border-black/50 bg-secondary p-4 shadow-[0_8px_30px_rgba(0,0,0,0.04)] backdrop-blur-xl transition hover:-translate-y-0.5 md:p-5"
     >
-      <div className="flex size-12 shrink-0 items-center justify-center rounded-md bg-primary-light/10 text-primary-light">
+      <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary-light/10 text-primary-light">
         {icon}
       </div>
 

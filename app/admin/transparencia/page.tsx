@@ -166,7 +166,7 @@ export default async function AdminTransparencyPage({
                           <Pencil size={15} />
                         </Link>
 
-                        <button className="rounded-md p-2 text-zinc-400 transition hover:bg-red-100 hover:text-red-600">
+                        <button className="rounded-md p-2 bg-red-500/10 text-zinc-400 transition hover:bg-red-100 hover:text-red-600">
                           <Trash2 size={15} />
                         </button>
                       </div>

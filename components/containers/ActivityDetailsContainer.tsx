@@ -223,7 +223,7 @@ export default function ActivityDetailsContainer({
       )}
 
       {imageUrl && (
-        <div className="relative w-full h-64 md:h-[420px] rounded-md overflow-hidden bg-gray-50 border border-gray-100">
+        <div className="relative w-full h-64 md:h-105 rounded-md overflow-hidden bg-gray-50 border border-gray-100">
           <Image
             src={imageUrl}
             alt={imageAlt || 'Capa da atividade'}
@@ -262,7 +262,7 @@ export default function ActivityDetailsContainer({
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            className="w-full min-h-[350px] border border-gray-300 rounded-xl p-4 focus:outline-none focus:border-gray-900 text-base"
+            className="w-full min-h-87.5 border border-gray-300 rounded-xl p-4 focus:outline-none focus:border-gray-900 text-base"
             placeholder="Conteúdo completo..."
           />
         ) : (
@@ -275,7 +275,7 @@ export default function ActivityDetailsContainer({
           <button
             onClick={handleCancel}
             disabled={isSubmitting}
-            className="text-xs bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-2.5 rounded-lg border border-gray-300 transition-colors cursor-pointer disabled:opacity-60"
+            className="text-xs bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-2.5 rounded-md border border-gray-300 transition-colors cursor-pointer disabled:opacity-60"
           >
             Descartar
           </button>
@@ -284,7 +284,7 @@ export default function ActivityDetailsContainer({
             <button
               onClick={handleSave}
               disabled={isSubmitting}
-              className="text-xs bg-green-600 hover:bg-green-700 text-white font-semibold px-5 py-2.5 rounded-lg transition-all cursor-pointer disabled:opacity-60"
+              className="text-xs bg-green-600 hover:bg-green-700 text-white font-semibold px-5 py-2.5 rounded-md transition-all cursor-pointer disabled:opacity-60"
             >
               {isSubmitting
                 ? 'Salvando...'
