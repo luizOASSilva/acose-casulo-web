@@ -1,60 +1,95 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
-import Image from 'next/image';
-import { usePathname, useRouter } from 'next/navigation';
-import type { Activity } from '@/types/activity';
-import { createActivity, updateActivity } from '@/services/activities';
+import { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import {
+  ArrowLeft,
+  Calendar,
+  ExternalLink,
+  FileText,
+  FolderOpen,
+  Link as LinkIcon,
+  Save,
+  X,
+} from 'lucide-react';
 
-interface ActivityDetailsContainerProps {
-  activity?: Activity;
-  isAdmin?: boolean;
-  startInEditMode?: boolean;
+import type {
+  DocumentInput,
+  DocumentItem,
+} from '@/types/document';
+
+import type { DocumentCategory } from '@/types/transparency';
+
+import {
+  createDocument,
+  updateDocument,
+} from '@/services/admin/document';
+
+interface DocumentDetailsContainerProps {
+  document: DocumentItem;
+  categories: DocumentCategory[];
   isNew?: boolean;
+  startInEditMode?: boolean;
 }
 
-export default function ActivityDetailsContainer({
-  activity,
-  isAdmin = false,
-  startInEditMode = false,
+export default function DocumentDetailsContainer({
+  document,
+  categories,
   isNew = false,
-}: ActivityDetailsContainerProps) {
+  startInEditMode = false,
+}: DocumentDetailsContainerProps) {
   const router = useRouter();
-  const pathname = usePathname();
 
-  const [isEditMode, setIsEditMode] = useState(startInEditMode);
+  const [isEditMode] = useState(startInEditMode || isNew);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [title, setTitle] = useState(activity?.title || '');
-  const [content, setContent] = useState(activity?.content || '');
-  const [imageUrl, setImageUrl] = useState(activity?.media?.url || '');
-  const [imageAlt, setImageAlt] = useState(activity?.media?.alt_text || '');
-  const [imageCaption, setImageCaption] = useState(activity?.media?.caption || '');
+  const [title, setTitle] = useState(document?.title || '');
+  const [fileUrl, setFileUrl] = useState(document?.file_url || '');
+  const [year, setYear] = useState<number>(
+    document?.year || new Date().getFullYear()
+  );
+
+  const [categoryId, setCategoryId] = useState<number>(
+    document?.category_id || document?.category?.id || categories[0]?.id || 0
+  );
 
   useEffect(() => {
-    if (activity) {
-      setTitle(activity.title || '');
-      setContent(activity.content || '');
-      setImageUrl(activity.media?.url || '');
-      setImageAlt(activity.media?.alt_text || '');
-      setImageCaption(activity.media?.caption || '');
-    }
-  }, [activity]);
+    if (!document) return;
+
+    setTitle(document.title || '');
+    setFileUrl(document.file_url || '');
+    setYear(document.year || new Date().getFullYear());
+    setCategoryId(
+      document.category_id || document.category?.id || categories[0]?.id || 0
+    );
+  }, [document, categories]);
+
+  const selectedCategory = useMemo(() => {
+    return categories.find((category) => category.id === Number(categoryId));
+  }, [categories, categoryId]);
+
+  const formattedDate = useMemo(() => {
+    const date = document?.created_at
+      ? new Date(document.created_at)
+      : new Date();
+
+    return date.toLocaleDateString('pt-BR');
+  }, [document]);
 
   const hasPendingChanges = useMemo(() => {
     return (
-      title !== (activity?.title || '') ||
-      content !== (activity?.content || '') ||
-      imageUrl !== (activity?.media?.url || '') ||
-      imageAlt !== (activity?.media?.alt_text || '') ||
-      imageCaption !== (activity?.media?.caption || '')
+      title !== (document?.title || '') ||
+      fileUrl !== (document?.file_url || '') ||
+      year !== (document?.year || new Date().getFullYear()) ||
+      categoryId !==
+        (document?.category_id || document?.category?.id || categories[0]?.id || 0)
     );
-  }, [title, content, imageUrl, imageAlt, imageCaption, activity]);
+  }, [title, fileUrl, year, categoryId, document, categories]);
 
   useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
       if (hasPendingChanges && isEditMode) {
-        e.preventDefault();
+        event.preventDefault();
       }
     };
 
@@ -62,14 +97,6 @@ export default function ActivityDetailsContainer({
 
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [hasPendingChanges, isEditMode]);
-
-  const resetFields = () => {
-    setTitle(activity?.title || '');
-    setContent(activity?.content || '');
-    setImageUrl(activity?.media?.url || '');
-    setImageAlt(activity?.media?.alt_text || '');
-    setImageCaption(activity?.media?.caption || '');
-  };
 
   const confirmDiscard = (): boolean => {
     if (!hasPendingChanges) return true;
@@ -82,236 +109,280 @@ export default function ActivityDetailsContainer({
   const handleBack = () => {
     if (!confirmDiscard()) return;
 
-    if (isNew) {
-      router.push('/admin/atividades');
-      return;
-    }
-
-    if (isEditMode) {
-      router.push(`/admin/atividades/${activity?.id}`);
-    } else {
-      router.push('/admin/atividades');
-    }
+    router.push('/admin/transparencia');
   };
 
   const handleCancel = () => {
     if (!confirmDiscard()) return;
 
-    if (isNew) {
-      router.push('/admin/atividades');
-      return;
-    }
-
-    setIsEditMode(false);
-    resetFields();
-    router.push(`/admin/atividades/${activity?.id}`);
+    router.push('/admin/transparencia');
   };
 
   const handleSave = async () => {
-    if (!title.trim() || !content.trim()) {
-      alert('Título e conteúdo são obrigatórios!');
+    if (!title.trim()) {
+      alert('Título é obrigatório!');
+      return;
+    }
+
+    if (!fileUrl.trim()) {
+      alert('URL do arquivo é obrigatória!');
+      return;
+    }
+
+    if (!categoryId) {
+      alert('Categoria é obrigatória!');
+      return;
+    }
+
+    if (!year) {
+      alert('Ano é obrigatório!');
       return;
     }
 
     setIsSubmitting(true);
 
-    let response = null;
+    const payload: DocumentInput = {
+      title: title.trim(),
+      file_url: fileUrl.trim(),
+      category_id: Number(categoryId),
+      year: Number(year),
+    };
 
-    if (isNew) {
-      response = await createActivity({
-        title,
-        content,
-        image_url: imageUrl,
-        image_description: imageAlt || 'Capa da atividade',
-        image_caption: imageCaption || undefined,
-      });
-    } else {
-      if (!activity?.id) {
-        setIsSubmitting(false);
-        return;
+    try {
+      const response = isNew
+        ? await createDocument(payload)
+        : await updateDocument(document.id, payload);
+
+      if (response) {
+        alert(
+          isNew
+            ? 'Documento criado com sucesso! ✔'
+            : 'Documento atualizado com sucesso! ✔'
+        );
+
+        router.push('/admin/transparencia');
+        router.refresh();
+      } else {
+        alert('Erro ao salvar documento.');
       }
-
-      response = await updateActivity(activity.id, {
-        title,
-        content,
-        image_url: imageUrl,
-        image_description: imageAlt || 'Capa da atividade',
-        image_caption: imageCaption || undefined,
-      });
-    }
-
-    setIsSubmitting(false);
-
-    if (response) {
-      alert(isNew ? 'Atividade criada com sucesso! ✔' : 'Alterações salvas com sucesso! ✔');
-      router.push('/admin/atividades');
-      router.refresh();
-    } else {
-      alert('Erro ao salvar atividade.');
+    } catch {
+      alert('Erro ao salvar documento.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <main className="w-full min-h-screen bg-[#f3f5f7]">
-      <section className="max-w-7xl mx-auto px-6 py-14 md:py-20 space-y-8">
-        <div className="mb-12 space-y-4">
-          <button
-            onClick={handleBack}
-            className="text-sm text-gray-500 hover:text-black transition-colors"
-          >
-            ← Voltar
-          </button>
+    <main className="w-full max-w-4xl mx-auto py-12 md:py-20 px-6">
+      <header className="mb-10 space-y-2">
+        <button
+          type="button"
+          onClick={handleBack}
+          className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 font-medium transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Voltar para transparência
+        </button>
 
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-            <div className="space-y-3">
-              <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-[#07152f]">
-                {isNew ? 'Nova Atividade' : isEditMode ? 'Editar Atividade' : title || 'Sem título'}
-              </h1>
+        <div className="pt-4 space-y-2">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight">
+            {isNew ? 'Criar Novo Documento' : 'Editar Documento'}
+          </h1>
 
-              <p className="max-w-2xl text-lg text-gray-600 leading-relaxed">
-                {isNew
-                  ? 'Crie uma nova atividade para aparecer na página pública do Centro Dia.'
-                  : isEditMode
-                    ? 'Atualize as informações da atividade mantendo o padrão visual do site.'
-                    : 'Visualize os detalhes da atividade cadastrada.'}
-              </p>
-            </div>
+          <p className="text-sm text-gray-600 bg-emerald-50 px-3 py-1.5 rounded-lg inline-block border border-emerald-100">
+            Pipeline conectado ao banco de dados Laravel. Alterações são refletidas em tempo real.
+          </p>
+        </div>
+      </header>
 
-            {isAdmin && !isEditMode && !isNew && (
-              <button
-                onClick={() => router.push(`${pathname}/editar`)}
-                className="h-11 px-5 rounded-xl bg-[#c96b18] hover:bg-[#b55f14] text-white font-semibold transition-all"
-              >
-                Editar atividade
-              </button>
-            )}
+      <section className="rounded-2xl border border-dashed border-gray-300 bg-white p-6 md:p-8">
+        <div className="flex flex-col items-center text-center gap-4 mb-8">
+          <div className="w-16 h-16 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center">
+            <FileText className="w-8 h-8" />
+          </div>
+
+          <div className="space-y-1">
+            <h2 className="text-lg font-semibold text-gray-800">
+              {isNew ? 'Novo documento' : 'Atualizar documento'}
+            </h2>
+
+            <p className="text-sm text-gray-600 max-w-md">
+              Informe o título, link do arquivo, ano e categoria para exibição na página de transparência.
+            </p>
           </div>
         </div>
 
-        {isEditMode && (
-          <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 space-y-5">
-            <h3 className="text-xs font-bold text-[#07152f] uppercase tracking-wider">
-              Mídia da publicação
-            </h3>
+        <div className="space-y-6">
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-gray-500">
+              Título do Documento
+            </label>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-gray-500">
-                  URL da imagem
-                </label>
+            <div className="relative">
+              <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+
+              <input
+                type="text"
+                value={title}
+                onChange={(event) => setTitle(event.target.value)}
+                className="w-full text-sm bg-white border border-gray-300 rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:border-gray-900 text-gray-800"
+                placeholder="Ex: Relatório Financeiro 2026"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-gray-500">
+              URL do Arquivo
+            </label>
+
+            <div className="relative">
+              <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+
+              <input
+                type="url"
+                value={fileUrl}
+                onChange={(event) => setFileUrl(event.target.value)}
+                className="w-full text-sm bg-white border border-gray-300 rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:border-gray-900 text-gray-800 font-mono"
+                placeholder="https://drive.google.com/file/..."
+              />
+            </div>
+
+            {fileUrl && (
+              <a
+                href={fileUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-xs text-orange-600 hover:text-orange-700 font-medium"
+              >
+                Abrir arquivo
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-gray-500">
+                Ano
+              </label>
+
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
 
                 <input
-                  type="text"
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  className="w-full text-sm bg-[#fafafa] border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#c96b18]/30 text-gray-700 font-mono"
-                  placeholder="https://..."
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-gray-500">
-                  Texto alternativo
-                </label>
-
-                <input
-                  type="text"
-                  value={imageAlt}
-                  onChange={(e) => setImageAlt(e.target.value)}
-                  className="w-full text-sm bg-[#fafafa] border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#c96b18]/30 text-gray-700"
-                  placeholder="Descrição da imagem"
-                />
-              </div>
-
-              <div className="space-y-1 md:col-span-2">
-                <label className="text-xs font-semibold text-gray-500">
-                  Legenda
-                </label>
-
-                <input
-                  type="text"
-                  value={imageCaption}
-                  onChange={(e) => setImageCaption(e.target.value)}
-                  className="w-full text-sm bg-[#fafafa] border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#c96b18]/30 text-gray-700"
-                  placeholder="Legenda opcional da imagem"
+                  type="number"
+                  value={year}
+                  onChange={(event) => setYear(Number(event.target.value))}
+                  className="w-full text-sm bg-white border border-gray-300 rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:border-gray-900 text-gray-800"
+                  placeholder="2026"
+                  min={2000}
+                  max={2100}
                 />
               </div>
             </div>
-          </div>
-        )}
 
-        {imageUrl && (
-          <div className="relative w-full h-[280px] md:h-[520px] rounded-3xl overflow-hidden bg-white shadow-sm">
-            <Image
-              src={imageUrl}
-              alt={imageAlt || 'Capa da atividade'}
-              fill
-              className="object-cover"
-              priority
-              unoptimized
-            />
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-gray-500">
+                Categoria
+              </label>
 
-            {!isEditMode && imageCaption && (
-              <p className="absolute bottom-0 left-0 right-0 bg-black/45 text-white text-sm px-4 py-2 text-center">
-                {imageCaption}
-              </p>
-            )}
-          </div>
-        )}
+              <div className="relative">
+                <FolderOpen className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
 
-        <div className="bg-white rounded-3xl p-8 md:p-12 shadow-sm space-y-6">
-          {isEditMode ? (
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full text-3xl md:text-5xl font-bold border border-gray-200 rounded-2xl p-5 focus:outline-none focus:ring-2 focus:ring-[#c96b18]/30 text-[#07152f] bg-[#fafafa]"
-              placeholder="Título da atividade"
-            />
-          ) : (
-            <h1 className="text-3xl md:text-5xl font-bold text-[#07152f] tracking-tight leading-tight">
-              {title || 'Sem título'}
-            </h1>
-          )}
-
-          <div className="text-gray-800 leading-relaxed text-base md:text-lg whitespace-pre-wrap font-normal">
-            {isEditMode ? (
-              <textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                className="w-full min-h-[420px] border border-gray-200 rounded-2xl p-5 focus:outline-none focus:ring-2 focus:ring-[#c96b18]/30 text-base bg-[#fafafa]"
-                placeholder="Conteúdo completo da atividade..."
-              />
-            ) : (
-              <p>{content || 'Sem conteúdo.'}</p>
-            )}
-          </div>
-
-          {isAdmin && isEditMode && (
-            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-end gap-3 pt-6 border-t border-gray-100">
-              <button
-                onClick={handleCancel}
-                disabled={isSubmitting}
-                className="h-12 px-6 rounded-xl bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold transition-all disabled:opacity-60"
-              >
-                Descartar
-              </button>
-
-              {(hasPendingChanges || isNew) && (
-                <button
-                  onClick={handleSave}
-                  disabled={isSubmitting}
-                  className="h-12 px-6 rounded-xl bg-[#c96b18] hover:bg-[#b55f14] text-white font-semibold transition-all disabled:opacity-60"
+                <select
+                  value={categoryId}
+                  onChange={(event) => setCategoryId(Number(event.target.value))}
+                  className="w-full text-sm bg-white border border-gray-300 rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:border-gray-900 text-gray-800 appearance-none"
                 >
-                  {isSubmitting
-                    ? 'Salvando...'
-                    : isNew
-                      ? 'Criar atividade'
-                      : 'Confirmar e salvar'}
-                </button>
+                  <option value={0}>Selecione uma categoria</option>
+
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <section className="overflow-hidden rounded-md border border-zinc-200 bg-white shadow-sm">
+            <div className="flex items-center justify-between border-b border-zinc-100 bg-zinc-50 px-5 py-4">
+              <div className="flex items-center gap-3">
+                <div className="rounded-md bg-primary/10 p-2 text-primary">
+                  <FolderOpen size={18} />
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-zinc-900">
+                    {selectedCategory?.name || 'Categoria'}
+                  </h3>
+
+                  <p className="text-xs text-zinc-500">
+                    Prévia do documento
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between px-5 py-3 transition hover:bg-zinc-50">
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium text-zinc-800">
+                  {title || 'Título do documento'}
+                </p>
+
+                <p className="mt-1 text-xs text-zinc-500">
+                  {formattedDate}
+                </p>
+              </div>
+
+              {fileUrl ? (
+                <a
+                  href={fileUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded-md p-2 text-zinc-400 transition hover:bg-primary/10 hover:text-primary"
+                >
+                  <ExternalLink size={15} />
+                </a>
+              ) : (
+                <div className="rounded-md p-2 text-zinc-300">
+                  <ExternalLink size={15} />
+                </div>
               )}
             </div>
-          )}
+          </section>
+
+          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-end gap-3 pt-4 border-t border-gray-100">
+            <button
+              type="button"
+              onClick={handleCancel}
+              disabled={isSubmitting}
+              className="h-11 px-5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold transition-all disabled:opacity-60"
+            >
+              <span className="inline-flex items-center justify-center gap-2">
+                <X className="w-4 h-4" />
+                Descartar
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={isSubmitting || (!hasPendingChanges && !isNew)}
+              className="h-11 px-5 rounded-xl bg-green-600 hover:bg-green-700 text-white text-sm font-semibold transition-all disabled:opacity-60"
+            >
+              <span className="inline-flex items-center justify-center gap-2">
+                <Save className="w-4 h-4" />
+                {isSubmitting
+                  ? 'Salvando...'
+                  : isNew
+                    ? 'Criar Documento'
+                    : 'Confirmar e Salvar'}
+              </span>
+            </button>
+          </div>
         </div>
       </section>
     </main>
