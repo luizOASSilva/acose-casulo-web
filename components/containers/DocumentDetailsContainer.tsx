@@ -4,19 +4,21 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   ArrowLeft,
+  Calendar,
+  ExternalLink,
   FileText,
+  FolderOpen,
   Link as LinkIcon,
   Save,
   X,
-  Calendar,
-  FolderOpen,
-  ExternalLink,
 } from 'lucide-react';
+
 import type {
   DocumentCategory,
   DocumentInput,
   DocumentItem,
 } from '@/types/document';
+
 import {
   createDocument,
   updateDocument,
@@ -28,6 +30,8 @@ interface DocumentDetailsContainerProps {
   isNew?: boolean;
   startInEditMode?: boolean;
 }
+
+const ADMIN_TRANSPARENCY_PATH = '/admin/transparencia';
 
 export default function DocumentDetailsContainer({
   document,
@@ -45,6 +49,7 @@ export default function DocumentDetailsContainer({
   const [year, setYear] = useState<number>(
     document?.year || new Date().getFullYear()
   );
+
   const [categoryId, setCategoryId] = useState<number>(
     document?.category_id || document?.category?.id || categories[0]?.id || 0
   );
@@ -64,13 +69,23 @@ export default function DocumentDetailsContainer({
     return categories.find((category) => category.id === Number(categoryId));
   }, [categories, categoryId]);
 
+  const formattedDate = useMemo(() => {
+    const date = document?.created_at
+      ? new Date(document.created_at)
+      : new Date();
+
+    return date.toLocaleDateString('pt-BR');
+  }, [document?.created_at]);
+
   const hasPendingChanges = useMemo(() => {
+    const originalCategoryId =
+      document?.category_id || document?.category?.id || categories[0]?.id || 0;
+
     return (
       title !== (document?.title || '') ||
       fileUrl !== (document?.file_url || '') ||
       year !== (document?.year || new Date().getFullYear()) ||
-      categoryId !==
-        (document?.category_id || document?.category?.id || categories[0]?.id || 0)
+      categoryId !== originalCategoryId
     );
   }, [title, fileUrl, year, categoryId, document, categories]);
 
@@ -97,13 +112,13 @@ export default function DocumentDetailsContainer({
   const handleBack = () => {
     if (!confirmDiscard()) return;
 
-    router.push('/admin/transparencia');
+    router.push(ADMIN_TRANSPARENCY_PATH);
   };
 
   const handleCancel = () => {
     if (!confirmDiscard()) return;
 
-    router.push('/admin/transparencia');
+    router.push(ADMIN_TRANSPARENCY_PATH);
   };
 
   const handleSave = async () => {
@@ -130,8 +145,8 @@ export default function DocumentDetailsContainer({
     setIsSubmitting(true);
 
     const payload: DocumentInput = {
-      title,
-      file_url: fileUrl,
+      title: title.trim(),
+      file_url: fileUrl.trim(),
       category_id: Number(categoryId),
       year: Number(year),
     };
@@ -148,7 +163,7 @@ export default function DocumentDetailsContainer({
             : 'Documento atualizado com sucesso! ✔'
         );
 
-        router.push('/admin/transparency');
+        router.push(ADMIN_TRANSPARENCY_PATH);
         router.refresh();
       } else {
         alert('Erro ao salvar documento.');
@@ -162,7 +177,7 @@ export default function DocumentDetailsContainer({
 
   return (
     <main className="w-full max-w-4xl mx-auto py-12 md:py-20 px-6">
-      <div className="mb-10 space-y-2">
+      <header className="mb-10 space-y-2">
         <button
           type="button"
           onClick={handleBack}
@@ -172,16 +187,16 @@ export default function DocumentDetailsContainer({
           Voltar para transparência
         </button>
 
-        <div className="pt-4">
+        <div className="pt-4 space-y-2">
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight">
             {isNew ? 'Criar Novo Documento' : 'Editar Documento'}
           </h1>
 
-          <p className="mt-2 text-sm text-gray-600 bg-emerald-50 px-3 py-1.5 rounded-lg inline-block border border-emerald-100">
-            Gerencie documentos públicos da área de transparência conectados ao banco de dados Laravel.
+          <p className="text-sm text-gray-600 bg-emerald-50 px-3 py-1.5 rounded-lg inline-block border border-emerald-100">
+            Pipeline conectado ao banco de dados Laravel. Alterações são refletidas em tempo real.
           </p>
         </div>
-      </div>
+      </header>
 
       <section className="rounded-2xl border border-dashed border-gray-300 bg-white p-6 md:p-8">
         <div className="flex flex-col items-center text-center gap-4 mb-8">
@@ -280,7 +295,9 @@ export default function DocumentDetailsContainer({
 
                 <select
                   value={categoryId}
-                  onChange={(event) => setCategoryId(Number(event.target.value))}
+                  onChange={(event) =>
+                    setCategoryId(Number(event.target.value))
+                  }
                   className="w-full text-sm bg-white border border-gray-300 rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:border-gray-900 text-gray-800 appearance-none"
                 >
                   <option value={0}>Selecione uma categoria</option>
@@ -295,27 +312,53 @@ export default function DocumentDetailsContainer({
             </div>
           </div>
 
-          <div className="rounded-2xl bg-gray-50 border border-gray-100 p-5">
-            <p className="text-xs font-bold text-gray-800 uppercase tracking-wider mb-3">
-              Prévia
-            </p>
+          <section className="overflow-hidden rounded-md border border-zinc-200 bg-white shadow-sm">
+            <div className="flex items-center justify-between border-b border-zinc-100 bg-zinc-50 px-5 py-4">
+              <div className="flex items-center gap-3">
+                <div className="rounded-md bg-primary/10 p-2 text-primary">
+                  <FolderOpen size={18} />
+                </div>
 
-            <div className="flex items-center gap-3">
-              <div className="rounded-xl bg-orange-100 p-3 text-orange-600">
-                <FileText className="w-5 h-5" />
+                <div>
+                  <h3 className="font-semibold text-zinc-900">
+                    {selectedCategory?.name || 'Categoria'}
+                  </h3>
+
+                  <p className="text-xs text-zinc-500">
+                    Prévia do documento
+                  </p>
+                </div>
               </div>
+            </div>
 
+            <div className="flex items-center justify-between border-b border-zinc-100 px-5 py-3 transition hover:bg-zinc-50">
               <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-gray-900">
+                <p className="truncate text-sm font-medium text-zinc-800">
                   {title || 'Título do documento'}
                 </p>
 
-                <p className="mt-1 text-xs text-gray-500">
-                  {selectedCategory?.name || 'Categoria'} · {year || 'Ano'}
+                <p className="mt-1 text-xs text-zinc-500">
+                  {formattedDate}
                 </p>
               </div>
+
+              {fileUrl ? (
+                <a
+                  href={fileUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded-md p-2 text-zinc-400 transition hover:bg-primary/10 hover:text-primary"
+                  title="Abrir documento"
+                >
+                  <ExternalLink size={15} />
+                </a>
+              ) : (
+                <div className="rounded-md p-2 text-zinc-300">
+                  <ExternalLink size={15} />
+                </div>
+              )}
             </div>
-          </div>
+          </section>
 
           <div className="flex flex-col md:flex-row items-stretch md:items-center justify-end gap-3 pt-4 border-t border-gray-100">
             <button
