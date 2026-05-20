@@ -1,95 +1,60 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import {
-  ArrowLeft,
-  Calendar,
-  ExternalLink,
-  FileText,
-  FolderOpen,
-  Link as LinkIcon,
-  Save,
-  X,
-} from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import Image from 'next/image';
+import { usePathname, useRouter } from 'next/navigation';
+import type { Activity } from '@/types/activity';
+import { createActivity, updateActivity } from '@/services/activities';
 
-import type {
-  DocumentInput,
-  DocumentItem,
-} from '@/types/document';
-
-import type { DocumentCategory } from '@/types/transparency';
-
-import {
-  createDocument,
-  updateDocument,
-} from '@/services/admin/document';
-
-interface DocumentDetailsContainerProps {
-  document: DocumentItem;
-  categories: DocumentCategory[];
-  isNew?: boolean;
+interface ActivityDetailsContainerProps {
+  activity?: Activity;
+  isAdmin?: boolean;
   startInEditMode?: boolean;
+  isNew?: boolean;
 }
 
-export default function DocumentDetailsContainer({
-  document,
-  categories,
-  isNew = false,
+export default function ActivityDetailsContainer({
+  activity,
+  isAdmin = false,
   startInEditMode = false,
-}: DocumentDetailsContainerProps) {
+  isNew = false,
+}: ActivityDetailsContainerProps) {
   const router = useRouter();
+  const pathname = usePathname();
 
-  const [isEditMode] = useState(startInEditMode || isNew);
+  const [isEditMode, setIsEditMode] = useState(startInEditMode || isNew);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [title, setTitle] = useState(document?.title || '');
-  const [fileUrl, setFileUrl] = useState(document?.file_url || '');
-  const [year, setYear] = useState<number>(
-    document?.year || new Date().getFullYear()
-  );
-
-  const [categoryId, setCategoryId] = useState<number>(
-    document?.category_id || document?.category?.id || categories[0]?.id || 0
-  );
+  const [title, setTitle] = useState(activity?.title || '');
+  const [content, setContent] = useState(activity?.content || '');
+  const [imageUrl, setImageUrl] = useState(activity?.media?.url || '');
+  const [imageAlt, setImageAlt] = useState(activity?.media?.alt_text || '');
+  const [imageCaption, setImageCaption] = useState(activity?.media?.caption || '');
 
   useEffect(() => {
-    if (!document) return;
-
-    setTitle(document.title || '');
-    setFileUrl(document.file_url || '');
-    setYear(document.year || new Date().getFullYear());
-    setCategoryId(
-      document.category_id || document.category?.id || categories[0]?.id || 0
-    );
-  }, [document, categories]);
-
-  const selectedCategory = useMemo(() => {
-    return categories.find((category) => category.id === Number(categoryId));
-  }, [categories, categoryId]);
-
-  const formattedDate = useMemo(() => {
-    const date = document?.created_at
-      ? new Date(document.created_at)
-      : new Date();
-
-    return date.toLocaleDateString('pt-BR');
-  }, [document]);
+    if (activity) {
+      setTitle(activity.title || '');
+      setContent(activity.content || '');
+      setImageUrl(activity.media?.url || '');
+      setImageAlt(activity.media?.alt_text || '');
+      setImageCaption(activity.media?.caption || '');
+    }
+  }, [activity]);
 
   const hasPendingChanges = useMemo(() => {
     return (
-      title !== (document?.title || '') ||
-      fileUrl !== (document?.file_url || '') ||
-      year !== (document?.year || new Date().getFullYear()) ||
-      categoryId !==
-        (document?.category_id || document?.category?.id || categories[0]?.id || 0)
+      title !== (activity?.title || '') ||
+      content !== (activity?.content || '') ||
+      imageUrl !== (activity?.media?.url || '') ||
+      imageAlt !== (activity?.media?.alt_text || '') ||
+      imageCaption !== (activity?.media?.caption || '')
     );
-  }, [title, fileUrl, year, categoryId, document, categories]);
+  }, [title, content, imageUrl, imageAlt, imageCaption, activity]);
 
   useEffect(() => {
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (hasPendingChanges && isEditMode) {
-        event.preventDefault();
+        e.preventDefault();
       }
     };
 
@@ -97,6 +62,14 @@ export default function DocumentDetailsContainer({
 
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [hasPendingChanges, isEditMode]);
+
+  const resetFields = () => {
+    setTitle(activity?.title || '');
+    setContent(activity?.content || '');
+    setImageUrl(activity?.media?.url || '');
+    setImageAlt(activity?.media?.alt_text || '');
+    setImageCaption(activity?.media?.caption || '');
+  };
 
   const confirmDiscard = (): boolean => {
     if (!hasPendingChanges) return true;
@@ -109,282 +82,219 @@ export default function DocumentDetailsContainer({
   const handleBack = () => {
     if (!confirmDiscard()) return;
 
-    router.push('/admin/transparencia');
+    if (isNew) {
+      router.push('/admin/atividades');
+      return;
+    }
+
+    if (isEditMode) {
+      router.push(`/admin/atividades/${activity?.id}`);
+      return;
+    }
+
+    router.push('/admin/atividades');
   };
 
   const handleCancel = () => {
     if (!confirmDiscard()) return;
 
-    router.push('/admin/transparencia');
+    if (isNew) {
+      router.push('/admin/atividades');
+      return;
+    }
+
+    setIsEditMode(false);
+    resetFields();
+    router.push(`/admin/atividades/${activity?.id}`);
   };
 
   const handleSave = async () => {
-    if (!title.trim()) {
-      alert('Título é obrigatório!');
-      return;
-    }
-
-    if (!fileUrl.trim()) {
-      alert('URL do arquivo é obrigatória!');
-      return;
-    }
-
-    if (!categoryId) {
-      alert('Categoria é obrigatória!');
-      return;
-    }
-
-    if (!year) {
-      alert('Ano é obrigatório!');
+    if (!title.trim() || !content.trim()) {
+      alert('Título e conteúdo são obrigatórios!');
       return;
     }
 
     setIsSubmitting(true);
 
-    const payload: DocumentInput = {
+    const payload = {
       title: title.trim(),
-      file_url: fileUrl.trim(),
-      category_id: Number(categoryId),
-      year: Number(year),
+      content: content.trim(),
+      image_url: imageUrl.trim(),
+      image_description: imageAlt.trim() || 'Capa da atividade',
+      image_caption: imageCaption.trim() || undefined,
     };
 
-    try {
-      const response = isNew
-        ? await createDocument(payload)
-        : await updateDocument(document.id, payload);
+    const response = isNew
+      ? await createActivity(payload)
+      : activity?.id
+        ? await updateActivity(activity.id, payload)
+        : null;
 
-      if (response) {
-        alert(
-          isNew
-            ? 'Documento criado com sucesso! ✔'
-            : 'Documento atualizado com sucesso! ✔'
-        );
+    setIsSubmitting(false);
 
-        router.push('/admin/transparencia');
-        router.refresh();
-      } else {
-        alert('Erro ao salvar documento.');
-      }
-    } catch {
-      alert('Erro ao salvar documento.');
-    } finally {
-      setIsSubmitting(false);
+    if (response) {
+      alert(
+        isNew
+          ? 'Atividade criada com sucesso! ✔'
+          : 'Alterações salvas com sucesso! ✔'
+      );
+
+      router.push('/admin/atividades');
+      router.refresh();
+    } else {
+      alert('Erro ao salvar atividade.');
     }
   };
 
   return (
-    <main className="w-full max-w-4xl mx-auto py-12 md:py-20 px-6">
-      <header className="mb-10 space-y-2">
+    <div className="w-full max-w-4xl mx-auto py-20 px-4 md:px-6 space-y-8">
+      <div className="flex items-center justify-between border-b border-gray-100 pb-4">
         <button
-          type="button"
           onClick={handleBack}
           className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 font-medium transition-colors"
         >
-          <ArrowLeft className="w-4 h-4" />
-          Voltar para transparência
+          {isEditMode && hasPendingChanges
+            ? '⚠️ Cancelar Alterações'
+            : isEditMode
+              ? '← Voltar para detalhes'
+              : '← Voltar para atividades'}
         </button>
 
-        <div className="pt-4 space-y-2">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight">
-            {isNew ? 'Criar Novo Documento' : 'Editar Documento'}
-          </h1>
+        {isAdmin && !isEditMode && !isNew && (
+          <button
+            onClick={() => router.push(`${pathname}/editar`)}
+            className="text-xs bg-primary-light hover:bg-primary text-white font-semibold px-4 py-2 rounded-md transition-all cursor-pointer"
+          >
+            Editar Atividade
+          </button>
+        )}
+      </div>
 
-          <p className="text-sm text-gray-600 bg-emerald-50 px-3 py-1.5 rounded-lg inline-block border border-emerald-100">
-            Pipeline conectado ao banco de dados Laravel. Alterações são refletidas em tempo real.
-          </p>
-        </div>
-      </header>
+      {isEditMode && (
+        <div className="bg-gray-50/70 p-5 rounded-2xl border border-gray-200/60 space-y-4">
+          <h3 className="text-xs font-bold text-gray-800 uppercase tracking-wider">
+            Mídia da Publicação
+          </h3>
 
-      <section className="rounded-2xl border border-dashed border-gray-300 bg-white p-6 md:p-8">
-        <div className="flex flex-col items-center text-center gap-4 mb-8">
-          <div className="w-16 h-16 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center">
-            <FileText className="w-8 h-8" />
-          </div>
-
-          <div className="space-y-1">
-            <h2 className="text-lg font-semibold text-gray-800">
-              {isNew ? 'Novo documento' : 'Atualizar documento'}
-            </h2>
-
-            <p className="text-sm text-gray-600 max-w-md">
-              Informe o título, link do arquivo, ano e categoria para exibição na página de transparência.
-            </p>
-          </div>
-        </div>
-
-        <div className="space-y-6">
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-gray-500">
-              Título do Documento
-            </label>
-
-            <div className="relative">
-              <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-gray-500">
+                URL da Imagem
+              </label>
 
               <input
                 type="text"
-                value={title}
-                onChange={(event) => setTitle(event.target.value)}
-                className="w-full text-sm bg-white border border-gray-300 rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:border-gray-900 text-gray-800"
-                placeholder="Ex: Relatório Financeiro 2026"
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                className="w-full text-xs bg-white border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:border-gray-900 text-gray-700 font-mono"
+                placeholder="https://..."
               />
             </div>
-          </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-gray-500">
-              URL do Arquivo
-            </label>
-
-            <div className="relative">
-              <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-gray-500">
+                Texto Alternativo
+              </label>
 
               <input
-                type="url"
-                value={fileUrl}
-                onChange={(event) => setFileUrl(event.target.value)}
-                className="w-full text-sm bg-white border border-gray-300 rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:border-gray-900 text-gray-800 font-mono"
-                placeholder="https://drive.google.com/file/..."
+                type="text"
+                value={imageAlt}
+                onChange={(e) => setImageAlt(e.target.value)}
+                className="w-full text-xs bg-white border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:border-gray-900 text-gray-700"
+                placeholder="Descrição da imagem"
               />
             </div>
 
-            {fileUrl && (
-              <a
-                href={fileUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-xs text-orange-600 hover:text-orange-700 font-medium"
-              >
-                Abrir arquivo
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
-            )}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="space-y-1.5">
+            <div className="space-y-1 md:col-span-2">
               <label className="text-xs font-semibold text-gray-500">
-                Ano
+                Legenda
               </label>
 
-              <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-
-                <input
-                  type="number"
-                  value={year}
-                  onChange={(event) => setYear(Number(event.target.value))}
-                  className="w-full text-sm bg-white border border-gray-300 rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:border-gray-900 text-gray-800"
-                  placeholder="2026"
-                  min={2000}
-                  max={2100}
-                />
-              </div>
+              <input
+                type="text"
+                value={imageCaption}
+                onChange={(e) => setImageCaption(e.target.value)}
+                className="w-full text-xs bg-white border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:border-gray-900 text-gray-700"
+                placeholder="Legenda opcional da imagem"
+              />
             </div>
-
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-gray-500">
-                Categoria
-              </label>
-
-              <div className="relative">
-                <FolderOpen className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-
-                <select
-                  value={categoryId}
-                  onChange={(event) => setCategoryId(Number(event.target.value))}
-                  className="w-full text-sm bg-white border border-gray-300 rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:border-gray-900 text-gray-800 appearance-none"
-                >
-                  <option value={0}>Selecione uma categoria</option>
-
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <section className="overflow-hidden rounded-md border border-zinc-200 bg-white shadow-sm">
-            <div className="flex items-center justify-between border-b border-zinc-100 bg-zinc-50 px-5 py-4">
-              <div className="flex items-center gap-3">
-                <div className="rounded-md bg-primary/10 p-2 text-primary">
-                  <FolderOpen size={18} />
-                </div>
-
-                <div>
-                  <h3 className="font-semibold text-zinc-900">
-                    {selectedCategory?.name || 'Categoria'}
-                  </h3>
-
-                  <p className="text-xs text-zinc-500">
-                    Prévia do documento
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between px-5 py-3 transition hover:bg-zinc-50">
-              <div className="min-w-0">
-                <p className="truncate text-sm font-medium text-zinc-800">
-                  {title || 'Título do documento'}
-                </p>
-
-                <p className="mt-1 text-xs text-zinc-500">
-                  {formattedDate}
-                </p>
-              </div>
-
-              {fileUrl ? (
-                <a
-                  href={fileUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="rounded-md p-2 text-zinc-400 transition hover:bg-primary/10 hover:text-primary"
-                >
-                  <ExternalLink size={15} />
-                </a>
-              ) : (
-                <div className="rounded-md p-2 text-zinc-300">
-                  <ExternalLink size={15} />
-                </div>
-              )}
-            </div>
-          </section>
-
-          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-end gap-3 pt-4 border-t border-gray-100">
-            <button
-              type="button"
-              onClick={handleCancel}
-              disabled={isSubmitting}
-              className="h-11 px-5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold transition-all disabled:opacity-60"
-            >
-              <span className="inline-flex items-center justify-center gap-2">
-                <X className="w-4 h-4" />
-                Descartar
-              </span>
-            </button>
-
-            <button
-              type="button"
-              onClick={handleSave}
-              disabled={isSubmitting || (!hasPendingChanges && !isNew)}
-              className="h-11 px-5 rounded-xl bg-green-600 hover:bg-green-700 text-white text-sm font-semibold transition-all disabled:opacity-60"
-            >
-              <span className="inline-flex items-center justify-center gap-2">
-                <Save className="w-4 h-4" />
-                {isSubmitting
-                  ? 'Salvando...'
-                  : isNew
-                    ? 'Criar Documento'
-                    : 'Confirmar e Salvar'}
-              </span>
-            </button>
           </div>
         </div>
-      </section>
-    </main>
+      )}
+
+      {imageUrl && (
+        <div className="relative w-full h-64 md:h-[420px] rounded-md overflow-hidden bg-gray-50 border border-gray-100">
+          <Image
+            src={imageUrl}
+            alt={imageAlt || 'Capa da atividade'}
+            fill
+            className="object-cover"
+            priority
+            unoptimized
+          />
+
+          {!isEditMode && imageCaption && (
+            <p className="absolute bottom-0 left-0 right-0 bg-black/40 text-white text-xs px-3 py-1.5 text-center">
+              {imageCaption}
+            </p>
+          )}
+        </div>
+      )}
+
+      <div className="space-y-4">
+        {isEditMode ? (
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="w-full text-xl md:text-2xl font-bold border border-gray-300 rounded-xl p-3 focus:outline-none focus:border-gray-900 text-gray-900"
+            placeholder="Título"
+          />
+        ) : (
+          <h1 className="text-2xl md:text-4xl font-bold text-gray-900 tracking-tight leading-tight">
+            {title || 'Sem título'}
+          </h1>
+        )}
+      </div>
+
+      <div className="text-gray-800 leading-relaxed text-base md:text-lg whitespace-pre-wrap font-normal">
+        {isEditMode ? (
+          <textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            className="w-full min-h-[350px] border border-gray-300 rounded-xl p-4 focus:outline-none focus:border-gray-900 text-base"
+            placeholder="Conteúdo completo..."
+          />
+        ) : (
+          <p>{content || 'Sem conteúdo.'}</p>
+        )}
+      </div>
+
+      {isAdmin && isEditMode && (
+        <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
+          <button
+            onClick={handleCancel}
+            disabled={isSubmitting}
+            className="text-xs bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-2.5 rounded-lg border border-gray-300 transition-colors cursor-pointer disabled:opacity-60"
+          >
+            Descartar
+          </button>
+
+          {(hasPendingChanges || isNew) && (
+            <button
+              onClick={handleSave}
+              disabled={isSubmitting}
+              className="text-xs bg-green-600 hover:bg-green-700 text-white font-semibold px-5 py-2.5 rounded-lg transition-all cursor-pointer disabled:opacity-60"
+            >
+              {isSubmitting
+                ? 'Salvando...'
+                : isNew
+                  ? 'Criar Atividade'
+                  : 'Confirmar e Salvar'}
+            </button>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
