@@ -29,7 +29,7 @@ export interface Donation {
 export interface PaginatedDonationsResponse {
   data: Donation[];
 
-  links: {
+  links?: {
     first: string | null;
     last: string | null;
     prev: string | null;
@@ -41,6 +41,13 @@ export interface PaginatedDonationsResponse {
     last_page: number;
     per_page: number;
     total: number;
+  };
+
+  stats: {
+    total_raised: number;
+    approved_count: number;
+    pending_count: number;
+    gifts_count: number;
   };
 }
 
