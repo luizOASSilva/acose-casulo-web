@@ -72,12 +72,23 @@ export default function ArticleListContainer({ articles, isAdmin = false }: Arti
 
               {isAdmin && (
                 <div
-                  className="ml-6 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200 transform translate-x-2 group-hover:translate-x-0 z-10"
+                  className="
+                    ml-6 flex items-center gap-2 z-10
+                    opacity-100 md:opacity-0
+                    translate-x-0 md:translate-x-2
+                    md:group-hover:opacity-100
+                    md:group-hover:translate-x-0
+                    transition-all duration-200
+                  "
                   onClick={(e) => e.stopPropagation()}
                 >
                   <button
                     onClick={() => router.push(`/admin/artigos/${article.id}/editar`)}
-                    className="p-2.5 text-gray-600 bg-gray-100 hover:bg-gray-200 hover:text-primary rounded-xl transition-all active:scale-95"
+                    className="
+                      p-2.5 rounded-xl transition-all active:scale-95
+                      text-gray-600 bg-gray-100
+                      hover:bg-orange-500/20 hover:text-orange-600
+                    "
                     title="Editar Artigo"
                   >
                     <Edit3 className="w-5 h-5" />

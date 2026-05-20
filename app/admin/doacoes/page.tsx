@@ -54,29 +54,13 @@ export default async function AdminDonationsPage({
   const page = params.page ? Number(params.page) : 1;
 
   const response = await getDonations(page, status);
+  
   const donations = response.data ?? [];
-
-  const allResponse = await getDonations(1);
-  const all = allResponse.data ?? [];
-
-  const stats = {
-    total: all.reduce(
-      (acc: number, item: any) =>
-        acc + Number(item.amount),
-      0
-    ),
-
-    approved: all.filter(
-      (item: any) => item.status === 'approved'
-    ).length,
-
-    pending: all.filter(
-      (item: any) => item.status === 'pending'
-    ).length,
-
-    gifts: all.filter(
-      (item: any) => item.has_gift
-    ).length,
+  const stats = response.stats ?? {
+    total_raised: 0,
+    approved_count: 0,
+    pending_count: 0,
+    gifts_count: 0,
   };
 
   return (
@@ -116,7 +100,7 @@ export default async function AdminDonationsPage({
             <DonationCard
               icon={<BadgeDollarSign size={22} className="text-primary"/>}
               title="Arrecadado"
-              value={stats.total.toLocaleString(
+              value={Number(stats.total_raised).toLocaleString(
                 'pt-BR',
                 {
                   style: 'currency',
@@ -131,7 +115,7 @@ export default async function AdminDonationsPage({
               <DonationCard
                 icon={<CheckCircle2 size={22} className="text-green-900"/>}
                 title="Aprovadas"
-                value={String(stats.approved)}
+                value={String(stats.approved_count)}
                 helper="Pagamentos confirmados"
                 iconWrapperClassName="bg-green-500/30"
               />
@@ -141,7 +125,7 @@ export default async function AdminDonationsPage({
               <DonationCard
                 icon={<Clock3 size={22} className="text-yellow-900"/>}
                 title="Pendentes"
-                value={String(stats.pending)}
+                value={String(stats.pending_count)}
                 helper="Aguardando pagamento"
                 iconWrapperClassName="bg-yellow-500/30"
               />
@@ -151,7 +135,7 @@ export default async function AdminDonationsPage({
               <DonationCard
                 icon={<Gift size={22}/>}
                 title="Brindes"
-                value={String(stats.gifts)}
+                value={String(stats.gifts_count)}
                 helper="Doações com brindes"
                 iconWrapperClassName="bg-secondary/30"
               />
