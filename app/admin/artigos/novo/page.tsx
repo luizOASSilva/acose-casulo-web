@@ -1,6 +1,6 @@
 import ArticleDetailsContainer from '@/components/containers/ArticleDetailsContainer';
 
-export default function AdminCreateArticlePage() {
+export default function AdminNovoArtigoPage() {
   const blankDraftSkeleton = {
     id: 0,
     slug: 'new',

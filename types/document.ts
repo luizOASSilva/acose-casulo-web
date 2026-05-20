@@ -11,7 +11,7 @@ export interface DocumentItem {
   title: string;
   file_url: string;
   year: number | null;
-  category_id: number;
+  category_id?: number;
   category: DocumentCategory;
   created_at: string;
 }

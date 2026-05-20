@@ -55,7 +55,7 @@ export default async function AdminTransparencyPage({
             </div>
 
             <Link
-              href="/admin/transparency/new"
+              href="/admin/transparencia/novo"
               className="inline-flex items-center justify-center gap-2 rounded-md bg-primary-light px-5 py-3 text-sm font-semibold text-white transition hover:scale-[1.02]"
             >
               <Plus size={18} />
@@ -160,7 +160,7 @@ export default async function AdminTransparencyPage({
 
                       <div className="flex items-center gap-1">
                         <Link
-                          href={`/admin/transparency/${doc.id}/edit`}
+                          href={`/admin/transparencia/${doc.id}/editar`}
                           className="rounded-md p-2 text-zinc-400 transition hover:bg-primary/10 hover:text-primary"
                         >
                           <Pencil size={15} />

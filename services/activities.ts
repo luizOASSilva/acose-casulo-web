@@ -44,7 +44,7 @@ export async function getActivities(): Promise<Activity[]> {
   }
 }
 
-export async function getRecentActivities(limit = 3): Promise<Activity[]> {
+export async function getRecentActivities(limit = 9): Promise<Activity[]> {
   try {
     const activities = await getActivities();
 

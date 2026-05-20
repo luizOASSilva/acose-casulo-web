@@ -6,7 +6,7 @@ interface ParamProps {
   params: Promise<{ id: string }>;
 }
 
-export default async function AdminEditArticlePage({ params }: ParamProps) {
+export default async function AdminEditarArtigoPage({ params }: ParamProps) {
   const { id } = await params;
   
   const [article, articles] = await Promise.all([
