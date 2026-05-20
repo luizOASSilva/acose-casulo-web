@@ -1,9 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback, useId } from 'react';
-import { DonationData } from '@/types/donation';
+import { DonationData, PixResponse } from '@/types/donation';
 import {
-  PixResponse,
   createDonation,
   getDonationStatus,
   updateDonationPix,
