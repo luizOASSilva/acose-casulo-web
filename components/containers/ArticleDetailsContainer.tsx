@@ -5,16 +5,17 @@ import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import type { Article } from '@/types/article';
 import KeywordBadge from '@/components/ui/KeywordBadge';
-import { updateArticle, createArticle, getArticles } from '@/services/articles';
+import { updateArticle, createArticle } from '@/services/articles';
 
 interface ArticleDetailsContainerProps {
   article?: Article;
   isAdmin?: boolean;
   isNew?: boolean;
   startInEditMode?: boolean;
+  allKeywords?: string[];
 }
 
-export default function ArticleDetailsContainer({ article, isAdmin = false, isNew = false, startInEditMode = false }: ArticleDetailsContainerProps) {
+export default function ArticleDetailsContainer({ article, isAdmin = false, isNew = false, startInEditMode = false, allKeywords = [] }: ArticleDetailsContainerProps) {
   const router = useRouter();
 
   const pathname = usePathname();
@@ -36,7 +37,7 @@ export default function ArticleDetailsContainer({ article, isAdmin = false, isNe
   const [keywordsArray, setKeywordsArray] = useState<string[]>(parseInitialKeywords(article));
   
   const [keywordSearch, setKeywordSearch] = useState('');
-  const [allDatabaseKeywords, setAllDatabaseKeywords] = useState<string[]>([]);
+  const [allDatabaseKeywords] = useState<string[]>(allKeywords);
 
   useEffect(() => {
     if (article) {
@@ -70,17 +71,6 @@ export default function ArticleDetailsContainer({ article, isAdmin = false, isNe
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [hasPendingChanges, isEditMode]);
-
-  useEffect(() => {
-    async function fetchExistingKeywords() {
-      const articles = await getArticles();
-      if (articles && articles.length > 0) {
-        const keywordsDoBanco = Array.from(new Set(articles.flatMap(art => parseInitialKeywords(art))));
-        setAllDatabaseKeywords(keywordsDoBanco);
-      }
-    }
-    if (isEditMode) fetchExistingKeywords();
-  }, [isEditMode]);
 
   const cleanKeywordSearch = keywordSearch.trim().toLowerCase();
   
@@ -261,7 +251,7 @@ export default function ArticleDetailsContainer({ article, isAdmin = false, isNe
                   ))}
                   {showCreateOption && (
                     <button key="new-kw-opt" type="button" onClick={() => handleAddKeyword(cleanKeywordSearch)} className="w-full text-left px-4 py-2.5 text-xs hover:bg-gray-50 text-orange-600 font-bold block border-t border-gray-100">
-                      ✨ Criar palavra-chave inédita: "{cleanKeywordSearch}"
+                      Criar palavra-chave inédita: "{cleanKeywordSearch}"
                     </button>
                   )}
                 </div>

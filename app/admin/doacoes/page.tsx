@@ -86,8 +86,8 @@ export default async function AdminDonationsPage({
         <section className="relative overflow-hidden py-4">
           <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-3xl">
-              <h1 className="text-3xl font-semibold tracking-tight text-primary md:text-4xl">
-                Gestão de Doações
+              <h1 className="text-3xl font-semibold tracking-tight text-secondary md:text-4xl">
+                Gestão de <span className="text-primary">Doações</span>
               </h1>
 
               <p className="mt-3 text-base leading-relaxed text-zinc-600">

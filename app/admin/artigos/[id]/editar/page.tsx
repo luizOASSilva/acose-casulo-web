@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { getArticleById } from '@/services/articles';
+import { getArticleById, getArticles } from '@/services/articles';
 import ArticleDetailsContainer from '@/components/containers/ArticleDetailsContainer';
 
 interface ParamProps {
@@ -9,9 +9,16 @@ interface ParamProps {
 export default async function AdminEditArticlePage({ params }: ParamProps) {
   const { id } = await params;
   
-  const article = await getArticleById(Number(id));
+  const [article, articles] = await Promise.all([
+    getArticleById(Number(id)),
+    getArticles(),
+  ]);
 
   if (!article) notFound();
 
-  return <ArticleDetailsContainer key={`edit-${article.id}`} article={article} isAdmin={true} isNew={false} startInEditMode={true} />;
+  const allKeywords = Array.from(new Set(
+    articles.flatMap(a => a.keywords?.map((k: any) => typeof k === 'object' ? k.word : k) ?? [])
+  ));
+
+  return <ArticleDetailsContainer key={`edit-${article.id}`} article={article} isAdmin={true} isNew={false} startInEditMode={true} allKeywords={allKeywords} />;
 }
