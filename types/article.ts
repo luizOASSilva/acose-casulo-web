@@ -1,4 +1,4 @@
-import type { ArticleSchemaData } from '@/lib/
+import type { ArticleSchemaData } from '@/schemas/article.schema'
 
 export interface Article {
   id: number;
