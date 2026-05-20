@@ -1,6 +1,6 @@
 'use client';
 
-import LogoCard from '@/components/ui/LogoCard';
+import PartnerCard from '@/components/ui/PartnerCard';
 import type { Partner } from '@/types/partner';
 
 type Props = {
@@ -36,7 +36,7 @@ function MarqueeRow({
         }}
       >
         {repeated.map((logo, i) => (
-          <LogoCard
+          <PartnerCard
             key={`${logo.name}-${i}`}
             logo={logo}
             index={i % items.length}

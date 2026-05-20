@@ -9,3 +9,12 @@ export interface Article {
   keywords: string[];
   created_at: string;
 }
+
+export interface SaveArticleDTO {
+  title: string;
+  summary: string;
+  content: string;
+  image_url: string;
+  image_description: string;
+  keywords: string[];
+}

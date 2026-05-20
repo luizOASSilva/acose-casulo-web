@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { Partner } from '@/types/partner';
 
-export default function LogoCard({
+export default function PartnerCard({
   logo,
   index,
   isClone,

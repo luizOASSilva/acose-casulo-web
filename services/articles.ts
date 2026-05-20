@@ -1,14 +1,5 @@
 import { api } from '@/lib/api';
-import type { Article } from '@/types/article';
-
-export interface SaveArticleDTO {
-  title: string;
-  summary: string;
-  content: string;
-  image_url: string;
-  image_description: string;
-  keywords: string[];
-}
+import type { Article, SaveArticleDTO } from '@/types/article';
 
 export async function getRecentArticles(): Promise<Article[]> {
   try {
