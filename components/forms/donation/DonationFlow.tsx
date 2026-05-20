@@ -6,7 +6,7 @@ import StepData from '@/components/forms/donation/steps/StepData';
 import StepPayment from '@/components/forms/donation/steps/StepPayment';
 import StepConfirmation from '@/components/forms/donation/steps/StepConfirmation';
 import { DonationData, DonationStep } from '@/types/donation';
-import { PixResponse } from '@/services/donation';
+import { PixResponse } from '@/types/donation';
 import { cn } from '@/lib/cn';
 import SecurityBadge from '@/components/ui/SecurityBadge';
 
