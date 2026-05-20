@@ -1,6 +1,6 @@
 'use client';
 
-import { X, Heart, Calendar, Clock } from 'lucide-react';
+import { X, Heart, Calendar, Clock, ImageIcon } from 'lucide-react';
 import Image from 'next/image';
 import type { Activity } from '@/types/activity';
 import { useActivityActions } from '@/hooks/useActivityActions';
@@ -18,10 +18,14 @@ export default function ActivityDetail({
   onClose,
 }: ActivityModalProps) {
   const { likes, isLiked, handleLike, likeLabel } = useActivityActions(
-    activity.likes
+    activity.likes ?? 0
   );
 
   useModalEffects(true, onClose);
+
+  const imageUrl = activity.media?.url;
+  const imageAlt =
+    activity.media?.alt_text || `Imagem da atividade ${activity.title}`;
 
   return (
     <div
@@ -40,17 +44,26 @@ export default function ActivityDetail({
 
       <div className="relative z-10 flex w-full flex-col bg-white shadow-2xl rounded-t-[2.5rem] sm:rounded-md sm:max-w-2xl max-h-[92svh] sm:max-h-[85vh]">
         <div className="relative h-48 w-full shrink-0 sm:h-64 bg-gray-100 rounded-t-[2.5rem] sm:rounded-t-md overflow-hidden">
-          <Image
-            src={activity.media?.url || ''}
-            alt={activity.media?.alt_text || `Imagem da atividade ${activity.title}`}
-            fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 768px"
-            className="object-cover"
-            loading="eager"
-            priority
-          />
+          {imageUrl ? (
+            <Image
+              src={imageUrl}
+              alt={imageAlt}
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 768px"
+              className="object-cover"
+              loading="eager"
+              priority
+              unoptimized
+            />
+          ) : (
+            <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-gray-400">
+              <ImageIcon className="h-8 w-8" aria-hidden="true" />
+              <span className="text-xs font-medium">Sem imagem</span>
+            </div>
+          )}
 
           <button
+            type="button"
             onClick={onClose}
             aria-label="Fechar modal"
             className="absolute right-4 top-4 z-20 rounded-full bg-white/90 p-2 text-gray-800 shadow-md transition-transform hover:bg-white active:scale-95 cursor-pointer"
@@ -66,10 +79,14 @@ export default function ActivityDetail({
                 id="modal-title"
                 className="mb-4 text-2xl font-bold text-gray-900 sm:text-3xl"
               >
-                {activity.title}
+                {activity.title || 'Sem título'}
               </h2>
 
-              <div className="flex flex-wrap gap-3" role="group" aria-label="Informações da atividade">
+              <div
+                className="flex flex-wrap gap-3"
+                role="group"
+                aria-label="Informações da atividade"
+              >
                 <div className="flex items-center gap-2 rounded-md bg-orange-50 px-3 py-1 text-sm font-semibold text-orange-700 border border-orange-100">
                   <Calendar size={14} aria-hidden="true" />
                   <span>Segunda a Sexta</span>
@@ -87,7 +104,8 @@ export default function ActivityDetail({
               className="border-b border-gray-100 pb-8 text-gray-600 leading-relaxed"
             >
               <h2 className="sr-only">Descrição da atividade</h2>
-              {(activity.content || '')
+
+              {(activity.content || 'Sem conteúdo.')
                 .split('\n')
                 .filter((p) => p.trim())
                 .map((p, i) => (
@@ -104,6 +122,7 @@ export default function ActivityDetail({
               </p>
 
               <button
+                type="button"
                 onClick={handleLike}
                 aria-label={likeLabel}
                 aria-pressed={isLiked}
@@ -122,6 +141,7 @@ export default function ActivityDetail({
                   fill={isLiked ? 'currentColor' : 'none'}
                   className={isLiked ? 'animate-pulse' : ''}
                 />
+
                 {likeLabel}
               </button>
             </div>
