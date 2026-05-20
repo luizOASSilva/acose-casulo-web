@@ -37,7 +37,7 @@ export function getVisitorId() {
   return visitorId;
 }
 
-function getVisitorHeaders() {
+function getVisitorHeaders(): Record<string, string> {
   const visitorId = getVisitorId();
 
   if (!visitorId) return {};
@@ -49,12 +49,14 @@ function getVisitorHeaders() {
 
 export async function getActivities(): Promise<Activity[]> {
   try {
+    const headers: Record<string, string> = {
+      Accept: 'application/json',
+      ...getVisitorHeaders(),
+    };
+
     const response = await fetch(`${API_URL}/activities`, {
       cache: 'no-store',
-      headers: {
-        Accept: 'application/json',
-        ...getVisitorHeaders(),
-      },
+      headers,
     });
 
     if (!response.ok) {
@@ -72,12 +74,14 @@ export async function getActivities(): Promise<Activity[]> {
 
 export async function getRecentActivities(limit = 9): Promise<Activity[]> {
   try {
+    const headers: Record<string, string> = {
+      Accept: 'application/json',
+      ...getVisitorHeaders(),
+    };
+
     const response = await fetch(`${API_URL}/activities/recent`, {
       cache: 'no-store',
-      headers: {
-        Accept: 'application/json',
-        ...getVisitorHeaders(),
-      },
+      headers,
     });
 
     if (!response.ok) {
@@ -95,12 +99,14 @@ export async function getRecentActivities(limit = 9): Promise<Activity[]> {
 
 export async function getActivityBySlug(slug: string): Promise<Activity | null> {
   try {
+    const headers: Record<string, string> = {
+      Accept: 'application/json',
+      ...getVisitorHeaders(),
+    };
+
     const response = await fetch(`${API_URL}/activities/${slug}`, {
       cache: 'no-store',
-      headers: {
-        Accept: 'application/json',
-        ...getVisitorHeaders(),
-      },
+      headers,
     });
 
     if (!response.ok) {
