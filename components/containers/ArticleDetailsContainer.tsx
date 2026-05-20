@@ -7,6 +7,7 @@ import type { Article } from '@/types/article';
 import KeywordBadge from '@/components/ui/KeywordBadge';
 import UserBadge from '@/components/ui/UserBadge';
 import { updateArticle, createArticle } from '@/services/articles';
+import { articleSchema } from '@/schemas/article.schema';
 
 interface ArticleDetailsContainerProps {
   article?: Article;
@@ -177,6 +178,11 @@ export default function ArticleDetailsContainer({
 
     if (!cleanWord) return;
 
+    if (cleanWord.length > 255) {
+      alert('Cada palavra-chave pode ter no máximo 255 caracteres.');
+      return;
+    }
+
     if (!keywordsArray.includes(cleanWord)) {
       setKeywordsArray((current) => [...current, cleanWord]);
     }
@@ -235,27 +241,27 @@ export default function ArticleDetailsContainer({
   };
 
   const handleSave = async () => {
-    if (!title.trim() || !content.trim()) {
-      alert('Título e Conteúdo são obrigatórios!');
+    const parsed = articleSchema.safeParse({
+      title,
+      summary,
+      content,
+      image_url: imageUrl,
+      image_description: imageAlt,
+      image_caption: imageCaption.trim() || null,
+      keywords: keywordsArray,
+    });
+
+    if (!parsed.success) {
+      alert(parsed.error.issues[0]?.message || 'Verifique os campos do artigo.');
       return;
     }
 
     setIsSubmitting(true);
 
-    const payload = {
-      title: title.trim(),
-      summary: summary.trim(),
-      content: content.trim(),
-      image_url: imageUrl.trim(),
-      image_description: imageAlt.trim() || 'Capa do artigo',
-      image_caption: imageCaption.trim() || null,
-      keywords: keywordsArray,
-    };
-
     const response = isCreationFlow
-      ? await createArticle(payload)
+      ? await createArticle(parsed.data)
       : article?.id
-        ? await updateArticle(article.id, payload)
+        ? await updateArticle(article.id, parsed.data)
         : null;
 
     setIsSubmitting(false);
@@ -326,10 +332,7 @@ export default function ArticleDetailsContainer({
               {title || 'Sem título'}
             </h1>
 
-            <UserBadge
-              name={authorName}
-              subtitle={formattedArticleDate}
-            />
+            <UserBadge name={authorName} subtitle={formattedArticleDate} />
 
             {imageUrl && (
               <figure className="w-full overflow-hidden">
@@ -351,12 +354,6 @@ export default function ArticleDetailsContainer({
                   </figcaption>
                 )}
               </figure>
-            )}
-
-            {summary && (
-              <p className="text-base md:text-lg text-gray-600 font-normal leading-relaxed">
-                {summary}
-              </p>
             )}
           </header>
 
@@ -394,6 +391,7 @@ export default function ArticleDetailsContainer({
                   onChange={(event) => setImageUrl(event.target.value)}
                   className="w-full text-xs bg-white border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:border-gray-900 text-gray-700 font-mono"
                   placeholder="https://..."
+                  maxLength={2048}
                 />
               </div>
 
@@ -408,7 +406,14 @@ export default function ArticleDetailsContainer({
                   onChange={(event) => setImageAlt(event.target.value)}
                   className="w-full text-xs bg-white border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:border-gray-900 text-gray-700"
                   placeholder="Descrição"
+                  maxLength={255}
                 />
+
+                <div className="flex justify-end">
+                  <span className="text-[11px] text-gray-400">
+                    {imageAlt.length}/255
+                  </span>
+                </div>
               </div>
 
               <div className="space-y-1 md:col-span-2">
@@ -422,7 +427,24 @@ export default function ArticleDetailsContainer({
                   onChange={(event) => setImageCaption(event.target.value)}
                   className="w-full text-xs bg-white border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:border-gray-900 text-gray-700"
                   placeholder="Legenda exibida abaixo da imagem"
+                  maxLength={255}
                 />
+
+                <div className="flex justify-between">
+                  <p className="text-[11px] text-gray-500">
+                    Aparece abaixo da imagem no site.
+                  </p>
+
+                  <span
+                    className={`text-[11px] ${
+                      imageCaption.length > 240
+                        ? 'text-orange-600'
+                        : 'text-gray-400'
+                    }`}
+                  >
+                    {imageCaption.length}/255
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -474,6 +496,7 @@ export default function ArticleDetailsContainer({
                 onChange={(event) => setKeywordSearch(event.target.value)}
                 className="w-full text-xs bg-white border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:border-gray-900"
                 placeholder="Buscar ou criar palavra-chave no banco..."
+                maxLength={255}
               />
 
               {cleanKeywordSearch && (
@@ -520,21 +543,61 @@ export default function ArticleDetailsContainer({
           </div>
 
           <div className="space-y-4">
-            <input
-              type="text"
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-              className="w-full text-xl md:text-2xl font-bold border border-gray-300 rounded-md p-3 focus:outline-none focus:border-gray-900 text-gray-900"
-              placeholder="Título"
-            />
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-gray-500">
+                Título
+              </label>
 
-            <textarea
-              value={summary}
-              onChange={(event) => setSummary(event.target.value)}
-              className="w-full text-sm text-gray-700 border border-gray-300 rounded-md p-3 focus:outline-none focus:border-gray-900 resize-none"
-              rows={2}
-              placeholder="Resumo"
-            />
+              <input
+                type="text"
+                value={title}
+                onChange={(event) => setTitle(event.target.value)}
+                className="w-full text-xl md:text-2xl font-bold border border-gray-300 rounded-md p-3 focus:outline-none focus:border-gray-900 text-gray-900"
+                placeholder="Título"
+                minLength={3}
+                maxLength={51}
+              />
+
+              <div className="flex justify-end">
+                <span
+                  className={`text-[11px] ${
+                    title.length > 45 ? 'text-orange-600' : 'text-gray-400'
+                  }`}
+                >
+                  {title.length}/51
+                </span>
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-gray-500">
+                Resumo SEO
+              </label>
+
+              <textarea
+                value={summary}
+                onChange={(event) => setSummary(event.target.value)}
+                className="w-full text-sm text-gray-700 border border-gray-300 rounded-md p-3 focus:outline-none focus:border-gray-900 resize-none"
+                rows={3}
+                placeholder="Resumo usado no Google, SEO e compartilhamentos..."
+                maxLength={160}
+              />
+
+              <div className="flex items-start justify-between gap-4">
+                <p className="text-[11px] text-gray-500">
+                  Este resumo não aparece no corpo do site. Ele é usado para
+                  Google, SEO e compartilhamentos.
+                </p>
+
+                <span
+                  className={`shrink-0 text-[11px] ${
+                    summary.length > 150 ? 'text-orange-600' : 'text-gray-400'
+                  }`}
+                >
+                  {summary.length}/160
+                </span>
+              </div>
+            </div>
           </div>
 
           {imageUrl && (
@@ -559,12 +622,18 @@ export default function ArticleDetailsContainer({
             </figure>
           )}
 
-          <textarea
-            value={content}
-            onChange={(event) => setContent(event.target.value)}
-            className="w-full min-h-[350px] border border-gray-300 rounded-md p-4 focus:outline-none focus:border-gray-900 text-base"
-            placeholder="Conteúdo completo..."
-          />
+          <div className="space-y-1">
+            <label className="text-xs font-semibold text-gray-500">
+              Conteúdo
+            </label>
+
+            <textarea
+              value={content}
+              onChange={(event) => setContent(event.target.value)}
+              className="w-full min-h-[350px] border border-gray-300 rounded-md p-4 focus:outline-none focus:border-gray-900 text-base"
+              placeholder="Conteúdo completo..."
+            />
+          </div>
 
           {isAdmin && (
             <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">

@@ -71,3 +71,6 @@ export const addressSchema = z.object({
 
 export const getStepDataSchema = (isGift: boolean) =>
   isGift ? stepDataBaseSchema.merge(addressSchema) : stepDataBaseSchema;
+
+export type DonationBaseSchemaData = z.infer<typeof stepDataBaseSchema>;
+export type DonationAddressSchemaData = z.infer<typeof addressSchema>;
