@@ -17,6 +17,16 @@ interface ArticleDetailsContainerProps {
   allKeywords?: string[];
 }
 
+type ArticleFormErrors = Partial<{
+  title: string;
+  summary: string;
+  content: string;
+  image_url: string;
+  image_description: string;
+  image_caption: string;
+  keywords: string;
+}>;
+
 const ADMIN_ARTICLES_PATH = '/admin/artigos';
 const MAX_KEYWORD_SUGGESTIONS = 20;
 
@@ -42,6 +52,27 @@ function normalizeKeywordList(words: string[]): string[] {
   );
 }
 
+function fieldClass(error?: string, className = '') {
+  return `
+    ${className}
+    ${
+      error
+        ? 'border-red-500 focus:border-red-600 focus:ring-1 focus:ring-red-500/20'
+        : 'border-gray-300 focus:border-gray-900'
+    }
+  `;
+}
+
+function FieldError({ message }: { message?: string }) {
+  if (!message) return null;
+
+  return (
+    <p className="text-[11px] font-medium text-red-600">
+      {message}
+    </p>
+  );
+}
+
 export default function ArticleDetailsContainer({
   article,
   isAdmin = false,
@@ -59,6 +90,7 @@ export default function ArticleDetailsContainer({
   );
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<ArticleFormErrors>({});
 
   const [title, setTitle] = useState(article?.title || '');
   const [summary, setSummary] = useState(article?.summary || '');
@@ -92,6 +124,7 @@ export default function ArticleDetailsContainer({
     setImageCaption(article.media?.caption || '');
 
     setKeywordsArray(parseInitialKeywords(article));
+    setErrors({});
   }, [article]);
 
   const initialKeywords = useMemo(() => {
@@ -161,17 +194,26 @@ export default function ArticleDetailsContainer({
     );
   }, [cleanKeywordSearch, keywordsArray, allDatabaseKeywords]);
 
-  const formattedArticleDate = useMemo(() => {
-    const date = article?.created_at ? new Date(article.created_at) : new Date();
-
-    return date.toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
-    });
-  }, [article?.created_at]);
+  const formattedArticleDate = new Date(
+    article?.created_at || new Date()
+  ).toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  });
 
   const authorName = article?.author?.name || 'Equipe Acose Casulo';
+
+  const clearError = (field: keyof ArticleFormErrors) => {
+    setErrors((current) => {
+      if (!current[field]) return current;
+
+      const next = { ...current };
+      delete next[field];
+
+      return next;
+    });
+  };
 
   const handleAddKeyword = (word: string) => {
     const cleanWord = word.toLowerCase().trim();
@@ -179,12 +221,16 @@ export default function ArticleDetailsContainer({
     if (!cleanWord) return;
 
     if (cleanWord.length > 255) {
-      alert('Cada palavra-chave pode ter no máximo 255 caracteres.');
+      setErrors((current) => ({
+        ...current,
+        keywords: 'Cada palavra-chave pode ter no máximo 255 caracteres.',
+      }));
       return;
     }
 
     if (!keywordsArray.includes(cleanWord)) {
       setKeywordsArray((current) => [...current, cleanWord]);
+      clearError('keywords');
     }
 
     setKeywordSearch('');
@@ -194,6 +240,7 @@ export default function ArticleDetailsContainer({
     setKeywordsArray((current) =>
       current.filter((keyword) => keyword !== wordToRemove)
     );
+    clearError('keywords');
   };
 
   const resetFields = () => {
@@ -207,6 +254,7 @@ export default function ArticleDetailsContainer({
 
     setKeywordsArray(parseInitialKeywords(article));
     setKeywordSearch('');
+    setErrors({});
   };
 
   const confirmDiscard = (): boolean => {
@@ -252,10 +300,26 @@ export default function ArticleDetailsContainer({
     });
 
     if (!parsed.success) {
-      alert(parsed.error.issues[0]?.message || 'Verifique os campos do artigo.');
+      const nextErrors: ArticleFormErrors = {};
+
+      parsed.error.issues.forEach((issue) => {
+        const field = issue.path[0] as keyof ArticleFormErrors | undefined;
+
+        if (field && !nextErrors[field]) {
+          nextErrors[field] = issue.message;
+          return;
+        }
+
+        if (!field && !nextErrors.keywords) {
+          nextErrors.keywords = issue.message;
+        }
+      });
+
+      setErrors(nextErrors);
       return;
     }
 
+    setErrors({});
     setIsSubmitting(true);
 
     const response = isCreationFlow
@@ -388,11 +452,19 @@ export default function ArticleDetailsContainer({
                 <input
                   type="text"
                   value={imageUrl}
-                  onChange={(event) => setImageUrl(event.target.value)}
-                  className="w-full text-xs bg-white border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:border-gray-900 text-gray-700 font-mono"
+                  onChange={(event) => {
+                    setImageUrl(event.target.value);
+                    clearError('image_url');
+                  }}
+                  className={fieldClass(
+                    errors.image_url,
+                    'w-full text-xs bg-white border rounded-md px-3 py-2 focus:outline-none text-gray-700 font-mono'
+                  )}
                   placeholder="https://..."
                   maxLength={2048}
                 />
+
+                <FieldError message={errors.image_url} />
               </div>
 
               <div className="space-y-1">
@@ -403,14 +475,22 @@ export default function ArticleDetailsContainer({
                 <input
                   type="text"
                   value={imageAlt}
-                  onChange={(event) => setImageAlt(event.target.value)}
-                  className="w-full text-xs bg-white border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:border-gray-900 text-gray-700"
+                  onChange={(event) => {
+                    setImageAlt(event.target.value);
+                    clearError('image_description');
+                  }}
+                  className={fieldClass(
+                    errors.image_description,
+                    'w-full text-xs bg-white border rounded-md px-3 py-2 focus:outline-none text-gray-700'
+                  )}
                   placeholder="Descrição"
                   maxLength={255}
                 />
 
-                <div className="flex justify-end">
-                  <span className="text-[11px] text-gray-400">
+                <div className="flex justify-between">
+                  <FieldError message={errors.image_description} />
+
+                  <span className="ml-auto text-[11px] text-gray-400">
                     {imageAlt.length}/255
                   </span>
                 </div>
@@ -424,19 +504,29 @@ export default function ArticleDetailsContainer({
                 <input
                   type="text"
                   value={imageCaption}
-                  onChange={(event) => setImageCaption(event.target.value)}
-                  className="w-full text-xs bg-white border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:border-gray-900 text-gray-700"
+                  onChange={(event) => {
+                    setImageCaption(event.target.value);
+                    clearError('image_caption');
+                  }}
+                  className={fieldClass(
+                    errors.image_caption,
+                    'w-full text-xs bg-white border rounded-md px-3 py-2 focus:outline-none text-gray-700'
+                  )}
                   placeholder="Legenda exibida abaixo da imagem"
                   maxLength={255}
                 />
 
-                <div className="flex justify-between">
-                  <p className="text-[11px] text-gray-500">
-                    Aparece abaixo da imagem no site.
-                  </p>
+                <div className="flex justify-between gap-3">
+                  <div>
+                    <p className="text-[11px] text-gray-500">
+                      Aparece abaixo da imagem no site.
+                    </p>
+
+                    <FieldError message={errors.image_caption} />
+                  </div>
 
                   <span
-                    className={`text-[11px] ${
+                    className={`shrink-0 text-[11px] ${
                       imageCaption.length > 240
                         ? 'text-orange-600'
                         : 'text-gray-400'
@@ -462,7 +552,12 @@ export default function ArticleDetailsContainer({
             </div>
 
             {keywordsArray.length > 0 ? (
-              <div className="max-h-28 overflow-y-auto rounded-md bg-white border border-gray-100 p-2">
+              <div
+                className={`
+                  max-h-28 overflow-y-auto rounded-md bg-white border p-2
+                  ${errors.keywords ? 'border-red-500' : 'border-gray-100'}
+                `}
+              >
                 <div className="flex flex-wrap gap-2">
                   {keywordsArray.map((keyword) => (
                     <span
@@ -488,6 +583,8 @@ export default function ArticleDetailsContainer({
                 Nenhuma palavra-chave vinculada.
               </p>
             )}
+
+            <FieldError message={errors.keywords} />
 
             <div className="relative">
               <input
@@ -551,16 +648,24 @@ export default function ArticleDetailsContainer({
               <input
                 type="text"
                 value={title}
-                onChange={(event) => setTitle(event.target.value)}
-                className="w-full text-xl md:text-2xl font-bold border border-gray-300 rounded-md p-3 focus:outline-none focus:border-gray-900 text-gray-900"
+                onChange={(event) => {
+                  setTitle(event.target.value);
+                  clearError('title');
+                }}
+                className={fieldClass(
+                  errors.title,
+                  'w-full text-xl md:text-2xl font-bold border rounded-md p-3 focus:outline-none text-gray-900'
+                )}
                 placeholder="Título"
                 minLength={3}
                 maxLength={51}
               />
 
-              <div className="flex justify-end">
+              <div className="flex justify-between">
+                <FieldError message={errors.title} />
+
                 <span
-                  className={`text-[11px] ${
+                  className={`ml-auto text-[11px] ${
                     title.length > 45 ? 'text-orange-600' : 'text-gray-400'
                   }`}
                 >
@@ -576,18 +681,28 @@ export default function ArticleDetailsContainer({
 
               <textarea
                 value={summary}
-                onChange={(event) => setSummary(event.target.value)}
-                className="w-full text-sm text-gray-700 border border-gray-300 rounded-md p-3 focus:outline-none focus:border-gray-900 resize-none"
+                onChange={(event) => {
+                  setSummary(event.target.value);
+                  clearError('summary');
+                }}
+                className={fieldClass(
+                  errors.summary,
+                  'w-full text-sm text-gray-700 border rounded-md p-3 focus:outline-none resize-none'
+                )}
                 rows={3}
                 placeholder="Resumo usado no Google, SEO e compartilhamentos..."
                 maxLength={160}
               />
 
               <div className="flex items-start justify-between gap-4">
-                <p className="text-[11px] text-gray-500">
-                  Este resumo não aparece no corpo do site. Ele é usado para
-                  Google, SEO e compartilhamentos.
-                </p>
+                <div>
+                  <p className="text-[11px] text-gray-500">
+                    Este resumo não aparece no corpo do site. Ele é usado para
+                    Google, SEO e compartilhamentos.
+                  </p>
+
+                  <FieldError message={errors.summary} />
+                </div>
 
                 <span
                   className={`shrink-0 text-[11px] ${
@@ -629,10 +744,18 @@ export default function ArticleDetailsContainer({
 
             <textarea
               value={content}
-              onChange={(event) => setContent(event.target.value)}
-              className="w-full min-h-[350px] border border-gray-300 rounded-md p-4 focus:outline-none focus:border-gray-900 text-base"
+              onChange={(event) => {
+                setContent(event.target.value);
+                clearError('content');
+              }}
+              className={fieldClass(
+                errors.content,
+                'w-full min-h-[350px] border rounded-md p-4 focus:outline-none text-base'
+              )}
               placeholder="Conteúdo completo..."
             />
+
+            <FieldError message={errors.content} />
           </div>
 
           {isAdmin && (

@@ -1,4 +1,4 @@
-import type { Activity } from '@/types/activity';
+import type { Activity, SaveActivityDTO } from '@/types/activity';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -22,12 +22,38 @@ function normalizeActivity(payload: any): Activity | null {
   return payload;
 }
 
+export function getVisitorId() {
+  if (typeof window === 'undefined') return '';
+
+  const key = 'acose_visitor_id';
+
+  let visitorId = localStorage.getItem(key);
+
+  if (!visitorId) {
+    visitorId = crypto.randomUUID();
+    localStorage.setItem(key, visitorId);
+  }
+
+  return visitorId;
+}
+
+function getVisitorHeaders() {
+  const visitorId = getVisitorId();
+
+  if (!visitorId) return {};
+
+  return {
+    'X-Visitor-ID': visitorId,
+  };
+}
+
 export async function getActivities(): Promise<Activity[]> {
   try {
     const response = await fetch(`${API_URL}/activities`, {
       cache: 'no-store',
       headers: {
         Accept: 'application/json',
+        ...getVisitorHeaders(),
       },
     });
 
@@ -46,28 +72,34 @@ export async function getActivities(): Promise<Activity[]> {
 
 export async function getRecentActivities(limit = 9): Promise<Activity[]> {
   try {
-    const activities = await getActivities();
+    const response = await fetch(`${API_URL}/activities/recent`, {
+      cache: 'no-store',
+      headers: {
+        Accept: 'application/json',
+        ...getVisitorHeaders(),
+      },
+    });
 
-    return activities
-      .sort((a, b) => {
-        const dateA = new Date(a.created_at || '').getTime();
-        const dateB = new Date(b.created_at || '').getTime();
+    if (!response.ok) {
+      throw new Error('Erro ao buscar atividades recentes');
+    }
 
-        return dateB - dateA;
-      })
-      .slice(0, limit);
+    const payload = await response.json();
+
+    return normalizeActivities(payload).slice(0, limit);
   } catch (error) {
     console.error(error);
     return [];
   }
 }
 
-export async function getActivityBySlug(id: string): Promise<Activity | null> {
+export async function getActivityBySlug(slug: string): Promise<Activity | null> {
   try {
-    const response = await fetch(`${API_URL}/activities/${id}`, {
+    const response = await fetch(`${API_URL}/activities/${slug}`, {
       cache: 'no-store',
       headers: {
         Accept: 'application/json',
+        ...getVisitorHeaders(),
       },
     });
 
@@ -84,16 +116,13 @@ export async function getActivityBySlug(id: string): Promise<Activity | null> {
   }
 }
 
-export async function createActivity(data: {
-  title: string;
-  content: string;
-  image_url?: string;
-  image_description?: string;
-  image_caption?: string;
-}): Promise<Activity | null> {
+export async function createActivity(
+  data: SaveActivityDTO
+): Promise<Activity | null> {
   try {
     const response = await fetch(`${API_URL}/activities`, {
       method: 'POST',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
@@ -116,17 +145,12 @@ export async function createActivity(data: {
 
 export async function updateActivity(
   activityId: number,
-  data: {
-    title: string;
-    content: string;
-    image_url?: string;
-    image_description?: string;
-    image_caption?: string;
-  }
+  data: SaveActivityDTO
 ): Promise<Activity | null> {
   try {
     const response = await fetch(`${API_URL}/activities/${activityId}`, {
       method: 'PUT',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
@@ -151,6 +175,7 @@ export async function deleteActivity(activityId: number): Promise<boolean> {
   try {
     const response = await fetch(`${API_URL}/activities/${activityId}`, {
       method: 'DELETE',
+      credentials: 'include',
       headers: {
         Accept: 'application/json',
       },
@@ -160,5 +185,40 @@ export async function deleteActivity(activityId: number): Promise<boolean> {
   } catch (error) {
     console.error(error);
     return false;
+  }
+}
+
+export async function toggleActivityLike(
+  activityId: number
+): Promise<{
+  liked: boolean;
+  likes: number;
+} | null> {
+  try {
+    const visitorId = getVisitorId();
+
+    if (!visitorId) {
+      throw new Error('Visitor ID não encontrado');
+    }
+
+    const response = await fetch(`${API_URL}/activities/${activityId}/like`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({
+        visitor_id: visitorId,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Erro ao curtir atividade');
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error(error);
+    return null;
   }
 }

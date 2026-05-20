@@ -1,10 +1,13 @@
 'use client';
 
+import { useState } from 'react';
 import { X, Heart, Calendar, Clock, ImageIcon } from 'lucide-react';
 import Image from 'next/image';
+
 import type { Activity } from '@/types/activity';
-import { useActivityActions } from '@/hooks/useActivityActions';
 import { useModalEffects } from '@/hooks/useModalEffects';
+import { toggleActivityLike } from '@/services/activities';
+import { formatSchedule } from '@/utils/activitySchedule';
 
 interface ActivityModalProps {
   id?: string;
@@ -17,15 +20,34 @@ export default function ActivityDetail({
   activity,
   onClose,
 }: ActivityModalProps) {
-  const { likes, isLiked, handleLike, likeLabel } = useActivityActions(
-    activity.likes ?? 0
-  );
+  const [likes, setLikes] = useState(activity.likes ?? 0);
+  const [isLiked, setIsLiked] = useState(activity.is_liked ?? false);
+  const [isLiking, setIsLiking] = useState(false);
 
   useModalEffects(true, onClose);
 
   const imageUrl = activity.media?.url;
   const imageAlt =
     activity.media?.alt_text || `Imagem da atividade ${activity.title}`;
+
+  const likeLabel = isLiked ? 'Remover curtida' : 'Curtir atividade';
+
+  const handleLike = async () => {
+    if (isLiking) return;
+
+    setIsLiking(true);
+
+    const response = await toggleActivityLike(activity.id);
+
+    setIsLiking(false);
+
+    if (!response) return;
+
+    setIsLiked(response.liked);
+    setLikes(response.likes);
+  };
+
+  const schedules = activity.schedules ?? [];
 
   return (
     <div
@@ -82,21 +104,48 @@ export default function ActivityDetail({
                 {activity.title || 'Sem título'}
               </h2>
 
-              <div
-                className="flex flex-wrap gap-3"
-                role="group"
-                aria-label="Informações da atividade"
-              >
-                <div className="flex items-center gap-2 rounded-md bg-orange-50 px-3 py-1 text-sm font-semibold text-orange-700 border border-orange-100">
-                  <Calendar size={14} aria-hidden="true" />
-                  <span>Segunda a Sexta</span>
-                </div>
+              {schedules.length > 0 ? (
+                <div
+                  className="flex flex-wrap gap-3"
+                  role="group"
+                  aria-label="Informações da atividade"
+                >
+                  {schedules.map((schedule, index) => {
+                    const formatted = formatSchedule(schedule);
 
-                <div className="flex items-center gap-2 rounded-md bg-orange-50 px-3 py-1 text-sm font-semibold text-orange-700 border border-orange-100">
-                  <Clock size={14} aria-hidden="true" />
-                  <span>08h - 11h</span>
+                    return (
+                      <div
+                        key={
+                          schedule.id ??
+                          `${schedule.weekday}-${schedule.start_time}-${schedule.end_time}-${index}`
+                        }
+                        className="flex flex-wrap gap-3"
+                      >
+                        <div className="flex items-center gap-2 rounded-md bg-orange-50 px-3 py-1 text-sm font-semibold text-orange-700 border border-orange-100">
+                          <Calendar size={14} aria-hidden="true" />
+                          <span>{formatted.day}</span>
+                        </div>
+
+                        <div className="flex items-center gap-2 rounded-md bg-orange-50 px-3 py-1 text-sm font-semibold text-orange-700 border border-orange-100">
+                          <Clock size={14} aria-hidden="true" />
+                          <span>{formatted.time}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              </div>
+              ) : (
+                <div
+                  className="flex flex-wrap gap-3"
+                  role="group"
+                  aria-label="Informações da atividade"
+                >
+                  <div className="flex items-center gap-2 rounded-md bg-gray-50 px-3 py-1 text-sm font-semibold text-gray-500 border border-gray-100">
+                    <Calendar size={14} aria-hidden="true" />
+                    <span>Horário não informado</span>
+                  </div>
+                </div>
+              )}
             </header>
 
             <article
@@ -107,10 +156,10 @@ export default function ActivityDetail({
 
               {(activity.content || 'Sem conteúdo.')
                 .split('\n')
-                .filter((p) => p.trim())
-                .map((p, i) => (
-                  <p key={i} className="mb-4">
-                    {p}
+                .filter((paragraph) => paragraph.trim())
+                .map((paragraph, index) => (
+                  <p key={index} className="mb-4">
+                    {paragraph}
                   </p>
                 ))}
             </article>
@@ -124,10 +173,11 @@ export default function ActivityDetail({
               <button
                 type="button"
                 onClick={handleLike}
+                disabled={isLiking}
                 aria-label={likeLabel}
                 aria-pressed={isLiked}
                 className={`
-                  flex w-full items-center justify-center gap-3 rounded-md border-2 px-8 py-3.5 font-bold transition-all active:scale-95 sm:w-auto cursor-pointer
+                  flex w-full items-center justify-center gap-3 rounded-md border-2 px-8 py-3.5 font-bold transition-all active:scale-95 sm:w-auto cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed
                   ${
                     isLiked
                       ? 'border-orange-500 bg-orange-500 text-white shadow-lg'
@@ -142,7 +192,7 @@ export default function ActivityDetail({
                   className={isLiked ? 'animate-pulse' : ''}
                 />
 
-                {likeLabel}
+                {isLiking ? 'Aguarde...' : likeLabel}
               </button>
             </div>
           </div>
