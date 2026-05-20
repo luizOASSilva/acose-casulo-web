@@ -3,6 +3,7 @@ export interface Activity {
   slug?: string;
   title: string;
   content: string;
+  likes?: number;
   created_at?: string;
   updated_at?: string;
   media?: {
