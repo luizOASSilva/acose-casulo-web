@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import type { Article } from '@/types/article';
 import KeywordBadge from '@/components/ui/KeywordBadge';
+import UserBadge from '@/components/ui/UserBadge';
 import { updateArticle, createArticle } from '@/services/articles';
 
 interface ArticleDetailsContainerProps {
@@ -169,7 +170,7 @@ export default function ArticleDetailsContainer({
     });
   }, [article?.created_at]);
 
-  const authorName = article?.author?.name || 'Usuário';
+  const authorName = article?.author?.name || 'Equipe Acose Casulo';
 
   const handleAddKeyword = (word: string) => {
     const cleanWord = word.toLowerCase().trim();
@@ -279,7 +280,7 @@ export default function ArticleDetailsContainer({
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto py-20 px-4 md:px-6 space-y-8">
+    <main className="w-[90%] max-w-3xl mx-auto py-20">
       <div className="flex items-center justify-between border-b border-gray-100 pb-4">
         <button
           type="button"
@@ -304,60 +305,128 @@ export default function ArticleDetailsContainer({
         )}
       </div>
 
-      {isEditMode && (
-        <div className="bg-gray-50/70 p-5 rounded-md border border-gray-200/60 space-y-4">
-          <h3 className="text-xs font-bold text-gray-800 uppercase tracking-wider">
-            Mídia da Publicação
-          </h3>
+      {!isEditMode && (
+        <article aria-labelledby="article-title" className="mt-8">
+          <header className="space-y-6 mb-10">
+            {keywordsArray.length > 0 && (
+              <ul
+                className="flex flex-wrap gap-2"
+                aria-label="Palavras-chave do artigo"
+              >
+                {keywordsArray.map((keyword) => (
+                  <KeywordBadge keyword={keyword} key={keyword} />
+                ))}
+              </ul>
+            )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-gray-500">
-                URL da Imagem
-              </label>
+            <h1
+              id="article-title"
+              className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight"
+            >
+              {title || 'Sem título'}
+            </h1>
 
-              <input
-                type="text"
-                value={imageUrl}
-                onChange={(event) => setImageUrl(event.target.value)}
-                className="w-full text-xs bg-white border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:border-gray-900 text-gray-700 font-mono"
-                placeholder="https://..."
-              />
-            </div>
+            <UserBadge
+              name={authorName}
+              subtitle={formattedArticleDate}
+            />
 
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-gray-500">
-                Texto Alternativo
-              </label>
+            {imageUrl && (
+              <figure className="w-full overflow-hidden">
+                <div className="relative w-full h-72 md:h-96 bg-gray-50">
+                  <Image
+                    src={imageUrl}
+                    alt={imageAlt || title || 'Imagem do artigo'}
+                    fill
+                    sizes="(max-width: 768px) 90vw, 768px"
+                    className="object-cover rounded-md"
+                    priority
+                    unoptimized
+                  />
+                </div>
 
-              <input
-                type="text"
-                value={imageAlt}
-                onChange={(event) => setImageAlt(event.target.value)}
-                className="w-full text-xs bg-white border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:border-gray-900 text-gray-700"
-                placeholder="Descrição"
-              />
-            </div>
+                {imageCaption && (
+                  <figcaption className="text-xs text-gray-700 text-center p-3">
+                    {imageCaption}
+                  </figcaption>
+                )}
+              </figure>
+            )}
 
-            <div className="space-y-1 md:col-span-2">
-              <label className="text-xs font-semibold text-gray-500">
-                Legenda da Imagem
-              </label>
+            {summary && (
+              <p className="text-base md:text-lg text-gray-600 font-normal leading-relaxed">
+                {summary}
+              </p>
+            )}
+          </header>
 
-              <input
-                type="text"
-                value={imageCaption}
-                onChange={(event) => setImageCaption(event.target.value)}
-                className="w-full text-xs bg-white border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:border-gray-900 text-gray-700"
-                placeholder="Legenda exibida abaixo da imagem"
-              />
-            </div>
+          <div className="prose prose-gray max-w-none">
+            {(content || 'Sem conteúdo.')
+              .split('\n\n')
+              .map((paragraph, index) => (
+                <p
+                  key={index}
+                  className="text-gray-700 text-lg leading-relaxed mb-6"
+                >
+                  {paragraph}
+                </p>
+              ))}
           </div>
-        </div>
+        </article>
       )}
 
-      <div className="space-y-2">
-        {isEditMode ? (
+      {isEditMode && (
+        <div className="mt-8 space-y-8">
+          <div className="bg-gray-50/70 p-5 rounded-md border border-gray-200/60 space-y-4">
+            <h3 className="text-xs font-bold text-gray-800 uppercase tracking-wider">
+              Mídia da Publicação
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-gray-500">
+                  URL da Imagem
+                </label>
+
+                <input
+                  type="text"
+                  value={imageUrl}
+                  onChange={(event) => setImageUrl(event.target.value)}
+                  className="w-full text-xs bg-white border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:border-gray-900 text-gray-700 font-mono"
+                  placeholder="https://..."
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-gray-500">
+                  Texto Alternativo
+                </label>
+
+                <input
+                  type="text"
+                  value={imageAlt}
+                  onChange={(event) => setImageAlt(event.target.value)}
+                  className="w-full text-xs bg-white border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:border-gray-900 text-gray-700"
+                  placeholder="Descrição"
+                />
+              </div>
+
+              <div className="space-y-1 md:col-span-2">
+                <label className="text-xs font-semibold text-gray-500">
+                  Legenda da Imagem
+                </label>
+
+                <input
+                  type="text"
+                  value={imageCaption}
+                  onChange={(event) => setImageCaption(event.target.value)}
+                  className="w-full text-xs bg-white border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:border-gray-900 text-gray-700"
+                  placeholder="Legenda exibida abaixo da imagem"
+                />
+              </div>
+            </div>
+          </div>
+
           <div className="bg-gray-50/70 p-5 rounded-md border border-gray-200/60 space-y-3">
             <div className="flex items-center justify-between gap-3">
               <label className="text-xs font-bold text-gray-700 uppercase tracking-wider block">
@@ -449,17 +518,7 @@ export default function ArticleDetailsContainer({
               )}
             </div>
           </div>
-        ) : (
-          <ul className="flex flex-wrap gap-2">
-            {keywordsArray.map((keyword) => (
-              <KeywordBadge keyword={keyword} key={keyword} />
-            ))}
-          </ul>
-        )}
-      </div>
 
-      <div className="space-y-4">
-        {isEditMode ? (
           <div className="space-y-4">
             <input
               type="text"
@@ -477,98 +536,65 @@ export default function ArticleDetailsContainer({
               placeholder="Resumo"
             />
           </div>
-        ) : (
-          <div className="space-y-3">
-            <h1 className="text-2xl md:text-4xl font-bold text-gray-900 tracking-tight leading-tight">
-              {title || 'Sem título'}
-            </h1>
 
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-orange-100 text-xs font-bold text-orange-700">
-                {authorName.charAt(0)}
+          {imageUrl && (
+            <figure className="w-full overflow-hidden">
+              <div className="relative w-full h-72 md:h-96 bg-gray-50">
+                <Image
+                  src={imageUrl}
+                  alt={imageAlt || title || 'Imagem do artigo'}
+                  fill
+                  sizes="(max-width: 768px) 90vw, 768px"
+                  className="object-cover rounded-md"
+                  priority
+                  unoptimized
+                />
               </div>
 
-              <div>
-                <p className="text-sm font-semibold text-gray-900">
-                  {authorName}
-                </p>
-
-                <p className="text-xs text-gray-500">
-                  {formattedArticleDate}
-                </p>
-              </div>
-            </div>
-
-            {summary && (
-              <p className="text-base md:text-lg text-gray-600 font-normal leading-relaxed">
-                {summary}
-              </p>
-            )}
-          </div>
-        )}
-      </div>
-
-      {imageUrl && (
-        <figure className="space-y-3">
-          <div className="relative w-full h-64 md:h-[420px] rounded-md overflow-hidden bg-gray-50 border border-gray-100">
-            <Image
-              src={imageUrl}
-              alt={imageAlt || 'Capa'}
-              fill
-              className="object-cover"
-              priority
-              unoptimized
-            />
-          </div>
-
-          {imageCaption && (
-            <figcaption className="text-center text-xs text-gray-500">
-              {imageCaption}
-            </figcaption>
+              {imageCaption && (
+                <figcaption className="text-xs text-gray-700 text-center p-3">
+                  {imageCaption}
+                </figcaption>
+              )}
+            </figure>
           )}
-        </figure>
-      )}
 
-      <div className="text-gray-800 leading-relaxed text-base md:text-lg whitespace-pre-wrap font-normal">
-        {isEditMode ? (
           <textarea
             value={content}
             onChange={(event) => setContent(event.target.value)}
             className="w-full min-h-[350px] border border-gray-300 rounded-md p-4 focus:outline-none focus:border-gray-900 text-base"
             placeholder="Conteúdo completo..."
           />
-        ) : (
-          <p>{content || 'Sem conteúdo.'}</p>
-        )}
-      </div>
 
-      {isAdmin && isEditMode && (
-        <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
-          <button
-            type="button"
-            onClick={handleCancel}
-            disabled={isSubmitting}
-            className="text-xs bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-2.5 rounded-md border border-gray-300 transition-colors cursor-pointer disabled:opacity-60"
-          >
-            Descartar
-          </button>
+          {isAdmin && (
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
+              <button
+                type="button"
+                onClick={handleCancel}
+                disabled={isSubmitting}
+                className="text-xs bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-2.5 rounded-md border border-gray-300 transition-colors cursor-pointer disabled:opacity-60"
+              >
+                Descartar
+              </button>
 
-          {(hasPendingChanges || isCreationFlow) && (
-            <button
-              type="button"
-              onClick={handleSave}
-              disabled={isSubmitting}
-              className="text-xs bg-green-600 hover:bg-green-700 text-white font-semibold px-5 py-2.5 rounded-md transition-all cursor-pointer disabled:opacity-60"
-            >
-              {isSubmitting
-                ? 'Salvando...'
-                : isCreationFlow
-                  ? 'Criar Artigo ✔'
-                  : 'Confirmar e Salvar no Banco ✔'}
-            </button>
+              {(hasPendingChanges || isCreationFlow) && (
+                <button
+                  type="button"
+                  onClick={handleSave}
+                  disabled={isSubmitting}
+                  className="text-xs bg-green-600 hover:bg-green-700 text-white font-semibold px-5 py-2.5 rounded-md transition-all cursor-pointer disabled:opacity-60"
+                >
+                  {isSubmitting
+                    ? 'Salvando...'
+                    : isCreationFlow
+                      ? 'Criar Artigo ✔'
+                      : 'Confirmar e Salvar no Banco ✔'}
+                </button>
+              )}
+            </div>
           )}
         </div>
       )}
-    </div>
+    </main>
   );
 }
