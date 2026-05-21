@@ -7,7 +7,7 @@ import { usePathname, useRouter } from 'next/navigation';
 
 import type { Activity, ActivitySchedule, Weekday } from '@/types/activity';
 import { createActivity, updateActivity } from '@/services/activities';
-import { weekdayOptions } from '@/utils/activitySchedule';
+import { formatSchedule, weekdayOptions } from '@/utils/activitySchedule';
 import { activitySchema } from '@/schemas/activity.schema';
 
 interface ActivityDetailsContainerProps {
@@ -134,6 +134,10 @@ export default function ActivityDetailsContainer({
     initialSchedules,
     activity,
   ]);
+
+  const viewSchedules = activity?.schedules?.length
+    ? activity.schedules
+    : schedules;
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -578,7 +582,11 @@ export default function ActivityDetailsContainer({
                         type="time"
                         value={schedule.start_time}
                         onChange={(event) =>
-                          updateSchedule(index, 'start_time', event.target.value)
+                          updateSchedule(
+                            index,
+                            'start_time',
+                            event.target.value
+                          )
                         }
                         className={fieldClass(
                           scheduleErrors[index]?.start_time,
@@ -685,9 +693,54 @@ export default function ActivityDetailsContainer({
             </div>
           </div>
         ) : (
-          <h1 className="text-2xl md:text-4xl font-bold text-gray-900 tracking-tight leading-tight">
-            {title || 'Sem título'}
-          </h1>
+          <header className="space-y-5">
+            <h1 className="text-2xl md:text-4xl font-bold text-gray-900 tracking-tight leading-tight">
+              {title || 'Sem título'}
+            </h1>
+
+            {viewSchedules.length > 0 ? (
+              <div
+                className="flex flex-wrap gap-3"
+                role="group"
+                aria-label="Informações da atividade"
+              >
+                {viewSchedules.map((schedule, index) => {
+                  const formatted = formatSchedule(schedule);
+
+                  return (
+                    <div
+                      key={
+                        schedule.id ??
+                        `${schedule.weekday}-${schedule.start_time}-${schedule.end_time}-${index}`
+                      }
+                      className="flex flex-wrap gap-3"
+                    >
+                      <div className="flex items-center gap-2 rounded-md bg-orange-50 px-3 py-1 text-sm font-semibold text-orange-700 border border-orange-100">
+                        <Calendar size={14} aria-hidden="true" />
+                        <span>{formatted.day}</span>
+                      </div>
+
+                      <div className="flex items-center gap-2 rounded-md bg-orange-50 px-3 py-1 text-sm font-semibold text-orange-700 border border-orange-100">
+                        <Clock size={14} aria-hidden="true" />
+                        <span>{formatted.time}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div
+                className="flex flex-wrap gap-3"
+                role="group"
+                aria-label="Informações da atividade"
+              >
+                <div className="flex items-center gap-2 rounded-md bg-gray-50 px-3 py-1 text-sm font-semibold text-gray-500 border border-gray-100">
+                  <Calendar size={14} aria-hidden="true" />
+                  <span>Horário não informado</span>
+                </div>
+              </div>
+            )}
+          </header>
         )}
       </div>
 
@@ -714,7 +767,18 @@ export default function ActivityDetailsContainer({
             <FieldError message={errors.content} />
           </div>
         ) : (
-          <p>{content || 'Sem conteúdo.'}</p>
+          <article className="border-b border-gray-100 pb-8 text-gray-600 leading-relaxed">
+            <h2 className="sr-only">Descrição da atividade</h2>
+
+            {(content || 'Sem conteúdo.')
+              .split('\n')
+              .filter((paragraph) => paragraph.trim())
+              .map((paragraph, index) => (
+                <p key={index} className="mb-4">
+                  {paragraph}
+                </p>
+              ))}
+          </article>
         )}
       </div>
 
@@ -731,10 +795,10 @@ export default function ActivityDetailsContainer({
 
           {(hasPendingChanges || isNew) && (
             <button
-                type="button"
-                onClick={handleSave}
-                disabled={isSubmitting}
-                className="text-xs bg-green-600 hover:bg-green-700 text-white font-semibold px-5 py-2.5 rounded-md transition-all cursor-pointer disabled:opacity-60"
+              type="button"
+              onClick={handleSave}
+              disabled={isSubmitting}
+              className="text-xs bg-green-600 hover:bg-green-700 text-white font-semibold px-5 py-2.5 rounded-md transition-all cursor-pointer disabled:opacity-60"
             >
               {isSubmitting
                 ? 'Salvando...'
