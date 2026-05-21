@@ -35,7 +35,7 @@ export default function ArticleListContainer({ articles, isAdmin = false }: Arti
         </h1>
         {isAdmin && (
           <p className="text-sm text-gray-600 bg-emerald-50 px-3 py-1.5 rounded-lg inline-block border border-emerald-100">
-            Pipeline conectado ao banco de dados Laravel. Alterações são refletidas em tempo real.
+            Painel conectado ao banco de dados. Alterações são refletidas em tempo real.
           </p>
         )}
       </header>

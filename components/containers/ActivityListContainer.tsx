@@ -48,7 +48,7 @@ export default function ActivityListContainer({
 
         {isAdmin && (
           <p className="text-sm text-gray-600 bg-emerald-50 px-3 py-1.5 rounded-lg inline-block border border-emerald-100">
-            Pipeline conectado ao banco de dados Laravel. Alterações são refletidas em tempo real.
+            Painel conectado ao banco de dados. Alterações são refletidas em tempo real.
           </p>
         )}
       </header>
@@ -169,21 +169,7 @@ export default function ActivityListContainer({
                       <button
                         type="button"
                         onClick={() => handleDelete(activity.id)}
-                        className="
-                          w-10 h-10
-                          flex items-center justify-center
-                          rounded-xl
-                          bg-gray-100
-                          text-gray-600
-                          border border-gray-200
-                          shadow-md
-                          transition-all
-                          hover:bg-red-600
-                          hover:text-white
-                          hover:border-red-600
-                          hover:shadow-lg
-                          active:scale-95
-                        "
+                        className="p-2.5 text-red-500 bg-white hover:bg-red-500 hover:text-white rounded-xl transition-all active:scale-95"
                         title="Deletar Atividade"
                       >
                         <Trash2 className="w-5 h-5" />
