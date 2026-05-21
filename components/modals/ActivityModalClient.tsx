@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import ActivityDetail from '@/components/ui/ActivityDetail';
 import type { Activity } from '@/types/activity';
+import { getActivityBySlug } from '@/services/activities';
 
 export default function ActivityModalClient({
   activity,
@@ -23,17 +24,39 @@ export default function ActivityModalClient({
   }, []);
 
   useEffect(() => {
-    setCurrentActivity(activity);
+    let isMounted = true;
+
+    async function loadClientActivity() {
+      if (!activity) {
+        setCurrentActivity(null);
+        return;
+      }
+
+      setCurrentActivity(activity);
+
+      if (!activity.slug) return;
+
+      const clientActivity = await getActivityBySlug(activity.slug);
+
+      if (!isMounted) return;
+
+      if (clientActivity) {
+        setCurrentActivity(clientActivity);
+      }
+    }
+
+    loadClientActivity();
+
+    return () => {
+      isMounted = false;
+    };
   }, [activity]);
 
   const handleActivityLikeChange = (updatedActivity: Activity) => {
     setCurrentActivity(updatedActivity);
-    router.refresh();
   };
 
   const handleClose = () => {
-    router.refresh();
-
     if (canGoBack.current) {
       router.back();
     } else {

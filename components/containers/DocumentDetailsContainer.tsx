@@ -24,6 +24,8 @@ import {
   updateDocument,
 } from '@/services/admin/document';
 
+import { documentSchema } from '@/schemas/document.schema';
+
 interface DocumentDetailsContainerProps {
   document: DocumentItem;
   categories: DocumentCategory[];
@@ -31,7 +33,37 @@ interface DocumentDetailsContainerProps {
   startInEditMode?: boolean;
 }
 
+type DocumentFormErrors = Partial<{
+  title: string;
+  file_url: string;
+  category_id: string;
+  year: string;
+}>;
+
 const ADMIN_TRANSPARENCY_PATH = '/admin/transparencia';
+
+function fieldClass(error?: string, className = '') {
+  return `
+    ${className}
+    selection:bg-primary selection:text-white
+    transition-all
+    ${
+      error
+        ? 'border-red-500 focus:border-red-600 focus:ring-2 focus:ring-red-500/20'
+        : 'border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20'
+    }
+  `;
+}
+
+function FieldError({ message }: { message?: string }) {
+  if (!message) return null;
+
+  return (
+    <p className="mt-1 text-[11px] font-semibold text-red-600">
+      {message}
+    </p>
+  );
+}
 
 export default function DocumentDetailsContainer({
   document,
@@ -43,6 +75,7 @@ export default function DocumentDetailsContainer({
 
   const [isEditMode] = useState(startInEditMode || isNew);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<DocumentFormErrors>({});
 
   const [title, setTitle] = useState(document?.title || '');
   const [fileUrl, setFileUrl] = useState(document?.file_url || '');
@@ -63,6 +96,7 @@ export default function DocumentDetailsContainer({
     setCategoryId(
       document.category_id || document.category?.id || categories[0]?.id || 0
     );
+    setErrors({});
   }, [document, categories]);
 
   const selectedCategory = useMemo(() => {
@@ -101,6 +135,17 @@ export default function DocumentDetailsContainer({
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [hasPendingChanges, isEditMode]);
 
+  const clearError = (field: keyof DocumentFormErrors) => {
+    setErrors((current) => {
+      if (!current[field]) return current;
+
+      const next = { ...current };
+      delete next[field];
+
+      return next;
+    });
+  };
+
   const confirmDiscard = (): boolean => {
     if (!hasPendingChanges) return true;
 
@@ -122,34 +167,32 @@ export default function DocumentDetailsContainer({
   };
 
   const handleSave = async () => {
-    if (!title.trim()) {
-      alert('Título é obrigatório!');
-      return;
-    }
-
-    if (!fileUrl.trim()) {
-      alert('URL do arquivo é obrigatória!');
-      return;
-    }
-
-    if (!categoryId) {
-      alert('Categoria é obrigatória!');
-      return;
-    }
-
-    if (!year) {
-      alert('Ano é obrigatório!');
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    const payload: DocumentInput = {
-      title: title.trim(),
-      file_url: fileUrl.trim(),
+    const parsed = documentSchema.safeParse({
+      title,
+      file_url: fileUrl,
       category_id: Number(categoryId),
       year: Number(year),
-    };
+    });
+
+    if (!parsed.success) {
+      const nextErrors: DocumentFormErrors = {};
+
+      parsed.error.issues.forEach((issue) => {
+        const field = issue.path[0] as keyof DocumentFormErrors | undefined;
+
+        if (field && !nextErrors[field]) {
+          nextErrors[field] = issue.message;
+        }
+      });
+
+      setErrors(nextErrors);
+      return;
+    }
+
+    setErrors({});
+    setIsSubmitting(true);
+
+    const payload: DocumentInput = parsed.data;
 
     try {
       const response = isNew
@@ -176,7 +219,7 @@ export default function DocumentDetailsContainer({
   };
 
   return (
-    <main className="w-full max-w-4xl mx-auto py-12 md:py-20 px-6">
+    <main className="w-full max-w-4xl mx-auto py-12 md:py-20 px-6 selection:bg-primary selection:text-white">
       <header className="mb-10 space-y-2">
         <button
           type="button"
@@ -192,13 +235,13 @@ export default function DocumentDetailsContainer({
             {isNew ? 'Criar Novo Documento' : 'Editar Documento'}
           </h1>
 
-          <p className="text-sm text-gray-600 bg-emerald-50 px-3 py-1.5 rounded-lg inline-block border border-emerald-100">
+          <p className="text-sm text-gray-600 bg-emerald-50 px-3 py-1.5 rounded-md inline-block border border-emerald-100">
             Pipeline conectado ao banco de dados Laravel. Alterações são refletidas em tempo real.
           </p>
         </div>
       </header>
 
-      <section className="rounded-2xl border border-dashed border-gray-300 bg-white p-6 md:p-8">
+      <section className="rounded-md border border-dashed border-gray-300 bg-white p-6 md:p-8">
         <div className="flex flex-col items-center text-center gap-4 mb-8">
           <div className="w-16 h-16 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center">
             <FileText className="w-8 h-8" />
@@ -227,10 +270,29 @@ export default function DocumentDetailsContainer({
               <input
                 type="text"
                 value={title}
-                onChange={(event) => setTitle(event.target.value)}
-                className="w-full text-sm bg-white border border-gray-300 rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:border-gray-900 text-gray-800"
+                onChange={(event) => {
+                  setTitle(event.target.value);
+                  clearError('title');
+                }}
+                className={fieldClass(
+                  errors.title,
+                  'w-full text-sm bg-white border rounded-md pl-10 pr-4 py-3 focus:outline-none text-gray-800'
+                )}
                 placeholder="Ex: Relatório Financeiro 2026"
+                maxLength={255}
               />
+            </div>
+
+            <div className="flex items-start justify-between gap-3">
+              <FieldError message={errors.title} />
+
+              <span
+                className={`ml-auto text-[11px] ${
+                  title.length > 240 ? 'text-orange-600' : 'text-gray-400'
+                }`}
+              >
+                {title.length}/255
+              </span>
             </div>
           </div>
 
@@ -245,13 +307,22 @@ export default function DocumentDetailsContainer({
               <input
                 type="url"
                 value={fileUrl}
-                onChange={(event) => setFileUrl(event.target.value)}
-                className="w-full text-sm bg-white border border-gray-300 rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:border-gray-900 text-gray-800 font-mono"
+                onChange={(event) => {
+                  setFileUrl(event.target.value);
+                  clearError('file_url');
+                }}
+                className={fieldClass(
+                  errors.file_url,
+                  'w-full text-sm bg-white border rounded-md pl-10 pr-4 py-3 focus:outline-none text-gray-800 font-mono'
+                )}
                 placeholder="https://drive.google.com/file/..."
+                maxLength={2048}
               />
             </div>
 
-            {fileUrl && (
+            <FieldError message={errors.file_url} />
+
+            {fileUrl && !errors.file_url && (
               <a
                 href={fileUrl}
                 target="_blank"
@@ -276,13 +347,21 @@ export default function DocumentDetailsContainer({
                 <input
                   type="number"
                   value={year}
-                  onChange={(event) => setYear(Number(event.target.value))}
-                  className="w-full text-sm bg-white border border-gray-300 rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:border-gray-900 text-gray-800"
+                  onChange={(event) => {
+                    setYear(Number(event.target.value));
+                    clearError('year');
+                  }}
+                  className={fieldClass(
+                    errors.year,
+                    'w-full text-sm bg-white border rounded-md pl-10 pr-4 py-3 focus:outline-none text-gray-800'
+                  )}
                   placeholder="2026"
                   min={2000}
                   max={2100}
                 />
               </div>
+
+              <FieldError message={errors.year} />
             </div>
 
             <div className="space-y-1.5">
@@ -295,10 +374,14 @@ export default function DocumentDetailsContainer({
 
                 <select
                   value={categoryId}
-                  onChange={(event) =>
-                    setCategoryId(Number(event.target.value))
-                  }
-                  className="w-full text-sm bg-white border border-gray-300 rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:border-gray-900 text-gray-800 appearance-none"
+                  onChange={(event) => {
+                    setCategoryId(Number(event.target.value));
+                    clearError('category_id');
+                  }}
+                  className={fieldClass(
+                    errors.category_id,
+                    'w-full text-sm bg-white border rounded-md pl-10 pr-4 py-3 focus:outline-none text-gray-800 appearance-none'
+                  )}
                 >
                   <option value={0}>Selecione uma categoria</option>
 
@@ -309,6 +392,8 @@ export default function DocumentDetailsContainer({
                   ))}
                 </select>
               </div>
+
+              <FieldError message={errors.category_id} />
             </div>
           </div>
 
@@ -362,22 +447,22 @@ export default function DocumentDetailsContainer({
 
           <div className="flex flex-col md:flex-row items-stretch md:items-center justify-end gap-3 pt-4 border-t border-gray-100">
             <button
-              type="button"
-              onClick={handleCancel}
-              disabled={isSubmitting}
-              className="h-11 px-5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold transition-all disabled:opacity-60"
+                type="button"
+                onClick={handleCancel}
+                disabled={isSubmitting}
+                className="text-xs bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-2.5 rounded-md border border-gray-300 transition-colors cursor-pointer disabled:opacity-60"
+
             >
               <span className="inline-flex items-center justify-center gap-2">
-                <X className="w-4 h-4" />
                 Descartar
               </span>
             </button>
 
             <button
-              type="button"
-              onClick={handleSave}
-              disabled={isSubmitting || (!hasPendingChanges && !isNew)}
-              className="h-11 px-5 rounded-xl bg-green-600 hover:bg-green-700 text-white text-sm font-semibold transition-all disabled:opacity-60"
+                type="button"
+                onClick={handleSave}
+                disabled={isSubmitting || (!hasPendingChanges && !isNew)}
+                className="text-xs bg-green-600 hover:bg-green-700 text-white font-semibold px-5 py-2.5 rounded-md transition-all cursor-pointer disabled:opacity-60"
             >
               <span className="inline-flex items-center justify-center gap-2">
                 <Save className="w-4 h-4" />

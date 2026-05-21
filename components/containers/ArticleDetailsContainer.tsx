@@ -55,10 +55,12 @@ function normalizeKeywordList(words: string[]): string[] {
 function fieldClass(error?: string, className = '') {
   return `
     ${className}
+    selection:bg-primary selection:text-white
+    transition-all
     ${
       error
-        ? 'border-red-500 focus:border-red-600 focus:ring-1 focus:ring-red-500/20'
-        : 'border-gray-300 focus:border-gray-900'
+        ? 'border-red-500 focus:border-red-600 focus:ring-2 focus:ring-red-500/20'
+        : 'border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20'
     }
   `;
 }
@@ -67,7 +69,7 @@ function FieldError({ message }: { message?: string }) {
   if (!message) return null;
 
   return (
-    <p className="text-[11px] font-medium text-red-600">
+    <p className="mt-1 text-[11px] font-semibold text-red-600">
       {message}
     </p>
   );
@@ -118,11 +120,9 @@ export default function ArticleDetailsContainer({
     setTitle(article.title || '');
     setSummary(article.summary || '');
     setContent(article.content || '');
-
     setImageUrl(article.media?.url || '');
     setImageAlt(article.media?.alt_text || '');
     setImageCaption(article.media?.caption || '');
-
     setKeywordsArray(parseInitialKeywords(article));
     setErrors({});
   }, [article]);
@@ -247,11 +247,9 @@ export default function ArticleDetailsContainer({
     setTitle(article?.title || '');
     setSummary(article?.summary || '');
     setContent(article?.content || '');
-
     setImageUrl(article?.media?.url || '');
     setImageAlt(article?.media?.alt_text || '');
     setImageCaption(article?.media?.caption || '');
-
     setKeywordsArray(parseInitialKeywords(article));
     setKeywordSearch('');
     setErrors({});
@@ -350,7 +348,7 @@ export default function ArticleDetailsContainer({
   };
 
   return (
-    <main className="w-[90%] max-w-3xl mx-auto py-20">
+    <main className="w-[90%] max-w-3xl mx-auto py-20 selection:bg-primary selection:text-white">
       <div className="flex items-center justify-between border-b border-gray-100 pb-4">
         <button
           type="button"
@@ -591,7 +589,7 @@ export default function ArticleDetailsContainer({
                 type="text"
                 value={keywordSearch}
                 onChange={(event) => setKeywordSearch(event.target.value)}
-                className="w-full text-xs bg-white border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:border-gray-900"
+                className="w-full text-xs bg-white border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 selection:bg-primary selection:text-white"
                 placeholder="Buscar ou criar palavra-chave no banco..."
                 maxLength={255}
               />
@@ -611,7 +609,7 @@ export default function ArticleDetailsContainer({
                       key={word}
                       type="button"
                       onClick={() => handleAddKeyword(word)}
-                      className="w-full text-left px-4 py-2.5 text-xs hover:bg-gray-50 text-gray-700 font-medium block"
+                      className="w-full text-left px-4 py-2.5 text-xs hover:bg-orange-50 text-gray-700 font-medium block"
                     >
                       🔍 Associar existente:{' '}
                       <span className="font-bold text-gray-900">{word}</span>
@@ -623,7 +621,7 @@ export default function ArticleDetailsContainer({
                       key="new-kw-opt"
                       type="button"
                       onClick={() => handleAddKeyword(cleanKeywordSearch)}
-                      className="w-full text-left px-4 py-2.5 text-xs hover:bg-gray-50 text-orange-600 font-bold block border-t border-gray-100"
+                      className="w-full text-left px-4 py-2.5 text-xs hover:bg-orange-50 text-orange-600 font-bold block border-t border-gray-100"
                     >
                       Criar palavra-chave inédita: "{cleanKeywordSearch}"
                     </button>
@@ -779,7 +777,7 @@ export default function ArticleDetailsContainer({
                   {isSubmitting
                     ? 'Salvando...'
                     : isCreationFlow
-                      ? 'Criar Artigo ✔'
+                      ? 'Criar Artigo'
                       : 'Confirmar e Salvar no Banco ✔'}
                 </button>
               )}

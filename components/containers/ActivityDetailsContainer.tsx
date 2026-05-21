@@ -731,10 +731,10 @@ export default function ActivityDetailsContainer({
 
           {(hasPendingChanges || isNew) && (
             <button
-              type="button"
-              onClick={handleSave}
-              disabled={isSubmitting}
-              className="text-xs bg-green-600 hover:bg-green-700 text-white font-semibold px-5 py-2.5 rounded-md transition-all cursor-pointer disabled:opacity-60"
+                type="button"
+                onClick={handleSave}
+                disabled={isSubmitting}
+                className="text-xs bg-green-600 hover:bg-green-700 text-white font-semibold px-5 py-2.5 rounded-md transition-all cursor-pointer disabled:opacity-60"
             >
               {isSubmitting
                 ? 'Salvando...'
