@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { X, Heart, Calendar, Clock, ImageIcon } from 'lucide-react';
 import Image from 'next/image';
 
@@ -13,18 +13,47 @@ interface ActivityModalProps {
   id?: string;
   activity: Activity;
   onClose: () => void;
+  onActivityLikeChange?: (activity: Activity) => void;
+}
+
+type LikeResponse = {
+  liked: boolean;
+  likes?: number;
+  likes_count?: number;
+};
+
+function getActivityLikes(activity: Activity): number {
+  return Number(
+    activity.likes_count ??
+      activity.likes ??
+      0
+  );
+}
+
+function getActivityLiked(activity: Activity): boolean {
+  return Boolean(
+    activity.is_liked ??
+      activity.liked ??
+      false
+  );
 }
 
 export default function ActivityDetail({
   id,
   activity,
   onClose,
+  onActivityLikeChange,
 }: ActivityModalProps) {
-  const [likes, setLikes] = useState(activity.likes ?? 0);
-  const [isLiked, setIsLiked] = useState(activity.is_liked ?? false);
+  const [likes, setLikes] = useState(() => getActivityLikes(activity));
+  const [isLiked, setIsLiked] = useState(() => getActivityLiked(activity));
   const [isLiking, setIsLiking] = useState(false);
 
   useModalEffects(true, onClose);
+
+  useEffect(() => {
+    setLikes(getActivityLikes(activity));
+    setIsLiked(getActivityLiked(activity));
+  }, [activity]);
 
   const imageUrl = activity.media?.url;
   const imageAlt =
@@ -35,16 +64,54 @@ export default function ActivityDetail({
   const handleLike = async () => {
     if (isLiking) return;
 
+    const previousLikes = likes;
+    const previousIsLiked = isLiked;
+
+    const optimisticLiked = !previousIsLiked;
+    const optimisticLikes = optimisticLiked
+      ? previousLikes + 1
+      : Math.max(previousLikes - 1, 0);
+
     setIsLiking(true);
 
-    const response = await toggleActivityLike(activity.id);
+    // Atualização visual imediata.
+    setIsLiked(optimisticLiked);
+    setLikes(optimisticLikes);
 
-    setIsLiking(false);
+    try {
+      const response = (await toggleActivityLike(
+        activity.slug ?? String(activity.id)
+      )) as LikeResponse | null;
 
-    if (!response) return;
+      if (!response) {
+        setIsLiked(previousIsLiked);
+        setLikes(previousLikes);
+        return;
+      }
 
-    setIsLiked(response.liked);
-    setLikes(response.likes);
+      const nextLiked = Boolean(response.liked);
+      const nextLikes = Number(response.likes_count ?? response.likes ?? optimisticLikes);
+
+      setIsLiked(nextLiked);
+      setLikes(nextLikes);
+
+      const updatedActivity = {
+        ...activity,
+        liked: nextLiked,
+        is_liked: nextLiked,
+        likes: nextLikes,
+        likes_count: nextLikes,
+      } as Activity;
+
+      onActivityLikeChange?.(updatedActivity);
+    } catch (error) {
+      console.error('Erro ao curtir atividade:', error);
+
+      setIsLiked(previousIsLiked);
+      setLikes(previousLikes);
+    } finally {
+      setIsLiking(false);
+    }
   };
 
   const schedules = activity.schedules ?? [];
@@ -181,7 +248,7 @@ export default function ActivityDetail({
                   ${
                     isLiked
                       ? 'border-orange-500 bg-orange-500 text-white shadow-lg'
-                      : 'border-gray-200 bg-white text-gray-700 hover:border-orange-500'
+                      : 'border-gray-200 bg-white text-gray-700 hover:border-orange-500 hover:text-orange-600'
                   }
                 `}
               >
@@ -189,7 +256,7 @@ export default function ActivityDetail({
                   size={20}
                   aria-hidden="true"
                   fill={isLiked ? 'currentColor' : 'none'}
-                  className={isLiked ? 'animate-pulse' : ''}
+                  className={isLiked ? 'text-white' : 'text-orange-600'}
                 />
 
                 {isLiking ? 'Aguarde...' : likeLabel}

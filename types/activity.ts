@@ -22,12 +22,12 @@ export interface Activity {
   title: string;
   content: string;
   likes?: number;
+  likes_count?: number;
   is_liked?: boolean;
+  liked?: boolean;
   created_at?: string;
   updated_at?: string;
-
   schedules?: ActivitySchedule[];
-
   media?: {
     url?: string;
     alt_text?: string;

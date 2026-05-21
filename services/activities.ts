@@ -2,6 +2,12 @@ import type { Activity, SaveActivityDTO } from '@/types/activity';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
+type ToggleActivityLikeResponse = {
+  liked: boolean;
+  likes: number;
+  likes_count: number;
+};
+
 function normalizeActivities(payload: any): Activity[] {
   if (Array.isArray(payload)) return payload;
 
@@ -22,41 +28,23 @@ function normalizeActivity(payload: any): Activity | null {
   return payload;
 }
 
-export function getVisitorId() {
-  if (typeof window === 'undefined') return '';
-
-  const key = 'acose_visitor_id';
-
-  let visitorId = localStorage.getItem(key);
-
-  if (!visitorId) {
-    visitorId = crypto.randomUUID();
-    localStorage.setItem(key, visitorId);
+function getApiUrl(): string {
+  if (!API_URL) {
+    throw new Error('NEXT_PUBLIC_API_URL não configurada');
   }
 
-  return visitorId;
-}
-
-function getVisitorHeaders(): Record<string, string> {
-  const visitorId = getVisitorId();
-
-  if (!visitorId) return {};
-
-  return {
-    'X-Visitor-ID': visitorId,
-  };
+  return API_URL.replace(/\/$/, '');
 }
 
 export async function getActivities(): Promise<Activity[]> {
   try {
-    const headers: Record<string, string> = {
-      Accept: 'application/json',
-      ...getVisitorHeaders(),
-    };
-
-    const response = await fetch(`${API_URL}/activities`, {
+    const response = await fetch(`${getApiUrl()}/activities`, {
+      method: 'GET',
       cache: 'no-store',
-      headers,
+      headers: {
+        Accept: 'application/json',
+      },
+      credentials: 'include',
     });
 
     if (!response.ok) {
@@ -74,14 +62,13 @@ export async function getActivities(): Promise<Activity[]> {
 
 export async function getRecentActivities(limit = 9): Promise<Activity[]> {
   try {
-    const headers: Record<string, string> = {
-      Accept: 'application/json',
-      ...getVisitorHeaders(),
-    };
-
-    const response = await fetch(`${API_URL}/activities/recent`, {
+    const response = await fetch(`${getApiUrl()}/activities/recent`, {
+      method: 'GET',
       cache: 'no-store',
-      headers,
+      headers: {
+        Accept: 'application/json',
+      },
+      credentials: 'include',
     });
 
     if (!response.ok) {
@@ -99,14 +86,13 @@ export async function getRecentActivities(limit = 9): Promise<Activity[]> {
 
 export async function getActivityBySlug(slug: string): Promise<Activity | null> {
   try {
-    const headers: Record<string, string> = {
-      Accept: 'application/json',
-      ...getVisitorHeaders(),
-    };
-
-    const response = await fetch(`${API_URL}/activities/${slug}`, {
+    const response = await fetch(`${getApiUrl()}/activities/${slug}`, {
+      method: 'GET',
       cache: 'no-store',
-      headers,
+      headers: {
+        Accept: 'application/json',
+      },
+      credentials: 'include',
     });
 
     if (!response.ok) {
@@ -126,7 +112,7 @@ export async function createActivity(
   data: SaveActivityDTO
 ): Promise<Activity | null> {
   try {
-    const response = await fetch(`${API_URL}/activities`, {
+    const response = await fetch(`${getApiUrl()}/activities`, {
       method: 'POST',
       credentials: 'include',
       headers: {
@@ -154,7 +140,7 @@ export async function updateActivity(
   data: SaveActivityDTO
 ): Promise<Activity | null> {
   try {
-    const response = await fetch(`${API_URL}/activities/${activityId}`, {
+    const response = await fetch(`${getApiUrl()}/activities/${activityId}`, {
       method: 'PUT',
       credentials: 'include',
       headers: {
@@ -179,7 +165,7 @@ export async function updateActivity(
 
 export async function deleteActivity(activityId: number): Promise<boolean> {
   try {
-    const response = await fetch(`${API_URL}/activities/${activityId}`, {
+    const response = await fetch(`${getApiUrl()}/activities/${activityId}`, {
       method: 'DELETE',
       credentials: 'include',
       headers: {
@@ -195,34 +181,35 @@ export async function deleteActivity(activityId: number): Promise<boolean> {
 }
 
 export async function toggleActivityLike(
-  activityId: number
-): Promise<{
-  liked: boolean;
-  likes: number;
-} | null> {
+  activityIdentifier: string | number
+): Promise<ToggleActivityLikeResponse | null> {
   try {
-    const visitorId = getVisitorId();
+    const response = await fetch(
+      `${getApiUrl()}/activities/${activityIdentifier}/like`,
+      {
+        method: 'POST',
+        cache: 'no-store',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({}),
+      }
+    );
 
-    if (!visitorId) {
-      throw new Error('Visitor ID não encontrado');
-    }
-
-    const response = await fetch(`${API_URL}/activities/${activityId}/like`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-      body: JSON.stringify({
-        visitor_id: visitorId,
-      }),
-    });
+    const payload = await response.json();
 
     if (!response.ok) {
-      throw new Error('Erro ao curtir atividade');
+      console.error('Erro ao curtir atividade:', payload);
+      return null;
     }
 
-    return response.json();
+    return {
+      liked: Boolean(payload.liked),
+      likes: Number(payload.likes_count ?? payload.likes ?? 0),
+      likes_count: Number(payload.likes_count ?? payload.likes ?? 0),
+    };
   } catch (error) {
     console.error(error);
     return null;

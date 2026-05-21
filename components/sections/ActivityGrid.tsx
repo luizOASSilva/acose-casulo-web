@@ -1,9 +1,13 @@
+import { unstable_noStore as noStore } from 'next/cache';
+
 import Link from 'next/link';
 import { getActivities } from '@/services/activities';
 import ActivityCard from '@/components/ui/ActivityCard';
 import Reveal from '@/components/animations/Reveal';
 
 export default async function ActivityGrid() {
+  noStore();
+
   const activities = await getActivities();
 
   return (
@@ -15,10 +19,7 @@ export default async function ActivityGrid() {
       {activities.length > 0 ? (
         <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {activities.map((activity, index) => (
-            <Reveal
-              key={activity.id}
-              delay={index * 0.1}
-            >
+            <Reveal key={activity.id} delay={index * 0.1}>
               <li>
                 <Link
                   href={`/atividades/${activity.slug}`}
