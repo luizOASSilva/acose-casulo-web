@@ -16,26 +16,12 @@ interface ActivityModalProps {
   onActivityLikeChange?: (activity: Activity) => void;
 }
 
-type LikeResponse = {
-  liked: boolean;
-  likes?: number;
-  likes_count?: number;
-};
-
 function getActivityLikes(activity: Activity): number {
-  return Number(
-    activity.likes_count ??
-      activity.likes ??
-      0
-  );
+  return Number(activity.likes_count ?? activity.likes ?? 0);
 }
 
 function getActivityLiked(activity: Activity): boolean {
-  return Boolean(
-    activity.is_liked ??
-      activity.liked ??
-      false
-  );
+  return Boolean(activity.is_liked ?? activity.liked ?? false);
 }
 
 export default function ActivityDetail({
@@ -73,15 +59,13 @@ export default function ActivityDetail({
       : Math.max(previousLikes - 1, 0);
 
     setIsLiking(true);
-
-    // Atualização visual imediata.
     setIsLiked(optimisticLiked);
     setLikes(optimisticLikes);
 
     try {
-      const response = (await toggleActivityLike(
+      const response = await toggleActivityLike(
         activity.slug ?? String(activity.id)
-      )) as LikeResponse | null;
+      );
 
       if (!response) {
         setIsLiked(previousIsLiked);
@@ -90,10 +74,7 @@ export default function ActivityDetail({
       }
 
       const nextLiked = Boolean(response.liked);
-      const nextLikes = Number(response.likes_count ?? response.likes ?? optimisticLikes);
-
-      setIsLiked(nextLiked);
-      setLikes(nextLikes);
+      const nextLikes = Number(response.likes_count ?? response.likes ?? 0);
 
       const updatedActivity = {
         ...activity,
@@ -103,7 +84,16 @@ export default function ActivityDetail({
         likes_count: nextLikes,
       } as Activity;
 
+      setIsLiked(nextLiked);
+      setLikes(nextLikes);
+
       onActivityLikeChange?.(updatedActivity);
+
+      window.dispatchEvent(
+        new CustomEvent<Activity>('activity-like-changed', {
+          detail: updatedActivity,
+        })
+      );
     } catch (error) {
       console.error('Erro ao curtir atividade:', error);
 

@@ -28,7 +28,6 @@ export default function ActivityModalClient({
 
   const handleActivityLikeChange = (updatedActivity: Activity) => {
     setCurrentActivity(updatedActivity);
-
     router.refresh();
   };
 

@@ -2,31 +2,11 @@ import type { Activity, SaveActivityDTO } from '@/types/activity';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-type ToggleActivityLikeResponse = {
+export type ToggleActivityLikeResponse = {
   liked: boolean;
   likes: number;
   likes_count: number;
 };
-
-function normalizeActivities(payload: any): Activity[] {
-  if (Array.isArray(payload)) return payload;
-
-  if (Array.isArray(payload?.data)) return payload.data;
-
-  if (Array.isArray(payload?.activities)) return payload.activities;
-
-  return [];
-}
-
-function normalizeActivity(payload: any): Activity | null {
-  if (!payload) return null;
-
-  if (payload?.data) return payload.data;
-
-  if (payload?.activity) return payload.activity;
-
-  return payload;
-}
 
 function getApiUrl(): string {
   if (!API_URL) {
@@ -36,6 +16,47 @@ function getApiUrl(): string {
   return API_URL.replace(/\/$/, '');
 }
 
+function normalizeActivities(payload: any): Activity[] {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.activities)) return payload.activities;
+
+  return [];
+}
+
+function normalizeActivity(payload: any): Activity | null {
+  if (!payload) return null;
+  if (payload?.data) return payload.data;
+  if (payload?.activity) return payload.activity;
+
+  return payload;
+}
+
+export function getVisitorId(): string {
+  if (typeof window === 'undefined') return '';
+
+  const key = 'acose_visitor_id';
+
+  let visitorId = localStorage.getItem(key);
+
+  if (!visitorId) {
+    visitorId = crypto.randomUUID();
+    localStorage.setItem(key, visitorId);
+  }
+
+  return visitorId;
+}
+
+function getVisitorHeaders(): Record<string, string> {
+  const visitorId = getVisitorId();
+
+  if (!visitorId) return {};
+
+  return {
+    'X-Visitor-ID': visitorId,
+  };
+}
+
 export async function getActivities(): Promise<Activity[]> {
   try {
     const response = await fetch(`${getApiUrl()}/activities`, {
@@ -43,8 +64,8 @@ export async function getActivities(): Promise<Activity[]> {
       cache: 'no-store',
       headers: {
         Accept: 'application/json',
+        ...getVisitorHeaders(),
       },
-      credentials: 'include',
     });
 
     if (!response.ok) {
@@ -67,8 +88,8 @@ export async function getRecentActivities(limit = 9): Promise<Activity[]> {
       cache: 'no-store',
       headers: {
         Accept: 'application/json',
+        ...getVisitorHeaders(),
       },
-      credentials: 'include',
     });
 
     if (!response.ok) {
@@ -91,8 +112,8 @@ export async function getActivityBySlug(slug: string): Promise<Activity | null> 
       cache: 'no-store',
       headers: {
         Accept: 'application/json',
+        ...getVisitorHeaders(),
       },
-      credentials: 'include',
     });
 
     if (!response.ok) {
@@ -189,10 +210,10 @@ export async function toggleActivityLike(
       {
         method: 'POST',
         cache: 'no-store',
-        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           Accept: 'application/json',
+          ...getVisitorHeaders(),
         },
         body: JSON.stringify({}),
       }
@@ -205,13 +226,15 @@ export async function toggleActivityLike(
       return null;
     }
 
+    const likesCount = Number(payload.likes_count ?? payload.likes ?? 0);
+
     return {
       liked: Boolean(payload.liked),
-      likes: Number(payload.likes_count ?? payload.likes ?? 0),
-      likes_count: Number(payload.likes_count ?? payload.likes ?? 0),
+      likes: likesCount,
+      likes_count: likesCount,
     };
   } catch (error) {
-    console.error(error);
+    console.error('Erro ao curtir atividade:', error);
     return null;
   }
 }

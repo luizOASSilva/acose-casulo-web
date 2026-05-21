@@ -8,6 +8,14 @@ interface ActivityCardProps {
   activity: Activity;
 }
 
+function getActivityLikes(activity: Activity): number {
+  return Number(activity.likes_count ?? activity.likes ?? 0);
+}
+
+function getActivityLiked(activity: Activity): boolean {
+  return Boolean(activity.is_liked ?? activity.liked ?? false);
+}
+
 export default function ActivityCard({ activity }: ActivityCardProps) {
   const imageUrl = activity.media?.url;
   const imageAlt =
@@ -15,6 +23,9 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
 
   const firstParagraph =
     activity.content?.split('\n\n')[0] || 'Sem descrição disponível.';
+
+  const likes = getActivityLikes(activity);
+  const isLiked = getActivityLiked(activity);
 
   return (
     <article
@@ -36,9 +47,7 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
         ) : (
           <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-gray-400">
             <ImageIcon className="h-8 w-8" aria-hidden="true" />
-            <span className="text-xs font-medium">
-              Sem imagem
-            </span>
+            <span className="text-xs font-medium">Sem imagem</span>
           </div>
         )}
       </div>
@@ -59,10 +68,21 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
         </p>
 
         <div className="flex items-center gap-1.5 pt-1">
-          <Heart size={14} aria-hidden="true" className="text-primary" />
+          <Heart
+            size={14}
+            aria-hidden="true"
+            fill={isLiked ? 'currentColor' : 'none'}
+            className={isLiked ? 'text-orange-600' : 'text-primary'}
+          />
 
-          <span className="text-xs text-gray-600 font-medium">
-            {activity.likes ?? 0}
+          <span
+            className={
+              isLiked
+                ? 'text-xs text-orange-600 font-bold'
+                : 'text-xs text-gray-600 font-medium'
+            }
+          >
+            {likes}
           </span>
         </div>
       </div>
