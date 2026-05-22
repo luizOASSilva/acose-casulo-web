@@ -7,7 +7,7 @@ interface ParamProps {
   params: Promise<{ id: string }>;
 }
 
-export default async function AdminEditActivityPage({ params }: ParamProps) {
+export default async function AdminEditarAtividadePage({ params }: ParamProps) {
   const { id } = await params;
 
   const activity = await getActivityBySlug(id);

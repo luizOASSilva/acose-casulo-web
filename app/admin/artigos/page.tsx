@@ -1,7 +1,7 @@
 import { getArticles } from '@/services/articles';
 import ArticleListContainer from '@/components/containers/ArticleListContainer';
 
-export default async function AdminArtigoPage() {
+export default async function AdminArtigosPage() {
   const articles = await getArticles();
 
   return (

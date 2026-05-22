@@ -8,7 +8,7 @@ interface ParamProps {
   }>;
 }
 
-export default async function AdminEditarDocumentPage({ params }: ParamProps) {
+export default async function AdminEditarDocumentoPage({ params }: ParamProps) {
   const { id } = await params;
 
   const [document, categories] = await Promise.all([

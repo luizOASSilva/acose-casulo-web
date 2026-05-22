@@ -1,6 +1,6 @@
 import ActivityDetailsContainer from '@/components/containers/ActivityDetailsContainer';
 
-export default function AdminCreateActivityPage() {
+export default function AdminNovaAtividadePage() {
   const blankActivitySkeleton = {
     id: 0,
     slug: 'new',

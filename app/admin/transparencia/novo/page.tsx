@@ -1,7 +1,7 @@
 import DocumentDetailsContainer from '@/components/containers/DocumentDetailsContainer';
 import { getDocumentCategories } from '@/services/admin/document';
 
-export default async function AdminCreateDocumentPage() {
+export default async function AdminNovoDocumentoPage() {
   const categories = await getDocumentCategories();
 
   const blankDocumentSkeleton = {

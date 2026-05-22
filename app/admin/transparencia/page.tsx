@@ -14,7 +14,7 @@ import YearFilter from '@/components/ui/YearFilter';
 
 export const dynamic = 'force-dynamic';
 
-export default async function AdminTransparencyPage({
+export default async function AdminTransparenciaPage({
   searchParams,
 }: {
   searchParams: Promise<{
