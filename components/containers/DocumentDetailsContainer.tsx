@@ -10,7 +10,6 @@ import {
   FolderOpen,
   Link as LinkIcon,
   Save,
-  X,
 } from 'lucide-react';
 
 import type {
@@ -25,6 +24,7 @@ import {
 } from '@/services/admin/document';
 
 import { documentSchema } from '@/schemas/document.schema';
+import { useConfirmDialog } from '@/context/ConfirmDialogContext';
 
 interface DocumentDetailsContainerProps {
   document: DocumentItem;
@@ -72,6 +72,7 @@ export default function DocumentDetailsContainer({
   startInEditMode = false,
 }: DocumentDetailsContainerProps) {
   const router = useRouter();
+  const { confirm } = useConfirmDialog();
 
   const [isEditMode] = useState(startInEditMode || isNew);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -146,22 +147,27 @@ export default function DocumentDetailsContainer({
     });
   };
 
-  const confirmDiscard = (): boolean => {
+  const confirmDiscard = async (): Promise<boolean> => {
     if (!hasPendingChanges) return true;
 
-    return window.confirm(
-      'Zezão, você tem alterações pendentes que não foram salvas! Deseja realmente descartar tudo?'
-    );
+    return confirm({
+      title: 'Descartar alterações?',
+      description:
+        'Você tem alterações pendentes que ainda não foram salvas. Se continuar, tudo que foi alterado será perdido.',
+      confirmText: 'Descartar',
+      cancelText: 'Continuar editando',
+      variant: 'danger',
+    });
   };
 
-  const handleBack = () => {
-    if (!confirmDiscard()) return;
+  const handleBack = async () => {
+    if (!(await confirmDiscard())) return;
 
     router.push(ADMIN_TRANSPARENCY_PATH);
   };
 
-  const handleCancel = () => {
-    if (!confirmDiscard()) return;
+  const handleCancel = async () => {
+    if (!(await confirmDiscard())) return;
 
     router.push(ADMIN_TRANSPARENCY_PATH);
   };
@@ -199,22 +205,43 @@ export default function DocumentDetailsContainer({
         ? await createDocument(payload)
         : await updateDocument(document.id, payload);
 
+      setIsSubmitting(false);
+
       if (response) {
-        alert(
-          isNew
-            ? 'Documento criado com sucesso! ✔'
-            : 'Documento atualizado com sucesso! ✔'
-        );
+        await confirm({
+          title: isNew ? 'Documento criado' : 'Documento atualizado',
+          description: isNew
+            ? 'O documento foi criado com sucesso.'
+            : 'As alterações do documento foram salvas com sucesso.',
+          confirmText: 'Entendi',
+          cancelText: 'Fechar',
+          variant: 'success',
+        });
 
         router.push(ADMIN_TRANSPARENCY_PATH);
         router.refresh();
-      } else {
-        alert('Erro ao salvar documento.');
+        return;
       }
+
+      await confirm({
+        title: 'Erro ao salvar',
+        description:
+          'Não foi possível salvar o documento agora. Tente novamente em alguns instantes.',
+        confirmText: 'Entendi',
+        cancelText: 'Fechar',
+        variant: 'danger',
+      });
     } catch {
-      alert('Erro ao salvar documento.');
-    } finally {
       setIsSubmitting(false);
+
+      await confirm({
+        title: 'Erro ao salvar',
+        description:
+          'Não foi possível salvar o documento agora. Tente novamente em alguns instantes.',
+        confirmText: 'Entendi',
+        cancelText: 'Fechar',
+        variant: 'danger',
+      });
     }
   };
 
@@ -226,7 +253,7 @@ export default function DocumentDetailsContainer({
           onClick={handleBack}
           className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 font-medium transition-colors"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="w-4 h-4" aria-hidden="true" />
           Voltar para transparência
         </button>
 
@@ -244,7 +271,7 @@ export default function DocumentDetailsContainer({
       <section className="rounded-md border border-dashed border-gray-300 bg-white p-6 md:p-8">
         <div className="flex flex-col items-center text-center gap-4 mb-8">
           <div className="w-16 h-16 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center">
-            <FileText className="w-8 h-8" />
+            <FileText className="w-8 h-8" aria-hidden="true" />
           </div>
 
           <div className="space-y-1">
@@ -265,7 +292,10 @@ export default function DocumentDetailsContainer({
             </label>
 
             <div className="relative">
-              <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <FileText
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
+                aria-hidden="true"
+              />
 
               <input
                 type="text"
@@ -302,7 +332,10 @@ export default function DocumentDetailsContainer({
             </label>
 
             <div className="relative">
-              <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <LinkIcon
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
+                aria-hidden="true"
+              />
 
               <input
                 type="url"
@@ -330,7 +363,7 @@ export default function DocumentDetailsContainer({
                 className="inline-flex items-center gap-1.5 text-xs text-orange-600 hover:text-orange-700 font-medium"
               >
                 Abrir arquivo
-                <ExternalLink className="w-3.5 h-3.5" />
+                <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" />
               </a>
             )}
           </div>
@@ -342,7 +375,10 @@ export default function DocumentDetailsContainer({
               </label>
 
               <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Calendar
+                  className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
+                  aria-hidden="true"
+                />
 
                 <input
                   type="number"
@@ -370,7 +406,10 @@ export default function DocumentDetailsContainer({
               </label>
 
               <div className="relative">
-                <FolderOpen className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <FolderOpen
+                  className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
+                  aria-hidden="true"
+                />
 
                 <select
                   value={categoryId}
@@ -401,7 +440,7 @@ export default function DocumentDetailsContainer({
             <div className="flex items-center justify-between border-b border-zinc-100 bg-zinc-50 px-5 py-4">
               <div className="flex items-center gap-3">
                 <div className="rounded-md bg-primary/10 p-2 text-primary">
-                  <FolderOpen size={18} />
+                  <FolderOpen size={18} aria-hidden="true" />
                 </div>
 
                 <div>
@@ -434,12 +473,13 @@ export default function DocumentDetailsContainer({
                   rel="noopener noreferrer"
                   className="rounded-md p-2 text-zinc-400 transition hover:bg-primary/10 hover:text-primary"
                   title="Abrir documento"
+                  aria-label="Abrir documento"
                 >
-                  <ExternalLink size={15} />
+                  <ExternalLink size={15} aria-hidden="true" />
                 </a>
               ) : (
                 <div className="rounded-md p-2 text-zinc-300">
-                  <ExternalLink size={15} />
+                  <ExternalLink size={15} aria-hidden="true" />
                 </div>
               )}
             </div>
@@ -447,11 +487,10 @@ export default function DocumentDetailsContainer({
 
           <div className="flex flex-col md:flex-row items-stretch md:items-center justify-end gap-3 pt-4 border-t border-gray-100">
             <button
-                type="button"
-                onClick={handleCancel}
-                disabled={isSubmitting}
-                className="text-xs bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-2.5 rounded-md border border-gray-300 transition-colors cursor-pointer disabled:opacity-60"
-
+              type="button"
+              onClick={handleCancel}
+              disabled={isSubmitting}
+              className="text-xs bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-2.5 rounded-md border border-gray-300 transition-colors cursor-pointer disabled:opacity-60"
             >
               <span className="inline-flex items-center justify-center gap-2">
                 Descartar
@@ -459,13 +498,14 @@ export default function DocumentDetailsContainer({
             </button>
 
             <button
-                type="button"
-                onClick={handleSave}
-                disabled={isSubmitting || (!hasPendingChanges && !isNew)}
-                className="text-xs bg-green-600 hover:bg-green-700 text-white font-semibold px-5 py-2.5 rounded-md transition-all cursor-pointer disabled:opacity-60"
+              type="button"
+              onClick={handleSave}
+              disabled={isSubmitting || (!hasPendingChanges && !isNew)}
+              className="text-xs bg-green-600 hover:bg-green-700 text-white font-semibold px-5 py-2.5 rounded-md transition-all cursor-pointer disabled:opacity-60"
             >
               <span className="inline-flex items-center justify-center gap-2">
-                <Save className="w-4 h-4" />
+                <Save className="w-4 h-4" aria-hidden="true" />
+
                 {isSubmitting
                   ? 'Salvando...'
                   : isNew

@@ -3,11 +3,14 @@
 import { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
+
 import type { Article } from '@/types/article';
 import KeywordBadge from '@/components/ui/KeywordBadge';
 import UserBadge from '@/components/ui/UserBadge';
+
 import { updateArticle, createArticle } from '@/services/articles';
 import { articleSchema } from '@/schemas/article.schema';
+import { useConfirmDialog } from '@/context/ConfirmDialogContext';
 
 interface ArticleDetailsContainerProps {
   article?: Article;
@@ -84,6 +87,7 @@ export default function ArticleDetailsContainer({
 }: ArticleDetailsContainerProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const { confirm } = useConfirmDialog();
 
   const isCreationFlow = isNew || !article?.id;
 
@@ -255,26 +259,32 @@ export default function ArticleDetailsContainer({
     setErrors({});
   };
 
-  const confirmDiscard = (): boolean => {
+  const confirmDiscard = async (): Promise<boolean> => {
     if (!hasPendingChanges) return true;
 
-    return window.confirm(
-      'Zezão, você tem alterações pendentes que não foram salvas! Deseja realmente descartar tudo?'
-    );
+    return confirm({
+      title: 'Descartar alterações?',
+      description:
+        'Você tem alterações pendentes que ainda não foram salvas. Se continuar, tudo que foi alterado será perdido.',
+      confirmText: 'Descartar',
+      cancelText: 'Continuar editando',
+      variant: 'danger',
+    });
   };
 
-  const handleBack = () => {
-    if (!confirmDiscard()) return;
+  const handleBack = async () => {
+    if (!(await confirmDiscard())) return;
 
     if (isEditMode && !isCreationFlow) {
       router.push(`${ADMIN_ARTICLES_PATH}/${article?.id}`);
-    } else {
-      router.push(ADMIN_ARTICLES_PATH);
+      return;
     }
+
+    router.push(ADMIN_ARTICLES_PATH);
   };
 
-  const handleCancel = () => {
-    if (!confirmDiscard()) return;
+  const handleCancel = async () => {
+    if (!(await confirmDiscard())) return;
 
     if (isCreationFlow) {
       router.push(ADMIN_ARTICLES_PATH);
@@ -333,18 +343,38 @@ export default function ArticleDetailsContainer({
 
       if (isCreationFlow) {
         router.push(ADMIN_ARTICLES_PATH);
-        alert('Artigo criado com sucesso! 🎉');
+
+        await confirm({
+          title: 'Artigo criado',
+          description: 'O artigo foi criado com sucesso.',
+          confirmText: 'Entendi',
+          cancelText: 'Fechar',
+          variant: 'success',
+        });
       } else {
         router.push(`${ADMIN_ARTICLES_PATH}/${article?.id}`);
-        alert('Alterações salvas com sucesso no Laravel! ✔');
+
+        await confirm({
+          title: 'Alterações salvas',
+          description: 'As alterações do artigo foram salvas com sucesso.',
+          confirmText: 'Entendi',
+          cancelText: 'Fechar',
+          variant: 'success',
+        });
       }
 
       router.refresh();
-    } else {
-      alert(
-        'Erro ao salvar dados no Laravel. Verifique se as permissões de CORS ou as rotas da API estão corretas.'
-      );
+      return;
     }
+
+    await confirm({
+      title: 'Erro ao salvar',
+      description:
+        'Não foi possível salvar os dados. Verifique as permissões, CORS ou as rotas da API.',
+      confirmText: 'Entendi',
+      cancelText: 'Fechar',
+      variant: 'danger',
+    });
   };
 
   return (
@@ -389,7 +419,7 @@ export default function ArticleDetailsContainer({
 
             <h1
               id="article-title"
-              className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight"
+              className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight break-words [overflow-wrap:anywhere]"
             >
               {title || 'Sem título'}
             </h1>
@@ -398,20 +428,20 @@ export default function ArticleDetailsContainer({
 
             {imageUrl && (
               <figure className="w-full overflow-hidden">
-                <div className="relative w-full h-72 md:h-96 bg-gray-50">
+                <div className="relative w-full h-72 md:h-96 bg-gray-50 overflow-hidden rounded-md">
                   <Image
                     src={imageUrl}
                     alt={imageAlt || title || 'Imagem do artigo'}
                     fill
                     sizes="(max-width: 768px) 90vw, 768px"
-                    className="object-cover rounded-md"
+                    className="object-cover"
                     priority
                     unoptimized
                   />
                 </div>
 
                 {imageCaption && (
-                  <figcaption className="text-xs text-gray-700 text-center p-3">
+                  <figcaption className="text-xs text-gray-700 text-center p-3 break-words [overflow-wrap:anywhere]">
                     {imageCaption}
                   </figcaption>
                 )}
@@ -419,13 +449,14 @@ export default function ArticleDetailsContainer({
             )}
           </header>
 
-          <div className="prose prose-gray max-w-none">
+          <div className="prose prose-gray max-w-none overflow-hidden">
             {(content || 'Sem conteúdo.')
               .split('\n\n')
+              .filter((paragraph) => paragraph.trim())
               .map((paragraph, index) => (
                 <p
                   key={index}
-                  className="text-gray-700 text-lg leading-relaxed mb-6"
+                  className="text-gray-700 text-lg leading-relaxed mb-6 break-words [overflow-wrap:anywhere]"
                 >
                   {paragraph}
                 </p>
@@ -715,20 +746,20 @@ export default function ArticleDetailsContainer({
 
           {imageUrl && (
             <figure className="w-full overflow-hidden">
-              <div className="relative w-full h-72 md:h-96 bg-gray-50">
+              <div className="relative w-full h-72 md:h-96 bg-gray-50 overflow-hidden rounded-md">
                 <Image
                   src={imageUrl}
                   alt={imageAlt || title || 'Imagem do artigo'}
                   fill
                   sizes="(max-width: 768px) 90vw, 768px"
-                  className="object-cover rounded-md"
+                  className="object-cover"
                   priority
                   unoptimized
                 />
               </div>
 
               {imageCaption && (
-                <figcaption className="text-xs text-gray-700 text-center p-3">
+                <figcaption className="text-xs text-gray-700 text-center p-3 break-words [overflow-wrap:anywhere]">
                   {imageCaption}
                 </figcaption>
               )}

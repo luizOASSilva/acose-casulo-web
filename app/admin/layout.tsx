@@ -1,27 +1,35 @@
-'use client';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 
-import { useState } from 'react';
-import { AdminSidebar } from '@/components/admin/AdminSidebar';
-import { EditModeProvider } from '@/context/admin/EditModeContext'; 
+import AdminShell from '@/components/admin/AdminShell';
+import { getCurrentAdmin } from '@/services/admin/settings';
+import { getPublicSettings } from '@/services/public-settings';
 
-export default function AdminLayout({
+export const dynamic = 'force-dynamic';
+
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [collapsed, setCollapsed] = useState(false);
+  const cookieStore = await cookies();
+  const cookieHeader = cookieStore.toString();
+
+  const [currentAdmin, publicSettings] = await Promise.all([
+    getCurrentAdmin(cookieHeader),
+    getPublicSettings(),
+  ]);
+
+  if (!currentAdmin) {
+    redirect('/');
+  }
 
   return (
-    <EditModeProvider>
-      <div className="flex min-h-screen bg-[#f5f7fa]">      
-        <AdminSidebar 
-          collapsed={collapsed} 
-          toggleSidebar={() => setCollapsed(!collapsed)} 
-        />
-        <main className="flex-1 w-full min-w-0 pt-16 lg:pt-0">
-          {children}
-        </main>     
-      </div>
-    </EditModeProvider>
+    <AdminShell
+      currentAdmin={currentAdmin}
+      logoUrl={publicSettings.site_logo_url || '/logo.svg'}
+    >
+      {children}
+    </AdminShell>
   );
 }

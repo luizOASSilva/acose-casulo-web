@@ -2,6 +2,9 @@ import type { Metadata } from 'next';
 import ContactForm from '@/components/forms/ContactForm';
 import { Clock, MapPin, Mail, Phone } from 'lucide-react';
 import { OG_IMAGE } from '@/lib/config';
+import { getPublicSettings } from '@/services/public-settings';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Contato',
@@ -19,7 +22,24 @@ export const metadata: Metadata = {
   },
 };
 
-export default function Contato() {
+function onlyDigits(value?: string | null): string {
+  return value?.replace(/\D/g, '') ?? '';
+}
+
+export default async function Contato() {
+  const settings = await getPublicSettings();
+
+  const businessHours =
+    settings.business_hours || 'Segunda a Sexta-feira · 08h às 17h';
+
+  const address =
+    settings.contact_address ||
+    'Rua Francisco Rodrigues Dias, 80\nUberaba — Bragança Paulista/SP';
+
+  const email = settings.contact_email || 'contato@projetocasulobp.org.br';
+  const phone = settings.contact_phone || '(11) 2473-4994';
+  const phoneDigits = onlyDigits(phone);
+
   return (
     <main className="flex flex-col lg:flex-row min-h-screen">
       <section
@@ -68,73 +88,91 @@ export default function Contato() {
           </div>
 
           <address className="not-italic space-y-7">
-            <div className="flex flex-row items-start gap-4">
-              <div className="p-3 rounded-full border border-gray-200 shrink-0 mt-0.5">
-                <Clock size={20} aria-hidden="true" className="text-gray-500" />
+            {businessHours && (
+              <div className="flex flex-row items-start gap-4">
+                <div className="p-3 rounded-full border border-gray-200 shrink-0 mt-0.5">
+                  <Clock
+                    size={20}
+                    aria-hidden="true"
+                    className="text-gray-500"
+                  />
+                </div>
+                <div className="space-y-0.5">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-black">
+                    Atendimento
+                  </p>
+                  <p className="text-gray-700 text-sm whitespace-pre-line">
+                    {businessHours}
+                  </p>
+                </div>
               </div>
-              <div className="space-y-0.5">
-                <p className="text-xs font-semibold uppercase tracking-widest text-black">
-                  Atendimento
-                </p>
-                <p className="text-gray-700 text-sm">
-                  Segunda a Sexta-feira · 08h às 17h
-                </p>
-              </div>
-            </div>
+            )}
 
-            <div className="flex flex-row items-start gap-4">
-              <div className="p-3 rounded-full border border-gray-200 shrink-0 mt-0.5">
-                <MapPin
-                  size={20}
-                  aria-hidden="true"
-                  className="text-gray-500"
-                />
+            {address && (
+              <div className="flex flex-row items-start gap-4">
+                <div className="p-3 rounded-full border border-gray-200 shrink-0 mt-0.5">
+                  <MapPin
+                    size={20}
+                    aria-hidden="true"
+                    className="text-gray-500"
+                  />
+                </div>
+                <div className="space-y-0.5">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-black">
+                    Endereço
+                  </p>
+                  <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
+                    {address}
+                  </p>
+                </div>
               </div>
-              <div className="space-y-0.5">
-                <p className="text-xs font-semibold uppercase tracking-widest text-black">
-                  Endereço
-                </p>
-                <p className="text-gray-700 text-sm leading-relaxed">
-                  Rua Francisco Rodrigues Dias, 80
-                  <br />
-                  Uberaba — Bragança Paulista/SP
-                </p>
-              </div>
-            </div>
+            )}
 
-            <div className="flex flex-row items-start gap-4">
-              <div className="p-3 rounded-full border border-gray-200 shrink-0 mt-0.5">
-                <Mail size={20} aria-hidden="true" className="text-gray-500" />
+            {email && (
+              <div className="flex flex-row items-start gap-4">
+                <div className="p-3 rounded-full border border-gray-200 shrink-0 mt-0.5">
+                  <Mail
+                    size={20}
+                    aria-hidden="true"
+                    className="text-gray-500"
+                  />
+                </div>
+                <div className="space-y-0.5">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-black">
+                    E-mail
+                  </p>
+                  <a
+                    href={`mailto:${email}`}
+                    className="text-orange-800 text-sm hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-800 rounded"
+                  >
+                    {email}
+                  </a>
+                </div>
               </div>
-              <div className="space-y-0.5">
-                <p className="text-xs font-semibold uppercase tracking-widest text-black">
-                  E-mail
-                </p>
-                <a
-                  href="mailto:contato@projetocasulobp.org.br"
-                  className="text-orange-800 text-sm hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-800 rounded"
-                >
-                  contato@projetocasulobp.org.br
-                </a>
-              </div>
-            </div>
+            )}
 
-            <div className="flex flex-row items-start gap-4">
-              <div className="p-3 rounded-full border border-gray-200 shrink-0 mt-0.5">
-                <Phone size={20} aria-hidden="true" className="text-gray-500" />
+            {phone && (
+              <div className="flex flex-row items-start gap-4">
+                <div className="p-3 rounded-full border border-gray-200 shrink-0 mt-0.5">
+                  <Phone
+                    size={20}
+                    aria-hidden="true"
+                    className="text-gray-500"
+                  />
+                </div>
+                <div className="space-y-0.5">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-black">
+                    Telefone
+                  </p>
+                  <a
+                    href={phoneDigits ? `tel:+55${phoneDigits}` : undefined}
+                    className="text-gray-700 text-sm hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
+                  >
+                    {phone}
+                  </a>
+                </div>
               </div>
-              <div className="space-y-0.5">
-                <p className="text-xs font-semibold uppercase tracking-widest text-black">
-                  Telefone
-                </p>
-                <a
-                  href="tel:+551124734994"
-                  className="text-gray-700 text-sm hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
-                >
-                  (11) 2473-4994
-                </a>
-              </div>
-            </div>
+            )}
           </address>
 
           <svg

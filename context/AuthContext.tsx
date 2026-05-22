@@ -6,16 +6,18 @@ import {
   useState,
   useEffect,
   useCallback,
-  ReactNode
+  ReactNode,
 } from 'react';
 
-import { api } from '@/lib/api';
 import { useRouter } from 'next/navigation';
+import { api } from '@/lib/api';
 
-interface Admin {
+export interface Admin {
   id: number;
   name: string;
   email: string;
+  role?: 'admin' | 'master' | string;
+  is_master?: boolean;
 }
 
 interface AuthContextType {
@@ -23,19 +25,37 @@ interface AuthContextType {
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  setAdmin: (admin: Admin | null) => void;
+}
+
+interface AuthProviderProps {
+  children: ReactNode;
+  initialAdmin?: Admin | null;
+  skipInitialFetch?: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [admin, setAdmin] = useState<Admin | null>(null);
-  const [loading, setLoading] = useState(true);
+export function AuthProvider({
+  children,
+  initialAdmin = null,
+  skipInitialFetch = false,
+}: AuthProviderProps) {
+  const [admin, setAdmin] = useState<Admin | null>(initialAdmin);
+  const [loading, setLoading] = useState(!initialAdmin && !skipInitialFetch);
+
   const router = useRouter();
 
   useEffect(() => {
+    if (skipInitialFetch || initialAdmin) {
+      setLoading(false);
+      return;
+    }
+
     let mounted = true;
 
-    api.get<Admin>('/auth/me')
+    api
+      .get<Admin>('/auth/me')
       .then((data) => {
         if (mounted) setAdmin(data);
       })
@@ -49,19 +69,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [initialAdmin, skipInitialFetch]);
 
-  const login = useCallback(async (email: string, password: string) => {
-    await api.post('/auth/login', {
-      email,
-      password,
-    });
+  const login = useCallback(
+    async (email: string, password: string) => {
+      await api.post('/auth/login', {
+        email,
+        password,
+      });
 
-    const me = await api.get<Admin>('/auth/me');
+      const me = await api.get<Admin>('/auth/me');
 
-    setAdmin(me);
-    router.push('/admin');
-  }, [router]);
+      setAdmin(me);
+      router.push('/admin/dashboard');
+      router.refresh();
+    },
+    [router]
+  );
 
   const logout = useCallback(async () => {
     try {
@@ -69,11 +93,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setAdmin(null);
       router.push('/');
+      router.refresh();
     }
   }, [router]);
 
   return (
-    <AuthContext.Provider value={{ admin, loading, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        admin,
+        loading,
+        login,
+        logout,
+        setAdmin,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -81,6 +114,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth deve ser usado dentro do AuthProvider');
+
+  if (!ctx) {
+    throw new Error('useAuth deve ser usado dentro do AuthProvider');
+  }
+
   return ctx;
 }

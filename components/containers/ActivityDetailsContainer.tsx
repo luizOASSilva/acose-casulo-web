@@ -16,6 +16,7 @@ import { createActivity, updateActivity } from '@/services/activities';
 import { formatSchedule, weekdayOptions } from '@/utils/activitySchedule';
 import { activitySchema } from '@/schemas/activity.schema';
 import ActivityScheduleAgenda from '@/components/ui/ActivityScheduleAgenda';
+import { useConfirmDialog } from '@/context/ConfirmDialogContext';
 
 interface ActivityDetailsContainerProps {
   activity?: Activity;
@@ -88,6 +89,7 @@ export default function ActivityDetailsContainer({
 }: ActivityDetailsContainerProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const { confirm } = useConfirmDialog();
 
   const [isEditMode, setIsEditMode] = useState(startInEditMode || isNew);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -273,16 +275,21 @@ export default function ActivityDetailsContainer({
     setScheduleErrors({});
   };
 
-  const confirmDiscard = (): boolean => {
+  const confirmDiscard = async (): Promise<boolean> => {
     if (!hasPendingChanges) return true;
 
-    return window.confirm(
-      'Zezão, você tem alterações pendentes que não foram salvas! Deseja realmente descartar tudo?'
-    );
+    return confirm({
+      title: 'Descartar alterações?',
+      description:
+        'Você tem alterações pendentes que ainda não foram salvas. Se continuar, tudo que foi alterado será perdido.',
+      confirmText: 'Descartar',
+      cancelText: 'Continuar editando',
+      variant: 'danger',
+    });
   };
 
-  const handleBack = () => {
-    if (!confirmDiscard()) return;
+  const handleBack = async () => {
+    if (!(await confirmDiscard())) return;
 
     if (isNew) {
       router.push('/admin/atividades');
@@ -297,8 +304,8 @@ export default function ActivityDetailsContainer({
     router.push('/admin/atividades');
   };
 
-  const handleCancel = () => {
-    if (!confirmDiscard()) return;
+  const handleCancel = async () => {
+    if (!(await confirmDiscard())) return;
 
     if (isNew) {
       router.push('/admin/atividades');
@@ -415,17 +422,29 @@ export default function ActivityDetailsContainer({
     setIsSubmitting(false);
 
     if (response) {
-      alert(
-        isNew
-          ? 'Atividade criada com sucesso! ✔'
-          : 'Alterações salvas com sucesso! ✔'
-      );
+      await confirm({
+        title: isNew ? 'Atividade criada' : 'Alterações salvas',
+        description: isNew
+          ? 'A atividade foi criada com sucesso.'
+          : 'As alterações da atividade foram salvas com sucesso.',
+        confirmText: 'Entendi',
+        cancelText: 'Fechar',
+        variant: 'success',
+      });
 
       router.push('/admin/atividades');
       router.refresh();
-    } else {
-      alert('Erro ao salvar atividade.');
+      return;
     }
+
+    await confirm({
+      title: 'Erro ao salvar',
+      description:
+        'Não foi possível salvar a atividade agora. Tente novamente em alguns instantes.',
+      confirmText: 'Entendi',
+      cancelText: 'Fechar',
+      variant: 'danger',
+    });
   };
 
   return (
@@ -690,8 +709,9 @@ export default function ActivityDetailsContainer({
                     disabled={schedules.length === 1}
                     className="mt-5 inline-flex h-10 items-center justify-center rounded-md bg-red-50 px-3 text-red-600 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-40"
                     title="Remover horário"
+                    aria-label="Remover horário"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-4 w-4" aria-hidden="true" />
                   </button>
                 </div>
               </div>
@@ -712,7 +732,7 @@ export default function ActivityDetailsContainer({
           />
 
           {!isEditMode && imageCaption && (
-            <p className="absolute bottom-0 left-0 right-0 bg-black/40 text-white text-xs px-3 py-1.5 text-center">
+            <p className="absolute bottom-0 left-0 right-0 bg-black/40 text-white text-xs px-3 py-1.5 text-center break-words [overflow-wrap:anywhere]">
               {imageCaption}
             </p>
           )}
@@ -756,7 +776,7 @@ export default function ActivityDetailsContainer({
           </div>
         ) : (
           <header className="space-y-5">
-            <h1 className="text-2xl md:text-4xl font-bold text-gray-900 tracking-tight leading-tight">
+            <h1 className="text-2xl md:text-4xl font-bold text-gray-900 tracking-tight leading-tight break-words [overflow-wrap:anywhere]">
               {title || 'Sem título'}
             </h1>
 
@@ -829,14 +849,17 @@ export default function ActivityDetailsContainer({
             <FieldError message={errors.content} />
           </div>
         ) : (
-          <article className="border-b border-gray-100 pb-8 text-gray-600 leading-relaxed">
+          <article className="border-b border-gray-100 pb-8 text-gray-600 leading-relaxed overflow-hidden">
             <h2 className="sr-only">Descrição da atividade</h2>
 
             {(content || 'Sem conteúdo.')
               .split('\n')
               .filter((paragraph) => paragraph.trim())
               .map((paragraph, index) => (
-                <p key={index} className="mb-4">
+                <p
+                  key={index}
+                  className="mb-4 break-words [overflow-wrap:anywhere]"
+                >
                   {paragraph}
                 </p>
               ))}

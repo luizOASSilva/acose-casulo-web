@@ -2,10 +2,13 @@
 
 import { useRouter } from 'next/navigation';
 import { Trash2, Edit3 } from 'lucide-react';
+
 import ActivityCard from '@/components/ui/ActivityCard';
 import Reveal from '@/components/animations/Reveal';
+
 import { Activity } from '@/types/activity';
 import { deleteActivity } from '@/services/activities';
+import { useConfirmDialog } from '@/context/ConfirmDialogContext';
 
 interface ActivityListContainerProps {
   activities: Activity[];
@@ -17,24 +20,37 @@ export default function ActivityListContainer({
   isAdmin = false,
 }: ActivityListContainerProps) {
   const router = useRouter();
+  const { confirm } = useConfirmDialog();
 
   const safeActivities = Array.isArray(activities) ? activities : [];
 
   const handleDelete = async (activityId: number) => {
-    if (
-      confirm(
-        'Zezão, tem certeza que deseja deletar esta atividade direto do banco de dados (Laravel)?'
-      )
-    ) {
-      const success = await deleteActivity(activityId);
+    const confirmed = await confirm({
+      title: 'Remover atividade?',
+      description:
+        'Essa atividade será removida do sistema. Essa ação não pode ser desfeita.',
+      confirmText: 'Remover atividade',
+      cancelText: 'Cancelar',
+      variant: 'danger',
+    });
 
-      if (success) {
-        alert('Atividade removida com sucesso!');
-        router.refresh();
-      } else {
-        alert('Erro ao deletar a atividade.');
-      }
+    if (!confirmed) return;
+
+    const success = await deleteActivity(activityId);
+
+    if (success) {
+      router.refresh();
+      return;
     }
+
+    await confirm({
+      title: 'Erro ao remover',
+      description:
+        'Não foi possível remover a atividade agora. Tente novamente em alguns instantes.',
+      confirmText: 'Entendi',
+      cancelText: 'Fechar',
+      variant: 'default',
+    });
   };
 
   return (
@@ -139,7 +155,7 @@ export default function ActivityListContainer({
                         md:group-hover:translate-y-0
                         transition-all duration-200
                       "
-                      onClick={(e) => e.stopPropagation()}
+                      onClick={(event) => event.stopPropagation()}
                     >
                       <button
                         type="button"
@@ -162,8 +178,9 @@ export default function ActivityListContainer({
                           active:scale-95
                         "
                         title="Editar Atividade"
+                        aria-label="Editar atividade"
                       >
-                        <Edit3 className="w-5 h-5" />
+                        <Edit3 className="w-5 h-5" aria-hidden="true" />
                       </button>
 
                       <button
@@ -171,8 +188,9 @@ export default function ActivityListContainer({
                         onClick={() => handleDelete(activity.id)}
                         className="p-2.5 text-red-500 bg-white hover:bg-red-500 hover:text-white rounded-xl transition-all active:scale-95"
                         title="Deletar Atividade"
+                        aria-label="Deletar atividade"
                       >
-                        <Trash2 className="w-5 h-5" />
+                        <Trash2 className="w-5 h-5" aria-hidden="true" />
                       </button>
                     </div>
                   )}

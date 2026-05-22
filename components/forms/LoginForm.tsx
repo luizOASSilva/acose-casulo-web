@@ -11,7 +11,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import LogoLoader from '@/components/ui/LogoLoader';
 
 const loginSchema = z.object({
-  email: z.string().email('E-mail inválido'),
+  email: z.email('E-mail inválido'),
   password: z.string().min(1, 'Senha obrigatória'),
 });
 
@@ -36,8 +36,8 @@ export default function LoginForm() {
   });
 
   useEffect(() => {
-    if (admin) {
-      router.replace('/admin');
+    if (!loading && admin) {
+      router.replace('/admin/dashboard');
     }
   }, [admin, loading, router]);
 
@@ -52,7 +52,7 @@ export default function LoginForm() {
   };
 
   if (loading || admin) {
-    return <LogoLoader />
+    return <LogoLoader />;
   }
 
   return (
@@ -63,11 +63,19 @@ export default function LoginForm() {
       aria-label="Formulário de acesso"
       className="w-full"
     >
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="space-y-5"
+        noValidate
+      >
         <div className="space-y-2">
-          <label htmlFor={emailId} className="text-sm font-medium text-neutral-700">
+          <label
+            htmlFor={emailId}
+            className="text-sm font-medium text-neutral-700"
+          >
             E-mail
           </label>
+
           <div className="group relative">
             <span
               aria-hidden="true"
@@ -75,6 +83,7 @@ export default function LoginForm() {
             >
               <Mail size={18} />
             </span>
+
             <input
               id={emailId}
               type="email"
@@ -87,6 +96,7 @@ export default function LoginForm() {
               className="h-12 w-full rounded-md border border-neutral-200 bg-white pl-12 pr-4 text-sm text-[#141210] outline-none transition placeholder:text-neutral-400 focus:border-primary aria-invalid:border-red-300"
             />
           </div>
+
           <AnimatePresence>
             {errors.email && (
               <motion.p
@@ -104,9 +114,13 @@ export default function LoginForm() {
 
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <label htmlFor={passwordId} className="text-sm font-medium text-neutral-700">
+            <label
+              htmlFor={passwordId}
+              className="text-sm font-medium text-neutral-700"
+            >
               Senha
             </label>
+
             <button
               type="button"
               className="text-xs font-medium text-primary transition hover:opacity-80"
@@ -114,6 +128,7 @@ export default function LoginForm() {
               Esqueceu sua senha?
             </button>
           </div>
+
           <div className="group relative">
             <span
               aria-hidden="true"
@@ -121,6 +136,7 @@ export default function LoginForm() {
             >
               <Lock size={18} />
             </span>
+
             <input
               id={passwordId}
               type="password"
@@ -132,6 +148,7 @@ export default function LoginForm() {
               className="h-12 w-full rounded-md border border-neutral-200 bg-white pl-12 pr-4 text-sm text-[#141210] outline-none transition placeholder:text-neutral-400 focus:border-primary aria-invalid:border-red-300"
             />
           </div>
+
           <AnimatePresence>
             {errors.password && (
               <motion.p
@@ -170,7 +187,7 @@ export default function LoginForm() {
           aria-busy={isSubmitting}
           className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-md bg-primary px-5 text-sm font-semibold text-white transition hover:brightness-110 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
         >
-          <span>Entrar</span>
+          <span>{isSubmitting ? 'Entrando...' : 'Entrar'}</span>
         </button>
       </form>
     </motion.section>

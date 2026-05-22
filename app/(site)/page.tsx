@@ -7,6 +7,9 @@ import Button from '@/components/ui/Button';
 import LeafIllustration from '@/components/ui/LeafIllustration';
 import { Briefcase, Coins, Recycle, Sprout } from 'lucide-react';
 import { OG_IMAGE } from '@/lib/config';
+import { getPublicSettings } from '@/services/public-settings';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   alternates: {
@@ -22,7 +25,24 @@ export const metadata: Metadata = {
   },
 };
 
-export default function Home() {
+export default async function Home() {
+  const settings = await getPublicSettings();
+
+  const address =
+    settings.contact_address ||
+    'Rua Francisco Rodrigues Dias, 80\nUberaba — Bragança Paulista/SP\nCEP: 12908-843';
+
+  const locationTitle =
+    settings.location_title || 'Centro Dia Pessoa Com Deficiência';
+
+  const mapsEmbedUrl =
+    settings.google_maps_embed_url ||
+    'https://maps.google.com/maps?q=Rua+Francisco+Rodrigues+Dias,+80+Bragança+Paulista&z=15&output=embed';
+
+  const mapsUrl =
+    settings.google_maps_url ||
+    'https://www.google.com/maps?q=Rua+Francisco+Rodrigues+Dias,+80+Bragança+Paulista';
+
   return (
     <main>
       <Hero
@@ -226,17 +246,13 @@ export default function Home() {
 
                 <div className="text-gray-800 leading-relaxed space-y-2 font-medium">
                   <p className="font-bold text-gray-900 text-lg">Endereço</p>
-                  <address className="not-italic">
-                    Rua Francisco Rodrigues Dias, 80
-                    <br />
-                    Uberaba — Bragança Paulista/SP
-                    <br />
-                    CEP: 12908-843
+                  <address className="not-italic whitespace-pre-line">
+                    {address}
                   </address>
                 </div>
 
                 <p className="font-bold text-gray-900 text-lg">
-                  Centro Dia Pessoa Com Deficiência
+                  {locationTitle}
                 </p>
 
                 <p className="text-gray-800 leading-relaxed font-medium">
@@ -252,16 +268,18 @@ export default function Home() {
                 Mapa mostrando a localização do Projeto Casulo em Bragança
                 Paulista, São Paulo.
               </p>
+
               <div className="relative w-full h-105 rounded-md overflow-hidden shadow-2xl border border-gray-200">
                 <iframe
                   title="Mapa de localização do Projeto Casulo"
-                  src="https://maps.google.com/maps?q=Rua+Francisco+Rodrigues+Dias,+80+Bragança+Paulista&z=15&output=embed"
+                  src={mapsEmbedUrl}
                   className="absolute inset-0 w-full h-full"
                   loading="lazy"
                 />
               </div>
+
               <a
-                href="https://www.google.com/maps?q=Rua+Francisco+Rodrigues+Dias,+80+Bragança+Paulista"
+                href={mapsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-orange-800 text-sm font-bold hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-800"

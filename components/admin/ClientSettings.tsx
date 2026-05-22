@@ -3,18 +3,22 @@
 import { useMemo, useState } from 'react';
 import {
   Brush,
-  Mail,
+  Building2,
+  CheckCircle2,
+  ExternalLink,
+  Globe2,
   MapPin,
-  Phone,
   Plus,
   RefreshCcw,
   Save,
   Settings,
   ShieldCheck,
   Trash2,
-  Users,
   X,
+  Pencil,
 } from 'lucide-react';
+
+import UserBadge from '@/components/ui/UserBadge';
 
 import type {
   AdminRole,
@@ -32,13 +36,21 @@ import {
   updateSettings,
 } from '@/services/admin/settings';
 
+import { settingsSchema } from '@/schemas/settings.schema';
+import { useConfirmDialog } from '@/context/ConfirmDialogContext';
+
 interface ClientSettingsProps {
   currentAdmin: AdminUser | null;
-  initialAdmins: AdminUser[];
-  initialSettings: SettingItem[];
+  initialAdmins?: AdminUser[];
+  initialSettings?: SettingItem[];
 }
 
-type Tab = 'general' | 'contact' | 'users' | 'system';
+type SectionId =
+  | 'geral'
+  | 'contato'
+  | 'redes'
+  | 'doacoes'
+  | 'area-sensivel';
 
 type SettingErrors = Record<string, string>;
 
@@ -52,15 +64,58 @@ type UserFormErrors = Partial<{
 
 type UserForm = CreateAdminDTO;
 
+const sections: {
+  id: SectionId;
+  label: string;
+  description: string;
+  icon: typeof Settings;
+  masterOnly?: boolean;
+}[] = [
+  {
+    id: 'geral',
+    label: 'Geral',
+    description: 'Identidade e informações principais.',
+    icon: Brush,
+  },
+  {
+    id: 'contato',
+    label: 'Contato',
+    description: 'WhatsApp, e-mail, endereço e atendimento.',
+    icon: MapPin,
+  },
+  {
+    id: 'redes',
+    label: 'Redes sociais',
+    description: 'Links oficiais exibidos no site.',
+    icon: Globe2,
+  },
+  {
+    id: 'doacoes',
+    label: 'Doações',
+    description: 'Mensagem pública da campanha.',
+    icon: Building2,
+  },
+  {
+    id: 'area-sensivel',
+    label: 'Área sensível',
+    description: 'Ações críticas do sistema.',
+    icon: ShieldCheck,
+    masterOnly: true,
+  },
+];
+
+function isValidEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
 function fieldClass(error?: string, className = '') {
   return `
     ${className}
-    selection:bg-primary selection:text-white
-    transition-all
+    transition selection:bg-primary selection:text-white
     ${
       error
         ? 'border-red-500 focus:border-red-600 focus:ring-2 focus:ring-red-500/20'
-        : 'border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20'
+        : 'border-zinc-300 focus:border-primary focus:ring-2 focus:ring-primary/15'
     }
   `;
 }
@@ -68,20 +123,26 @@ function fieldClass(error?: string, className = '') {
 function FieldError({ message }: { message?: string }) {
   if (!message) return null;
 
-  return (
-    <p className="mt-1 text-[11px] font-semibold text-red-600">
-      {message}
-    </p>
-  );
+  return <p className="mt-1 text-[11px] font-medium text-red-600">{message}</p>;
 }
 
-function isValidEmail(email: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+function getSortOrder(setting: SettingItem): number {
+  return Number((setting as any).sort_order ?? (setting as any).order ?? 0);
 }
 
-function settingGroupTitle(group: string): string {
+function getSectionByGroup(group: string): SectionId {
+  if (group === 'branding' || group === 'general') return 'geral';
+  if (group === 'contact') return 'contato';
+  if (group === 'social') return 'redes';
+  if (group === 'donation') return 'doacoes';
+
+  return 'geral';
+}
+
+function getGroupTitle(group: string): string {
   const titles: Record<string, string> = {
     branding: 'Identidade visual',
+    general: 'Informações gerais',
     contact: 'Contato e localização',
     social: 'Redes sociais',
     donation: 'Doações',
@@ -90,24 +151,38 @@ function settingGroupTitle(group: string): string {
   return titles[group] ?? group;
 }
 
+function roleBadgeClass(role?: string) {
+  if (role === 'master') {
+    return 'bg-black/10 text-black';
+  }
+
+  return 'bg-primary/10 text-primary';
+}
+
 export default function ClientSettings({
   currentAdmin,
-  initialAdmins,
-  initialSettings,
+  initialAdmins = [],
+  initialSettings = [],
 }: ClientSettingsProps) {
+  const { confirm } = useConfirmDialog();
+
   const isMaster = Boolean(
     currentAdmin?.is_master || currentAdmin?.role === 'master'
   );
 
-  const [activeTab, setActiveTab] = useState<Tab>('general');
-  const [admins, setAdmins] = useState<AdminUser[]>(initialAdmins);
-  const [settings, setSettings] = useState<SettingItem[]>(initialSettings);
+  const [settings, setSettings] = useState<SettingItem[]>(
+    Array.isArray(initialSettings) ? initialSettings : []
+  );
+
+  const [admins, setAdmins] = useState<AdminUser[]>(
+    Array.isArray(initialAdmins) ? initialAdmins : []
+  );
 
   const [settingErrors, setSettingErrors] = useState<SettingErrors>({});
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [isClearingCache, setIsClearingCache] = useState(false);
 
-  const [isCreatingUser, setIsCreatingUser] = useState(false);
+  const [isUserFormOpen, setIsUserFormOpen] = useState(false);
   const [editingAdminId, setEditingAdminId] = useState<number | null>(null);
   const [isSavingUser, setIsSavingUser] = useState(false);
   const [userErrors, setUserErrors] = useState<UserFormErrors>({});
@@ -120,28 +195,58 @@ export default function ClientSettings({
     password_confirmation: '',
   });
 
+  const visibleSections = useMemo(() => {
+    return sections.filter((section) => !section.masterOnly || isMaster);
+  }, [isMaster]);
+
   const sortedAdmins = useMemo(() => {
-    return [...admins].sort((a, b) => a.name.localeCompare(b.name));
+    const safeAdmins = Array.isArray(admins) ? admins : [];
+
+    return [...safeAdmins].sort((a, b) => {
+      if (a.role === 'master' && b.role !== 'master') return -1;
+      if (a.role !== 'master' && b.role === 'master') return 1;
+
+      return a.name.localeCompare(b.name);
+    });
   }, [admins]);
 
-  const brandingSettings = useMemo(
-    () => settings.filter((setting) => setting.group === 'branding'),
-    [settings]
+  const settingsBySection = useMemo(() => {
+    const grouped: Record<SectionId, Record<string, SettingItem[]>> = {
+      geral: {},
+      contato: {},
+      redes: {},
+      doacoes: {},
+      'area-sensivel': {},
+    };
+
+    const safeSettings = Array.isArray(settings) ? settings : [];
+
+    safeSettings.forEach((setting) => {
+      if (!setting?.group) return;
+
+      const section = getSectionByGroup(setting.group);
+
+      grouped[section][setting.group] = grouped[section][setting.group] || [];
+      grouped[section][setting.group].push(setting);
+    });
+
+    Object.values(grouped).forEach((groups) => {
+      Object.values(groups).forEach((items) => {
+        items.sort((a, b) => getSortOrder(a) - getSortOrder(b));
+      });
+    });
+
+    return grouped;
+  }, [settings]);
+
+  const donationSettings = settingsBySection.doacoes.donation ?? [];
+
+  const donationMessageSettings = donationSettings.filter(
+    (setting) => setting.key !== 'donation_enabled'
   );
 
-  const contactSettings = useMemo(
-    () => settings.filter((setting) => setting.group === 'contact'),
-    [settings]
-  );
-
-  const socialSettings = useMemo(
-    () => settings.filter((setting) => setting.group === 'social'),
-    [settings]
-  );
-
-  const donationSettings = useMemo(
-    () => settings.filter((setting) => setting.group === 'donation'),
-    [settings]
+  const donationEnabledSetting = donationSettings.find(
+    (setting) => setting.key === 'donation_enabled'
   );
 
   const updateSettingValue = (key: string, value: string) => {
@@ -162,32 +267,35 @@ export default function ClientSettings({
   };
 
   const validateSettings = (): SettingErrors => {
+    const payload = {
+      settings: settings.map((setting) => ({
+        key: setting.key,
+        type: setting.type,
+        value: setting.value?.trim() || null,
+      })),
+    };
+
+    const parsed = settingsSchema.safeParse(payload);
+
+    if (parsed.success) return {};
+
     const nextErrors: SettingErrors = {};
 
-    settings.forEach((setting) => {
-      const value = setting.value?.trim() ?? '';
+    parsed.error.issues.forEach((issue) => {
+      const index =
+        issue.path[0] === 'settings' && typeof issue.path[1] === 'number'
+          ? issue.path[1]
+          : typeof issue.path[0] === 'number'
+            ? issue.path[0]
+            : null;
 
-      if (setting.type === 'email' && value && !isValidEmail(value)) {
-        nextErrors[setting.key] = 'Informe um e-mail válido.';
-      }
+      if (index === null) return;
 
-      if (setting.type === 'url' && value) {
-        if (value.startsWith('/')) return;
+      const setting = settings[index];
 
-        try {
-          const url = new URL(value);
+      if (!setting?.key) return;
 
-          if (!['http:', 'https:'].includes(url.protocol)) {
-            nextErrors[setting.key] = 'Informe uma URL válida.';
-          }
-        } catch {
-          nextErrors[setting.key] = 'Informe uma URL válida.';
-        }
-      }
-
-      if ((setting.value ?? '').length > 2048) {
-        nextErrors[setting.key] = 'O valor deve ter no máximo 2048 caracteres.';
-      }
+      nextErrors[setting.key] = issue.message;
     });
 
     return nextErrors;
@@ -213,14 +321,38 @@ export default function ClientSettings({
     setIsSavingSettings(false);
 
     if (!success) {
-      alert('Erro ao salvar configurações.');
+      await confirm({
+        title: 'Erro ao salvar',
+        description:
+          'Não foi possível salvar as configurações agora. Tente novamente em alguns instantes.',
+        confirmText: 'Entendi',
+        cancelText: 'Fechar',
+        variant: 'danger',
+      });
       return;
     }
 
-    alert('Configurações salvas com sucesso! ✔');
+    await confirm({
+      title: 'Configurações salvas',
+      description: 'As alterações foram salvas com sucesso.',
+      confirmText: 'Entendi',
+      cancelText: 'Fechar',
+      variant: 'success',
+    });
   };
 
   const handleClearCache = async () => {
+    const confirmed = await confirm({
+      title: 'Limpar cache?',
+      description:
+        'As configurações públicas serão recarregadas. Use isso caso alguma alteração ainda não esteja aparecendo no site.',
+      confirmText: 'Limpar cache',
+      cancelText: 'Cancelar',
+      variant: 'danger',
+    });
+
+    if (!confirmed) return;
+
     setIsClearingCache(true);
 
     const success = await clearSettingsCache();
@@ -228,11 +360,24 @@ export default function ClientSettings({
     setIsClearingCache(false);
 
     if (!success) {
-      alert('Erro ao limpar cache.');
+      await confirm({
+        title: 'Erro ao limpar cache',
+        description:
+          'Não foi possível limpar o cache agora. Tente novamente em alguns instantes.',
+        confirmText: 'Entendi',
+        cancelText: 'Fechar',
+        variant: 'danger',
+      });
       return;
     }
 
-    alert('Cache limpo com sucesso! ✔');
+    await confirm({
+      title: 'Cache limpo',
+      description: 'O cache de configurações foi limpo com sucesso.',
+      confirmText: 'Entendi',
+      cancelText: 'Fechar',
+      variant: 'success',
+    });
   };
 
   const resetUserForm = () => {
@@ -245,14 +390,14 @@ export default function ClientSettings({
     });
 
     setUserErrors({});
-    setIsCreatingUser(false);
     setEditingAdminId(null);
+    setIsUserFormOpen(false);
   };
 
-  const startCreateUser = () => {
-    setIsCreatingUser(true);
+  const openCreateUserForm = () => {
     setEditingAdminId(null);
     setUserErrors({});
+
     setUserForm({
       name: '',
       email: '',
@@ -260,18 +405,33 @@ export default function ClientSettings({
       password: '',
       password_confirmation: '',
     });
+
+    setIsUserFormOpen(true);
   };
 
-  const startEditUser = (admin: AdminUser) => {
-    setIsCreatingUser(false);
+  const openEditUserForm = (admin: AdminUser) => {
     setEditingAdminId(admin.id);
     setUserErrors({});
+
     setUserForm({
       name: admin.name,
       email: admin.email,
       role: admin.role,
       password: '',
       password_confirmation: '',
+    });
+
+    setIsUserFormOpen(true);
+  };
+
+  const clearUserError = (field: keyof UserFormErrors) => {
+    setUserErrors((current) => {
+      if (!current[field]) return current;
+
+      const next = { ...current };
+      delete next[field];
+
+      return next;
     });
   };
 
@@ -291,7 +451,7 @@ export default function ClientSettings({
     }
 
     if (!['master', 'admin'].includes(userForm.role)) {
-      nextErrors.role = 'Nível de usuário inválido.';
+      nextErrors.role = 'Nível inválido.';
     }
 
     if (!isEdit || userForm.password.trim()) {
@@ -307,17 +467,6 @@ export default function ClientSettings({
     }
 
     return nextErrors;
-  };
-
-  const clearUserError = (field: keyof UserFormErrors) => {
-    setUserErrors((current) => {
-      if (!current[field]) return current;
-
-      const next = { ...current };
-      delete next[field];
-
-      return next;
-    });
   };
 
   const handleSaveUser = async () => {
@@ -356,7 +505,14 @@ export default function ClientSettings({
     setIsSavingUser(false);
 
     if (!response) {
-      alert('Erro ao salvar usuário.');
+      await confirm({
+        title: 'Erro ao salvar usuário',
+        description:
+          'Não foi possível salvar o usuário agora. Verifique os dados e tente novamente.',
+        confirmText: 'Entendi',
+        cancelText: 'Fechar',
+        variant: 'danger',
+      });
       return;
     }
 
@@ -372,594 +528,721 @@ export default function ClientSettings({
 
     resetUserForm();
 
-    alert(
-      isEdit
-        ? 'Usuário atualizado com sucesso! ✔'
-        : 'Usuário criado com sucesso! ✔'
-    );
+    await confirm({
+      title: isEdit ? 'Usuário atualizado' : 'Usuário criado',
+      description: isEdit
+        ? 'O usuário administrativo foi atualizado com sucesso.'
+        : 'O novo usuário administrativo foi criado com sucesso.',
+      confirmText: 'Entendi',
+      cancelText: 'Fechar',
+      variant: 'success',
+    });
   };
 
   const handleDeleteUser = async (admin: AdminUser) => {
     if (currentAdmin?.id === admin.id) {
-      alert('Você não pode remover o próprio usuário logado.');
+      await confirm({
+        title: 'Ação não permitida',
+        description: 'Você não pode remover o próprio usuário logado.',
+        confirmText: 'Entendi',
+        cancelText: 'Fechar',
+        variant: 'danger',
+      });
       return;
     }
 
-    const confirmed = window.confirm(
-      `Tem certeza que deseja remover o usuário ${admin.name}?`
-    );
+    const confirmed = await confirm({
+      title: 'Remover usuário?',
+      description: `O usuário ${admin.name} perderá acesso ao painel administrativo. Essa ação não pode ser desfeita.`,
+      confirmText: 'Remover usuário',
+      cancelText: 'Cancelar',
+      variant: 'danger',
+    });
 
     if (!confirmed) return;
 
     const success = await deleteAdmin(admin.id);
 
     if (!success) {
-      alert('Erro ao remover usuário.');
+      await confirm({
+        title: 'Erro ao remover usuário',
+        description:
+          'Não foi possível remover o usuário agora. Tente novamente em alguns instantes.',
+        confirmText: 'Entendi',
+        cancelText: 'Fechar',
+        variant: 'danger',
+      });
       return;
     }
 
     setAdmins((current) => current.filter((item) => item.id !== admin.id));
-    alert('Usuário removido com sucesso.');
+
+    await confirm({
+      title: 'Usuário removido',
+      description: 'O usuário foi removido com sucesso.',
+      confirmText: 'Entendi',
+      cancelText: 'Fechar',
+      variant: 'success',
+    });
   };
 
-  const renderSettingField = (setting: SettingItem) => {
+  const renderSettingInput = (setting: SettingItem) => {
     const error = settingErrors[setting.key];
 
+    if (setting.type === 'textarea') {
+      return (
+        <textarea
+          value={setting.value ?? ''}
+          onChange={(event) =>
+            updateSettingValue(setting.key, event.target.value)
+          }
+          placeholder={
+            setting.key === 'donation_message'
+              ? 'Digite aqui a mensagem exibida na área pública de doações...'
+              : undefined
+          }
+          className={fieldClass(
+            error,
+            'min-h-20 w-full resize-none rounded-md border bg-white px-3 py-2 text-sm text-zinc-800 outline-none'
+          )}
+          maxLength={2048}
+        />
+      );
+    }
+
+    if (setting.type === 'boolean') {
+      return (
+        <select
+          value={setting.value ?? '0'}
+          onChange={(event) =>
+            updateSettingValue(setting.key, event.target.value)
+          }
+          className={fieldClass(
+            error,
+            'w-full rounded-md border bg-white px-3 py-2 text-sm text-zinc-800 outline-none'
+          )}
+        >
+          <option value="1">Ativo</option>
+          <option value="0">Inativo</option>
+        </select>
+      );
+    }
+
     return (
-      <div key={setting.key} className="space-y-1.5">
-        <label className="text-xs font-semibold text-gray-500">
-          {setting.label}
-        </label>
+      <>
+        <input
+          type={
+            setting.type === 'email'
+              ? 'email'
+              : setting.type === 'url'
+                ? 'url'
+                : 'text'
+          }
+          value={setting.value ?? ''}
+          onChange={(event) =>
+            updateSettingValue(setting.key, event.target.value)
+          }
+          className={fieldClass(
+            error,
+            'w-full rounded-md border bg-white px-3 py-2 text-sm text-zinc-800 outline-none'
+          )}
+          maxLength={2048}
+        />
 
-        {setting.type === 'textarea' ? (
-          <textarea
-            value={setting.value ?? ''}
-            onChange={(event) =>
-              updateSettingValue(setting.key, event.target.value)
-            }
-            className={fieldClass(
-              error,
-              'w-full min-h-28 resize-none rounded-md border bg-white px-3 py-3 text-sm text-gray-800 focus:outline-none'
-            )}
-            placeholder={setting.description ?? ''}
-            maxLength={2048}
-          />
-        ) : setting.type === 'boolean' ? (
-          <select
-            value={setting.value ?? '0'}
-            onChange={(event) =>
-              updateSettingValue(setting.key, event.target.value)
-            }
-            className={fieldClass(
-              error,
-              'w-full rounded-md border bg-white px-3 py-3 text-sm text-gray-800 focus:outline-none'
-            )}
+        {setting.type === 'url' && setting.value && (
+          <a
+            href={setting.value}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-primary"
           >
-            <option value="1">Ativo</option>
-            <option value="0">Inativo</option>
-          </select>
+            Abrir link
+            <ExternalLink className="h-3 w-3" />
+          </a>
+        )}
+      </>
+    );
+  };
+
+  const renderSettingsRows = (items: SettingItem[]) => {
+    if (items.length === 0) {
+      return (
+        <div className="px-5 py-8">
+          <div className="rounded-md border border-dashed border-zinc-300 bg-zinc-50 p-5 text-center">
+            <p className="text-sm font-medium text-zinc-800">
+              Nenhuma configuração encontrada.
+            </p>
+
+            <p className="mt-1 text-xs text-zinc-500">
+              Verifique se o seeder rodou e se o usuário tem permissão.
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="divide-y divide-zinc-100">
+        {items.map((setting) => (
+          <div
+            key={setting.key}
+            className="grid grid-cols-1 gap-4 px-5 py-4 lg:grid-cols-[235px_1fr]"
+          >
+            <div>
+              <label className="text-[13px] font-semibold text-zinc-900">
+                {setting.label}
+              </label>
+
+              {setting.description && (
+                <p className="mt-1 text-xs leading-relaxed text-zinc-500">
+                  {setting.description}
+                </p>
+              )}
+
+              {setting.key === 'site_logo_url' && (
+                <p className="mt-1 text-[11px] leading-relaxed text-zinc-500">
+                  Use somente o caminho público da logo. Exemplo:{' '}
+                  <span className="font-mono text-zinc-700">/logo.svg</span>
+                </p>
+              )}
+
+              <FieldError message={settingErrors[setting.key]} />
+
+              <p className="mt-2 text-[11px] font-mono text-zinc-400">
+                {setting.key}
+              </p>
+            </div>
+
+            <div>{renderSettingInput(setting)}</div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const renderSettingsCard = (
+    sectionId: Exclude<SectionId, 'area-sensivel'>,
+    Icon: typeof Settings,
+    title: string,
+    description: string,
+    customItems?: SettingItem[]
+  ) => {
+    const groups = settingsBySection[sectionId];
+    const entries = Object.entries(groups);
+
+    return (
+      <section
+        id={sectionId}
+        className="scroll-mt-8 rounded-md border border-zinc-200 bg-white shadow-sm"
+      >
+        <header className="border-b border-zinc-100 px-5 py-4">
+          <div className="flex items-start gap-4">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <Icon className="h-5 w-5" />
+            </div>
+
+            <div>
+              <h2 className="text-xl font-semibold tracking-tight text-zinc-900">
+                {title}
+              </h2>
+
+              <p className="mt-1 max-w-2xl text-sm leading-relaxed text-zinc-500">
+                {description}
+              </p>
+            </div>
+          </div>
+        </header>
+
+        {customItems ? (
+          renderSettingsRows(customItems)
+        ) : entries.length > 0 ? (
+          <div className="divide-y divide-zinc-100">
+            {entries.map(([group, items]) => (
+              <div key={group}>
+                {entries.length > 1 && (
+                  <div className="bg-zinc-50 px-5 py-3">
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                      {getGroupTitle(group)}
+                    </h3>
+                  </div>
+                )}
+
+                {renderSettingsRows(items)}
+              </div>
+            ))}
+          </div>
         ) : (
-          <input
-            type={
-              setting.type === 'email'
-                ? 'email'
-                : setting.type === 'url'
-                  ? 'url'
-                  : 'text'
-            }
-            value={setting.value ?? ''}
-            onChange={(event) =>
-              updateSettingValue(setting.key, event.target.value)
-            }
-            className={fieldClass(
-              error,
-              'w-full rounded-md border bg-white px-3 py-3 text-sm text-gray-800 focus:outline-none'
-            )}
-            placeholder={setting.description ?? ''}
-            maxLength={2048}
-          />
+          renderSettingsRows([])
         )}
+      </section>
+    );
+  };
 
-        {setting.description && (
-          <p className="text-[11px] text-gray-500">
-            {setting.description}
-          </p>
-        )}
+  const renderUserForm = () => {
+    if (!isUserFormOpen) return null;
 
-        <FieldError message={error} />
+    return (
+      <div className="border-t border-red-100 bg-red-500/5 px-5 py-5">
+        <div className="rounded-md border border-zinc-200 bg-white p-5">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h3 className="text-lg font-semibold text-zinc-900">
+                {editingAdminId ? 'Editar usuário' : 'Criar usuário'}
+              </h3>
+
+              <p className="mt-1 text-sm text-zinc-600">
+                {editingAdminId
+                  ? 'Atualize os dados do administrador.'
+                  : 'Adicione um novo acesso administrativo.'}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={resetUserForm}
+              className="rounded-md bg-zinc-100 p-2 text-zinc-600 transition"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+
+          <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-zinc-600">
+                Nome
+              </label>
+
+              <input
+                type="text"
+                value={userForm.name}
+                onChange={(event) => {
+                  setUserForm((current) => ({
+                    ...current,
+                    name: event.target.value,
+                  }));
+                  clearUserError('name');
+                }}
+                className={fieldClass(
+                  userErrors.name,
+                  'w-full rounded-md border bg-white px-3 py-2 text-sm text-zinc-800 outline-none'
+                )}
+              />
+
+              <FieldError message={userErrors.name} />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-zinc-600">
+                E-mail
+              </label>
+
+              <input
+                type="email"
+                value={userForm.email}
+                onChange={(event) => {
+                  setUserForm((current) => ({
+                    ...current,
+                    email: event.target.value,
+                  }));
+                  clearUserError('email');
+                }}
+                className={fieldClass(
+                  userErrors.email,
+                  'w-full rounded-md border bg-white px-3 py-2 text-zinc-800 outline-none'
+                )}
+              />
+
+              <FieldError message={userErrors.email} />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-zinc-600">
+                Nível
+              </label>
+
+              <select
+                value={userForm.role}
+                onChange={(event) => {
+                  setUserForm((current) => ({
+                    ...current,
+                    role: event.target.value as AdminRole,
+                  }));
+                  clearUserError('role');
+                }}
+                className={fieldClass(
+                  userErrors.role,
+                  'w-full rounded-md border bg-white px-3 py-2 text-zinc-800 outline-none'
+                )}
+              >
+                <option value="admin">Admin</option>
+                <option value="master">Master</option>
+              </select>
+
+              <FieldError message={userErrors.role} />
+            </div>
+
+            <div className="hidden md:block" />
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-zinc-600">
+                {editingAdminId ? 'Nova senha' : 'Senha'}
+              </label>
+
+              <input
+                type="password"
+                value={userForm.password}
+                onChange={(event) => {
+                  setUserForm((current) => ({
+                    ...current,
+                    password: event.target.value,
+                  }));
+                  clearUserError('password');
+                }}
+                className={fieldClass(
+                  userErrors.password,
+                  'w-full rounded-md border bg-white px-3 py-2 text-zinc-800 outline-none'
+                )}
+                placeholder={
+                  editingAdminId
+                    ? 'Deixe em branco para manter'
+                    : 'Senha de acesso'
+                }
+              />
+
+              <FieldError message={userErrors.password} />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-zinc-600">
+                Confirmar senha
+              </label>
+
+              <input
+                type="password"
+                value={userForm.password_confirmation}
+                onChange={(event) => {
+                  setUserForm((current) => ({
+                    ...current,
+                    password_confirmation: event.target.value,
+                  }));
+                  clearUserError('password_confirmation');
+                }}
+                className={fieldClass(
+                  userErrors.password_confirmation,
+                  'w-full rounded-md border bg-white px-3 py-2 text-zinc-800 outline-none'
+                )}
+              />
+
+              <FieldError message={userErrors.password_confirmation} />
+            </div>
+          </div>
+
+          <div className="mt-5 flex justify-end gap-3 border-t border-zinc-100 pt-4">
+            <button
+              type="button"
+              onClick={resetUserForm}
+              disabled={isSavingUser}
+              className="rounded-md bg-zinc-100 px-4 py-2 text-sm font-semibold text-zinc-700 transition disabled:opacity-50"
+            >
+              Cancelar
+            </button>
+
+            <button
+              type="button"
+              onClick={handleSaveUser}
+              disabled={isSavingUser}
+              className="inline-flex items-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white transition disabled:opacity-50"
+            >
+              <Save className="h-4 w-4" />
+              {isSavingUser ? 'Salvando...' : 'Salvar usuário'}
+            </button>
+          </div>
+        </div>
       </div>
     );
   };
 
   return (
-    <main className="w-[90%] max-w-6xl mx-auto py-12 md:py-20 selection:bg-primary selection:text-white">
-      <header className="mb-10 space-y-3">
-        <div className="inline-flex items-center gap-2 rounded-md bg-primary/10 px-3 py-1.5 text-xs font-bold text-primary">
-          <Settings className="h-4 w-4" />
-          Configurações
-        </div>
+    <div className="p-6 md:p-8">
+      <div className="mx-auto flex max-w-7xl flex-col gap-8">
+        <section className="relative overflow-hidden py-4">
+          <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+            <div className="max-w-3xl">
+              <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 md:text-4xl">
+                Configurações do Sistema
+              </h1>
 
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight">
-          Configurações do Sistema
-        </h1>
+              <p className="mt-3 text-base leading-relaxed text-zinc-600">
+                Gerencie informações públicas, canais de contato, redes sociais,
+                usuários administrativos e recursos do sistema.
+              </p>
+            </div>
 
-        <p className="max-w-2xl text-sm md:text-base text-gray-600 leading-relaxed">
-          Gerencie contatos públicos, redes sociais, usuários administrativos e cache do sistema.
-        </p>
-      </header>
-
-      <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-8">
-        <aside className="rounded-md border border-gray-200 bg-white p-3 h-fit">
-          <button
-            type="button"
-            onClick={() => setActiveTab('general')}
-            className={`w-full rounded-md px-4 py-3 text-left text-sm font-semibold transition-all flex items-center gap-3 ${
-              activeTab === 'general'
-                ? 'bg-primary text-white'
-                : 'text-gray-700 hover:bg-gray-50'
-            }`}
-          >
-            <Brush className="h-4 w-4" />
-            Geral
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('contact')}
-            className={`mt-1 w-full rounded-md px-4 py-3 text-left text-sm font-semibold transition-all flex items-center gap-3 ${
-              activeTab === 'contact'
-                ? 'bg-primary text-white'
-                : 'text-gray-700 hover:bg-gray-50'
-            }`}
-          >
-            <Phone className="h-4 w-4" />
-            Contato e redes
-          </button>
-
-          {isMaster && (
             <button
               type="button"
-              onClick={() => setActiveTab('users')}
-              className={`mt-1 w-full rounded-md px-4 py-3 text-left text-sm font-semibold transition-all flex items-center gap-3 ${
-                activeTab === 'users'
-                  ? 'bg-primary text-white'
-                  : 'text-gray-700 hover:bg-gray-50'
-              }`}
+              onClick={handleSaveSettings}
+              disabled={isSavingSettings || settings.length === 0}
+              className="inline-flex w-fit items-center justify-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <Users className="h-4 w-4" />
-              Usuários
+              <Save className="h-4 w-4" />
+              {isSavingSettings ? 'Salvando...' : 'Salvar alterações'}
             </button>
-          )}
+          </div>
+        </section>
 
-          {isMaster && (
-            <button
-              type="button"
-              onClick={() => setActiveTab('system')}
-              className={`mt-1 w-full rounded-md px-4 py-3 text-left text-sm font-semibold transition-all flex items-center gap-3 ${
-                activeTab === 'system'
-                  ? 'bg-primary text-white'
-                  : 'text-gray-700 hover:bg-gray-50'
-              }`}
-            >
-              <ShieldCheck className="h-4 w-4" />
-              Sistema
-            </button>
-          )}
-        </aside>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[250px_1fr]">
+          <aside className="h-fit rounded-md border border-zinc-200 bg-white p-2 shadow-sm lg:sticky lg:top-6">
+            <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
+              Navegação
+            </p>
 
-        <section className="min-w-0">
-          {activeTab === 'general' && (
-            <div className="rounded-md border border-gray-200 bg-white p-6 md:p-8">
-              <div className="mb-6 flex items-start gap-4">
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                  <Brush className="h-7 w-7" />
-                </div>
+            <nav className="space-y-1">
+              {visibleSections.map((section) => {
+                const isSensitive = section.id === 'area-sensivel';
 
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">
-                    Geral
-                  </h2>
-                  <p className="mt-1 text-sm text-gray-600">
-                    Controle identidade visual e opções públicas principais.
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 gap-5">
-                {[...brandingSettings, ...donationSettings].map(
-                  renderSettingField
-                )}
-              </div>
-
-              <div className="mt-6 flex justify-end border-t border-gray-100 pt-4">
-                <button
-                  type="button"
-                  onClick={handleSaveSettings}
-                  disabled={isSavingSettings}
-                  className="rounded-md bg-green-600 px-5 py-2.5 text-sm font-bold text-white transition-all hover:bg-green-700 disabled:opacity-60"
-                >
-                  <span className="inline-flex items-center gap-2">
-                    <Save className="h-4 w-4" />
-                    {isSavingSettings
-                      ? 'Salvando...'
-                      : 'Salvar configurações'}
-                  </span>
-                </button>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'contact' && (
-            <div className="rounded-md border border-gray-200 bg-white p-6 md:p-8">
-              <div className="mb-6 flex items-start gap-4">
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                  <MapPin className="h-7 w-7" />
-                </div>
-
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">
-                    Contato e redes
-                  </h2>
-                  <p className="mt-1 text-sm text-gray-600">
-                    Edite informações públicas de contato, localização e redes sociais.
-                  </p>
-                </div>
-              </div>
-
-              <div className="space-y-8">
-                <div>
-                  <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-gray-500">
-                    {settingGroupTitle('contact')}
-                  </h3>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    {contactSettings.map(renderSettingField)}
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-gray-500">
-                    {settingGroupTitle('social')}
-                  </h3>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    {socialSettings.map(renderSettingField)}
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-6 flex justify-end border-t border-gray-100 pt-4">
-                <button
-                  type="button"
-                  onClick={handleSaveSettings}
-                  disabled={isSavingSettings}
-                  className="rounded-md bg-green-600 px-5 py-2.5 text-sm font-bold text-white transition-all hover:bg-green-700 disabled:opacity-60"
-                >
-                  <span className="inline-flex items-center gap-2">
-                    <Save className="h-4 w-4" />
-                    {isSavingSettings
-                      ? 'Salvando...'
-                      : 'Salvar configurações'}
-                  </span>
-                </button>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'users' && isMaster && (
-            <div className="space-y-6">
-              <div className="rounded-md border border-gray-200 bg-white p-6 md:p-8">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div>
-                    <h2 className="text-2xl font-bold text-gray-900">
-                      Gestão de usuários
-                    </h2>
-                    <p className="mt-1 text-sm text-gray-600">
-                      Crie, edite e remova usuários administrativos.
-                    </p>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={startCreateUser}
-                    className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-primary-light"
+                return (
+                  <a
+                    key={section.id}
+                    href={`#${section.id}`}
+                    className={`block rounded-md border px-3 py-2.5 text-sm font-medium transition ${
+                      isSensitive
+                        ? 'border-red-200 bg-red-50/80 text-red-700 hover:bg-red-100'
+                        : 'border-transparent text-zinc-700 hover:bg-zinc-50'
+                    }`}
                   >
-                    <Plus className="h-4 w-4" />
-                    Novo usuário
-                  </button>
-                </div>
+                    <span className="block">{section.label}</span>
 
-                <div className="mt-6 divide-y divide-gray-100">
-                  {sortedAdmins.length > 0 ? (
-                    sortedAdmins.map((admin) => (
-                      <div
-                        key={admin.id}
-                        className="flex flex-col md:flex-row md:items-center justify-between gap-4 py-4"
-                      >
-                        <div className="min-w-0">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <p className="font-semibold text-gray-900">
-                              {admin.name}
-                            </p>
+                    <span
+                      className={`mt-0.5 block text-[11px] font-normal leading-relaxed ${
+                        isSensitive ? 'text-red-700/75' : 'text-zinc-500'
+                      }`}
+                    >
+                      {section.description}
+                    </span>
+                  </a>
+                );
+              })}
+            </nav>
+          </aside>
 
-                            <span
-                              className={`rounded-md px-2 py-0.5 text-[11px] font-bold uppercase ${
-                                admin.role === 'master'
-                                  ? 'bg-primary/10 text-primary'
-                                  : 'bg-gray-100 text-gray-600'
-                              }`}
-                            >
-                              {admin.role}
-                            </span>
-                          </div>
+          <div className="space-y-6">
+            {renderSettingsCard(
+              'geral',
+              Brush,
+              'Geral',
+              'Controle a identidade principal exibida no site.'
+            )}
 
-                          <p className="mt-1 flex items-center gap-1.5 text-sm text-gray-600">
-                            <Mail className="h-3.5 w-3.5" />
-                            {admin.email}
-                          </p>
-                        </div>
+            {renderSettingsCard(
+              'contato',
+              MapPin,
+              'Contato',
+              'Atualize WhatsApp, e-mail, endereço, localização e atendimento.'
+            )}
 
-                        <div className="flex items-center gap-2">
-                          <button
-                            type="button"
-                            onClick={() => startEditUser(admin)}
-                            className="rounded-md bg-gray-100 px-3 py-2 text-xs font-bold text-gray-700 transition-all hover:bg-primary/10 hover:text-primary"
-                          >
-                            Editar
-                          </button>
+            {renderSettingsCard(
+              'redes',
+              Globe2,
+              'Redes sociais',
+              'Gerencie os links oficiais exibidos no site.'
+            )}
 
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteUser(admin)}
-                            className="rounded-md bg-red-50 px-3 py-2 text-xs font-bold text-red-600 transition-all hover:bg-red-100"
-                          >
-                            <span className="inline-flex items-center gap-1.5">
-                              <Trash2 className="h-3.5 w-3.5" />
-                              Remover
-                            </span>
-                          </button>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="py-6 text-sm italic text-gray-500">
-                      Nenhum usuário cadastrado.
-                    </p>
-                  )}
-                </div>
-              </div>
+            {renderSettingsCard(
+              'doacoes',
+              Building2,
+              'Doações',
+              'Configure a mensagem pública exibida no fluxo de doações.',
+              donationMessageSettings
+            )}
 
-              {(isCreatingUser || editingAdminId !== null) && (
-                <div className="rounded-md border border-gray-200 bg-white p-6 md:p-8">
-                  <div className="flex items-center justify-between gap-4">
+            {isMaster && (
+              <section
+                id="area-sensivel"
+                className="scroll-mt-8 overflow-hidden rounded-md border border-red-200 bg-red-50/80 shadow-sm"
+              >
+                <header className="border-b border-red-200 bg-red-50 px-5 py-4">
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-600/10 text-red-700">
+                      <ShieldCheck className="h-5 w-5" />
+                    </div>
+
                     <div>
-                      <h3 className="text-xl font-bold text-gray-900">
-                        {editingAdminId ? 'Editar usuário' : 'Criar usuário'}
+                      <h2 className="text-xl font-semibold tracking-tight text-red-700">
+                        Área sensível
+                      </h2>
+
+                      <p className="mt-1 max-w-2xl text-sm leading-relaxed text-red-800/80">
+                        Ações críticas que podem afetar doações, acessos
+                        administrativos e comportamento do sistema.
+                      </p>
+                    </div>
+                  </div>
+                </header>
+
+                <div className="divide-y divide-red-100">
+                  {donationEnabledSetting && (
+                    <div className="grid grid-cols-1 gap-4 px-5 py-5 lg:grid-cols-[235px_1fr]">
+                      <div>
+                        <label className="text-[13px] font-semibold text-zinc-950">
+                          {donationEnabledSetting.label}
+                        </label>
+
+                        <p className="mt-1 text-xs leading-relaxed text-zinc-700">
+                          Use apenas para pausar doações em manutenção,
+                          emergência ou erro operacional.
+                        </p>
+
+                        <p className="mt-2 text-[11px] font-mono text-zinc-500">
+                          {donationEnabledSetting.key}
+                        </p>
+                      </div>
+
+                      <div>{renderSettingInput(donationEnabledSetting)}</div>
+                    </div>
+                  )}
+
+                  <div className="px-5 py-5">
+                    <div className="mb-4 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                      <div>
+                        <h3 className="text-[13px] font-semibold text-zinc-950">
+                          Usuários administrativos
+                        </h3>
+
+                        <p className="mt-1 text-xs leading-relaxed text-zinc-700">
+                          Gerencie quem pode acessar o painel e alterar
+                          informações do site.
+                        </p>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={openCreateUserForm}
+                        className="inline-flex w-fit items-center justify-center gap-2 rounded-md border border-primary bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-white hover:text-primary"
+                      >
+                        <Plus className="h-4 w-4" />
+                        Novo usuário
+                      </button>
+                    </div>
+
+                    <div className="overflow-hidden rounded-md border border-red-100 bg-white/90">
+                      <div className="divide-y divide-zinc-100">
+                        {sortedAdmins.length > 0 ? (
+                          sortedAdmins.map((admin) => (
+                            <div
+                              key={admin.id}
+                              className="grid grid-cols-1 gap-4 px-5 py-4 md:grid-cols-[1fr_auto]"
+                            >
+                              <div className="flex min-w-0 items-start gap-4">
+                                <UserBadge
+                                  name={admin.name}
+                                  subtitle={admin.email}
+                                  size="md"
+                                />
+
+                                <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                                  <span
+                                    className={`rounded-md px-2 py-0.5 text-[11px] font-semibold uppercase ${roleBadgeClass(
+                                      admin.role
+                                    )}`}
+                                  >
+                                    {admin.role}
+                                  </span>
+
+                                  {currentAdmin?.id === admin.id && (
+                                    <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold uppercase text-emerald-700">
+                                      Você
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => openEditUserForm(admin)}
+                                  className="
+                                    rounded-xl p-2.5 transition-all active:scale-95
+                                    text-gray-600 bg-gray-100
+                                    hover:bg-orange-500/20 hover:text-orange-600
+                                  "
+                                  title="Editar usuário"
+                                >
+                                  <Pencil className="h-5 w-5" />
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteUser(admin)}
+                                  className="
+                                    rounded-xl p-2.5 transition-all active:scale-95
+                                    text-red-600 bg-red-500/10
+                                    hover:bg-red-500/20
+                                  "
+                                  title="Remover usuário"
+                                >
+                                  <Trash2 className="h-5 w-5" />
+                                </button>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="px-5 py-8 text-center">
+                            <p className="text-sm font-medium text-zinc-800">
+                              Nenhum usuário cadastrado.
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {renderUserForm()}
+
+                  <div className="grid grid-cols-1 gap-4 px-5 py-5 md:grid-cols-[1fr_auto]">
+                    <div>
+                      <h3 className="text-[13px] font-semibold text-zinc-950">
+                        Cache de configurações
                       </h3>
 
-                      <p className="mt-1 text-sm text-gray-600">
-                        {editingAdminId
-                          ? 'Atualize nome, e-mail, nível ou defina uma nova senha.'
-                          : 'Cadastre um novo administrador para acessar o painel.'}
+                      <p className="mt-1 text-xs leading-relaxed text-zinc-700">
+                        Limpa as configurações armazenadas em cache para forçar
+                        atualização imediata.
                       </p>
                     </div>
 
                     <button
                       type="button"
-                      onClick={resetUserForm}
-                      className="rounded-md bg-gray-100 p-2 text-gray-600 transition-all hover:bg-gray-200"
-                      aria-label="Fechar formulário de usuário"
+                      onClick={handleClearCache}
+                      disabled={isClearingCache}
+                      className="inline-flex w-fit items-center justify-center gap-2 rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white transition disabled:opacity-50"
                     >
-                      <X className="h-4 w-4" />
+                      <RefreshCcw className="h-4 w-4" />
+                      {isClearingCache ? 'Limpando...' : 'Limpar cache'}
                     </button>
                   </div>
 
-                  <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-gray-500">
-                        Nome
-                      </label>
+                  <div className="grid grid-cols-1 gap-4 px-5 py-5 md:grid-cols-[1fr_auto]">
+                    <div>
+                      <h3 className="text-[13px] font-semibold text-zinc-950">
+                        Sessão atual
+                      </h3>
 
-                      <input
-                        type="text"
-                        value={userForm.name}
-                        onChange={(event) => {
-                          setUserForm((current) => ({
-                            ...current,
-                            name: event.target.value,
-                          }));
-                          clearUserError('name');
-                        }}
-                        className={fieldClass(
-                          userErrors.name,
-                          'w-full rounded-md border bg-white px-3 py-3 text-sm text-gray-800 focus:outline-none'
-                        )}
-                        placeholder="Nome do administrador"
-                      />
-
-                      <FieldError message={userErrors.name} />
+                      <p className="mt-1 text-xs leading-relaxed text-zinc-700">
+                        Administrador autenticado neste painel.
+                      </p>
                     </div>
 
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-gray-500">
-                        E-mail
-                      </label>
-
-                      <input
-                        type="email"
-                        value={userForm.email}
-                        onChange={(event) => {
-                          setUserForm((current) => ({
-                            ...current,
-                            email: event.target.value,
-                          }));
-                          clearUserError('email');
-                        }}
-                        className={fieldClass(
-                          userErrors.email,
-                          'w-full rounded-md border bg-white px-3 py-3 text-sm text-gray-800 focus:outline-none'
-                        )}
-                        placeholder="email@exemplo.com"
-                      />
-
-                      <FieldError message={userErrors.email} />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-gray-500">
-                        Nível
-                      </label>
-
-                      <select
-                        value={userForm.role}
-                        onChange={(event) => {
-                          setUserForm((current) => ({
-                            ...current,
-                            role: event.target.value as AdminRole,
-                          }));
-                          clearUserError('role');
-                        }}
-                        className={fieldClass(
-                          userErrors.role,
-                          'w-full rounded-md border bg-white px-3 py-3 text-sm text-gray-800 focus:outline-none'
-                        )}
-                      >
-                        <option value="admin">Admin</option>
-                        <option value="master">Master</option>
-                      </select>
-
-                      <FieldError message={userErrors.role} />
-                    </div>
-
-                    <div className="hidden md:block" />
-
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-gray-500">
-                        {editingAdminId ? 'Nova senha' : 'Senha'}
-                      </label>
-
-                      <input
-                        type="password"
-                        value={userForm.password}
-                        onChange={(event) => {
-                          setUserForm((current) => ({
-                            ...current,
-                            password: event.target.value,
-                          }));
-                          clearUserError('password');
-                        }}
-                        className={fieldClass(
-                          userErrors.password,
-                          'w-full rounded-md border bg-white px-3 py-3 text-sm text-gray-800 focus:outline-none'
-                        )}
-                        placeholder={
-                          editingAdminId
-                            ? 'Deixe em branco para manter'
-                            : 'Senha de acesso'
-                        }
-                      />
-
-                      <FieldError message={userErrors.password} />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-gray-500">
-                        Confirmar senha
-                      </label>
-
-                      <input
-                        type="password"
-                        value={userForm.password_confirmation}
-                        onChange={(event) => {
-                          setUserForm((current) => ({
-                            ...current,
-                            password_confirmation: event.target.value,
-                          }));
-                          clearUserError('password_confirmation');
-                        }}
-                        className={fieldClass(
-                          userErrors.password_confirmation,
-                          'w-full rounded-md border bg-white px-3 py-3 text-sm text-gray-800 focus:outline-none'
-                        )}
-                        placeholder="Repita a senha"
-                      />
-
-                      <FieldError message={userErrors.password_confirmation} />
+                    <div className="inline-flex w-fit items-center gap-2 rounded-md bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
+                      <CheckCircle2 className="h-4 w-4" />
+                      {currentAdmin?.name || 'Admin'}
                     </div>
                   </div>
-
-                  <div className="mt-6 flex justify-end gap-3 border-t border-gray-100 pt-4">
-                    <button
-                      type="button"
-                      onClick={resetUserForm}
-                      disabled={isSavingUser}
-                      className="rounded-md bg-gray-100 px-4 py-2.5 text-sm font-bold text-gray-700 transition-all hover:bg-gray-200 disabled:opacity-60"
-                    >
-                      Cancelar
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={handleSaveUser}
-                      disabled={isSavingUser}
-                      className="rounded-md bg-green-600 px-5 py-2.5 text-sm font-bold text-white transition-all hover:bg-green-700 disabled:opacity-60"
-                    >
-                      <span className="inline-flex items-center gap-2">
-                        <Save className="h-4 w-4" />
-                        {isSavingUser ? 'Salvando...' : 'Salvar usuário'}
-                      </span>
-                    </button>
-                  </div>
                 </div>
-              )}
-            </div>
-          )}
-
-          {activeTab === 'system' && isMaster && (
-            <div className="rounded-md border border-gray-200 bg-white p-6 md:p-8">
-              <div className="mb-6 flex items-start gap-4">
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                  <ShieldCheck className="h-7 w-7" />
-                </div>
-
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">
-                    Sistema
-                  </h2>
-
-                  <p className="mt-1 text-sm text-gray-600">
-                    Ações administrativas relacionadas ao cache e integridade das configurações.
-                  </p>
-                </div>
-              </div>
-
-              <div className="rounded-md border border-gray-100 bg-gray-50 p-5">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div>
-                    <h3 className="font-bold text-gray-900">
-                      Cache de configurações
-                    </h3>
-
-                    <p className="mt-1 text-sm text-gray-600">
-                      Limpa o cache das configurações públicas e administrativas.
-                    </p>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={handleClearCache}
-                    disabled={isClearingCache}
-                    className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-primary-light disabled:opacity-60"
-                  >
-                    <RefreshCcw className="h-4 w-4" />
-                    {isClearingCache ? 'Limpando...' : 'Limpar cache'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-        </section>
+              </section>
+            )}
+          </div>
+        </div>
       </div>
-    </main>
+    </div>
   );
 }

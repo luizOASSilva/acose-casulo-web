@@ -1,3 +1,5 @@
+import { api } from '@/lib/api';
+
 import type {
   AdminUser,
   CreateAdminDTO,
@@ -16,6 +18,13 @@ function getApiUrl(): string {
   return API_URL.replace(/\/$/, '');
 }
 
+function getHeaders(cookieHeader?: string): HeadersInit {
+  return {
+    Accept: 'application/json',
+    ...(cookieHeader ? { Cookie: cookieHeader } : {}),
+  };
+}
+
 function normalizeAdmin(payload: any): AdminUser | null {
   if (!payload) return null;
   if (payload.data) return payload.data;
@@ -26,29 +35,29 @@ function normalizeAdmin(payload: any): AdminUser | null {
 
 function normalizeAdmins(payload: any): AdminUser[] {
   if (Array.isArray(payload)) return payload;
-  if (Array.isArray(payload.data)) return payload.data;
-  if (Array.isArray(payload.admins)) return payload.admins;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.admins)) return payload.admins;
 
   return [];
 }
 
 function normalizeSettings(payload: any): SettingItem[] {
   if (Array.isArray(payload)) return payload;
-  if (Array.isArray(payload.data)) return payload.data;
-  if (Array.isArray(payload.settings)) return payload.settings;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.settings)) return payload.settings;
 
   return [];
 }
 
-export async function getCurrentAdmin(): Promise<AdminUser | null> {
+export async function getCurrentAdmin(
+  cookieHeader?: string
+): Promise<AdminUser | null> {
   try {
     const response = await fetch(`${getApiUrl()}/auth/me`, {
       method: 'GET',
       cache: 'no-store',
       credentials: 'include',
-      headers: {
-        Accept: 'application/json',
-      },
+      headers: getHeaders(cookieHeader),
     });
 
     if (!response.ok) return null;
@@ -62,15 +71,15 @@ export async function getCurrentAdmin(): Promise<AdminUser | null> {
   }
 }
 
-export async function getAdmins(): Promise<AdminUser[]> {
+export async function getAdmins(
+  cookieHeader?: string
+): Promise<AdminUser[]> {
   try {
     const response = await fetch(`${getApiUrl()}/admins`, {
       method: 'GET',
       cache: 'no-store',
       credentials: 'include',
-      headers: {
-        Accept: 'application/json',
-      },
+      headers: getHeaders(cookieHeader),
     });
 
     if (!response.ok) return [];
@@ -84,87 +93,15 @@ export async function getAdmins(): Promise<AdminUser[]> {
   }
 }
 
-export async function createAdmin(data: CreateAdminDTO): Promise<AdminUser | null> {
-  try {
-    const response = await fetch(`${getApiUrl()}/admins`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      console.error(await response.json().catch(() => null));
-      return null;
-    }
-
-    const payload = await response.json();
-
-    return normalizeAdmin(payload);
-  } catch (error) {
-    console.error(error);
-    return null;
-  }
-}
-
-export async function updateAdmin(
-  adminId: number,
-  data: UpdateAdminDTO
-): Promise<AdminUser | null> {
-  try {
-    const response = await fetch(`${getApiUrl()}/admins/${adminId}`, {
-      method: 'PUT',
-      credentials: 'include',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      console.error(await response.json().catch(() => null));
-      return null;
-    }
-
-    const payload = await response.json();
-
-    return normalizeAdmin(payload);
-  } catch (error) {
-    console.error(error);
-    return null;
-  }
-}
-
-export async function deleteAdmin(adminId: number): Promise<boolean> {
-  try {
-    const response = await fetch(`${getApiUrl()}/admins/${adminId}`, {
-      method: 'DELETE',
-      credentials: 'include',
-      headers: {
-        Accept: 'application/json',
-      },
-    });
-
-    return response.ok;
-  } catch (error) {
-    console.error(error);
-    return false;
-  }
-}
-
-export async function getSettings(): Promise<SettingItem[]> {
+export async function getSettings(
+  cookieHeader?: string
+): Promise<SettingItem[]> {
   try {
     const response = await fetch(`${getApiUrl()}/settings`, {
       method: 'GET',
       cache: 'no-store',
       credentials: 'include',
-      headers: {
-        Accept: 'application/json',
-      },
+      headers: getHeaders(cookieHeader),
     });
 
     if (!response.ok) return [];
@@ -178,24 +115,49 @@ export async function getSettings(): Promise<SettingItem[]> {
   }
 }
 
+export async function createAdmin(
+  data: CreateAdminDTO
+): Promise<AdminUser | null> {
+  try {
+    const payload = await api.post<any>('/admins', data);
+
+    return normalizeAdmin(payload);
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+export async function updateAdmin(
+  adminId: number,
+  data: UpdateAdminDTO
+): Promise<AdminUser | null> {
+  try {
+    const payload = await api.put<any>(`/admins/${adminId}`, data);
+
+    return normalizeAdmin(payload);
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+export async function deleteAdmin(adminId: number): Promise<boolean> {
+  try {
+    await api.delete(`/admins/${adminId}`);
+
+    return true;
+  } catch (error) {
+    console.error(error);
+    return false;
+  }
+}
+
 export async function updateSettings(
   data: UpdateSettingsDTO
 ): Promise<boolean> {
   try {
-    const response = await fetch(`${getApiUrl()}/settings`, {
-      method: 'PUT',
-      credentials: 'include',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      console.error(await response.json().catch(() => null));
-      return false;
-    }
+    await api.put('/settings', data);
 
     return true;
   } catch (error) {
@@ -206,15 +168,9 @@ export async function updateSettings(
 
 export async function clearSettingsCache(): Promise<boolean> {
   try {
-    const response = await fetch(`${getApiUrl()}/settings/clear-cache`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        Accept: 'application/json',
-      },
-    });
+    await api.post('/settings/clear-cache');
 
-    return response.ok;
+    return true;
   } catch (error) {
     console.error(error);
     return false;

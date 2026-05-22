@@ -121,8 +121,8 @@ export default function ActivityDetail({
         onClick={onClose}
       />
 
-      <div className="relative z-10 flex w-full flex-col bg-white shadow-2xl rounded-t-[2.5rem] sm:rounded-md sm:max-w-2xl max-h-[92svh] sm:max-h-[85vh]">
-        <div className="relative h-48 w-full shrink-0 sm:h-64 bg-gray-100 rounded-t-[2.5rem] sm:rounded-t-md overflow-hidden">
+      <div className="relative z-10 flex max-h-[92svh] w-full flex-col overflow-hidden rounded-t-[2.5rem] bg-white shadow-2xl sm:max-h-[85vh] sm:max-w-2xl sm:rounded-md">
+        <div className="relative h-48 w-full shrink-0 overflow-hidden rounded-t-[2.5rem] bg-gray-100 sm:h-64 sm:rounded-t-md">
           {imageUrl ? (
             <Image
               src={imageUrl}
@@ -145,18 +145,18 @@ export default function ActivityDetail({
             type="button"
             onClick={onClose}
             aria-label="Fechar modal"
-            className="absolute right-4 top-4 z-20 rounded-full bg-white/90 p-2 text-gray-800 shadow-md transition-transform hover:bg-white active:scale-95 cursor-pointer"
+            className="absolute right-4 top-4 z-20 cursor-pointer rounded-full bg-white/90 p-2 text-gray-800 shadow-md transition-transform hover:bg-white active:scale-95"
           >
             <X size={20} aria-hidden="true" />
           </button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 sm:p-10 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-200 hover:[&::-webkit-scrollbar-thumb]:bg-gray-300">
-          <div className="mx-auto max-w-4xl">
+          <div className="mx-auto w-full max-w-4xl overflow-hidden">
             <header className="mb-6">
               <h2
                 id="modal-title"
-                className="mb-4 text-2xl font-bold text-gray-900 sm:text-3xl"
+                className="mb-4 max-w-full break-words text-2xl font-bold text-gray-900 [overflow-wrap:anywhere] sm:text-3xl"
               >
                 {activity.title || 'Sem título'}
               </h2>
@@ -178,12 +178,12 @@ export default function ActivityDetail({
                         }
                         className="flex flex-wrap gap-3"
                       >
-                        <div className="flex items-center gap-2 rounded-md bg-orange-50 px-3 py-1 text-sm font-semibold text-orange-700 border border-orange-100">
+                        <div className="flex items-center gap-2 rounded-md border border-orange-100 bg-orange-50 px-3 py-1 text-sm font-semibold text-orange-700">
                           <Calendar size={14} aria-hidden="true" />
                           <span>{formatted.day}</span>
                         </div>
 
-                        <div className="flex items-center gap-2 rounded-md bg-orange-50 px-3 py-1 text-sm font-semibold text-orange-700 border border-orange-100">
+                        <div className="flex items-center gap-2 rounded-md border border-orange-100 bg-orange-50 px-3 py-1 text-sm font-semibold text-orange-700">
                           <Clock size={14} aria-hidden="true" />
                           <span>{formatted.time}</span>
                         </div>
@@ -197,7 +197,7 @@ export default function ActivityDetail({
                   role="group"
                   aria-label="Informações da atividade"
                 >
-                  <div className="flex items-center gap-2 rounded-md bg-gray-50 px-3 py-1 text-sm font-semibold text-gray-500 border border-gray-100">
+                  <div className="flex items-center gap-2 rounded-md border border-gray-100 bg-gray-50 px-3 py-1 text-sm font-semibold text-gray-500">
                     <Calendar size={14} aria-hidden="true" />
                     <span>Horário não informado</span>
                   </div>
@@ -207,7 +207,7 @@ export default function ActivityDetail({
 
             <article
               id="modal-description"
-              className="border-b border-gray-100 pb-8 text-gray-600 leading-relaxed"
+              className="max-w-full overflow-hidden border-b border-gray-100 pb-8 leading-relaxed text-gray-600"
             >
               <h2 className="sr-only">Descrição da atividade</h2>
 
@@ -215,7 +215,10 @@ export default function ActivityDetail({
                 .split('\n')
                 .filter((paragraph) => paragraph.trim())
                 .map((paragraph, index) => (
-                  <p key={index} className="mb-4">
+                  <p
+                    key={index}
+                    className="mb-4 max-w-full break-words [overflow-wrap:anywhere]"
+                  >
                     {paragraph}
                   </p>
                 ))}
@@ -234,7 +237,7 @@ export default function ActivityDetail({
                 aria-label={likeLabel}
                 aria-pressed={isLiked}
                 className={`
-                  flex w-full items-center justify-center gap-3 rounded-md border-2 px-8 py-3.5 font-bold transition-all active:scale-95 sm:w-auto cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed
+                  flex w-full cursor-pointer items-center justify-center gap-3 rounded-md border-2 px-8 py-3.5 font-bold transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto
                   ${
                     isLiked
                       ? 'border-orange-500 bg-orange-500 text-white shadow-lg'

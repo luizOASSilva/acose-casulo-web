@@ -5,9 +5,12 @@ import Image from 'next/image';
 import { useState, useRef, useEffect } from 'react';
 import { Heart, X, Menu, ChevronDown } from 'lucide-react';
 import { usePathname } from 'next/navigation';
+import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
+
 import { cn } from '@/lib/cn';
 import { useModalEffects } from '@/hooks/useModalEffects';
-import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
+import { usePublicSettings } from '@/context/PublicSettingsContext';
+import { isDonationEnabled } from '@/services/public-settings';
 
 interface Article {
   id: string | number;
@@ -28,6 +31,8 @@ export default function NavbarClient({
 }: {
   recentArticles: Article[];
 }) {
+  const { settings } = usePublicSettings();
+
   const [open, setOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [navbarHeight, setNavbarHeight] = useState(80);
@@ -37,12 +42,17 @@ export default function NavbarClient({
   const headerRef = useRef<HTMLElement>(null);
   const { scrollY } = useScroll();
 
+  const logoUrl = settings.site_logo_url || '/logo.svg';
+  const donationIsEnabled = isDonationEnabled(settings);
+
   useMotionValueEvent(scrollY, 'change', (latest) => {
     const previous = scrollY.getPrevious() ?? 0;
+
     if (open) {
       setHidden(false);
       return;
     }
+
     if (latest > previous && latest > 150) {
       setHidden(true);
     } else {
@@ -52,10 +62,13 @@ export default function NavbarClient({
 
   useEffect(() => {
     if (!headerRef.current) return;
+
     const observer = new ResizeObserver(() => {
       setNavbarHeight(headerRef.current?.offsetHeight ?? 80);
     });
+
     observer.observe(headerRef.current);
+
     return () => observer.disconnect();
   }, []);
 
@@ -65,6 +78,7 @@ export default function NavbarClient({
     } else {
       document.documentElement.style.overflow = '';
     }
+
     return () => {
       document.documentElement.style.overflow = '';
     };
@@ -100,9 +114,9 @@ export default function NavbarClient({
         }}
         animate={hidden ? 'hidden' : 'visible'}
         transition={{ duration: 0.3, ease: 'easeInOut' }}
-        className="fixed top-0 left-0 w-full border-b border-gray-200 bg-white z-50"
+        className="fixed left-0 top-0 z-50 w-full border-b border-gray-200 bg-white"
       >
-        <div className="max-w-7xl mx-auto flex items-center justify-between px-4 lg:px-6 h-20">
+        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 lg:px-6">
           <Link
             href="/"
             className="flex shrink-0"
@@ -110,17 +124,19 @@ export default function NavbarClient({
             aria-label="Ir para a página inicial da Acose Casulo"
           >
             <Image
-              src="/logo.svg"
+              src={logoUrl}
               alt="Acose Casulo"
               width={100}
               height={40}
               priority
+              className="h-auto w-auto max-w-[100px]"
             />
           </Link>
 
           <button
-            className="lg:hidden p-2 text-gray-700 cursor-pointer"
-            onClick={() => setOpen(!open)}
+            type="button"
+            className="cursor-pointer p-2 text-gray-700 lg:hidden"
+            onClick={() => setOpen((current) => !current)}
             aria-expanded={open}
             aria-controls="main-nav"
             aria-label={open ? 'Fechar menu' : 'Abrir menu'}
@@ -139,13 +155,13 @@ export default function NavbarClient({
               maxHeight: open ? `calc(100dvh - ${navbarHeight}px)` : undefined,
             }}
             className={cn(
-              'absolute top-full left-0 w-full bg-white border-b border-gray-200 flex-col gap-0 transition-all duration-300',
+              'absolute left-0 top-full w-full flex-col gap-0 border-b border-gray-200 bg-white transition-all duration-300',
               'overflow-y-auto overflow-x-hidden',
-              'lg:static lg:flex lg:flex-row lg:items-center lg:w-auto lg:border-0 lg:p-0 lg:ml-auto lg:max-h-none lg:overflow-visible lg:gap-0',
-              open ? 'flex opacity-100 visible' : 'hidden lg:flex'
+              'lg:static lg:ml-auto lg:flex lg:max-h-none lg:w-auto lg:flex-row lg:items-center lg:gap-0 lg:overflow-visible lg:border-0 lg:p-0',
+              open ? 'flex visible opacity-100' : 'hidden lg:flex'
             )}
           >
-            <ul className="flex flex-col lg:flex-row lg:gap-8 lg:items-center lg:p-0 w-full lg:w-auto">
+            <ul className="flex w-full flex-col lg:w-auto lg:flex-row lg:items-center lg:gap-8 lg:p-0">
               {links.map(({ href, label }) => (
                 <li key={href} className="w-full lg:w-auto">
                   <Link
@@ -153,7 +169,7 @@ export default function NavbarClient({
                     onClick={closeMenus}
                     aria-current={pathname === href ? 'page' : undefined}
                     className={cn(
-                      'block w-full px-6 py-4 lg:px-0 lg:py-0 text-sm font-semibold transition-colors hover:text-primary',
+                      'block w-full px-6 py-4 text-sm font-semibold transition-colors hover:text-primary lg:px-0 lg:py-0',
                       pathname === href ? 'text-primary' : 'text-gray-600'
                     )}
                   >
@@ -168,6 +184,7 @@ export default function NavbarClient({
                 onMouseLeave={() => isDesktop() && setDropdownOpen(false)}
               >
                 <button
+                  type="button"
                   onClick={() => !isDesktop() && setDropdownOpen(!dropdownOpen)}
                   aria-expanded={dropdownOpen}
                   aria-controls="artigos-dropdown"
@@ -177,14 +194,14 @@ export default function NavbarClient({
                       : 'Abrir submenu de artigos'
                   }
                   className={cn(
-                    'flex items-center justify-between gap-1 w-full lg:w-auto px-6 lg:px-0 py-4 lg:py-0 lg:cursor-default',
-                    'text-sm font-semibold transition-colors hover:text-primary',
+                    'flex w-full items-center justify-between gap-1 px-6 py-4 text-sm font-semibold transition-colors hover:text-primary lg:w-auto lg:cursor-default lg:px-0 lg:py-0',
                     pathname.includes('/artigos')
                       ? 'text-primary'
                       : 'text-gray-600'
                   )}
                 >
                   Artigos
+
                   <ChevronDown
                     size={14}
                     aria-hidden="true"
@@ -198,24 +215,24 @@ export default function NavbarClient({
                 <div
                   id="artigos-dropdown"
                   className={cn(
-                    'lg:absolute lg:top-full lg:left-0 lg:pt-4 w-full lg:w-80 transition-all z-50',
+                    'z-50 w-full transition-all lg:absolute lg:left-0 lg:top-full lg:w-80 lg:pt-4',
                     dropdownOpen
-                      ? 'block opacity-100 visible'
-                      : 'hidden lg:invisible lg:opacity-0'
+                      ? 'visible block opacity-100'
+                      : 'hidden opacity-0 lg:invisible'
                   )}
                 >
                   <ul
-                    className="bg-white lg:border lg:border-gray-100 lg:shadow-xl lg:rounded-xl lg:mt-0"
+                    className="bg-white lg:mt-0 lg:rounded-xl lg:border lg:border-gray-100 lg:shadow-xl"
                     aria-label="Artigos recentes"
                   >
-                    {recentArticles.map((art) => (
-                      <li key={art.id} className="w-full">
+                    {recentArticles.map((article) => (
+                      <li key={article.id} className="w-full">
                         <Link
-                          href={`/artigos/${art.slug}`}
+                          href={`/artigos/${article.slug}`}
                           onClick={closeMenus}
-                          className="block w-full px-6 py-4 lg:px-5 text-[13px] font-medium border-l-4 border-transparent hover:border-primary hover:bg-orange-50/40 text-gray-700 transition-all"
+                          className="block w-full border-l-4 border-transparent px-6 py-4 text-[13px] font-medium text-gray-700 transition-all hover:border-primary hover:bg-orange-50/40 lg:px-5"
                         >
-                          {art.title}
+                          {article.title}
                         </Link>
                       </li>
                     ))}
@@ -224,7 +241,7 @@ export default function NavbarClient({
                       <Link
                         href="/artigos"
                         onClick={closeMenus}
-                        className="block w-full px-6 py-4 lg:px-5 text-sm font-bold text-primary bg-orange-50/60 hover:bg-orange-100 text-center transition-colors border-t border-gray-100"
+                        className="block w-full border-t border-gray-100 bg-orange-50/60 px-6 py-4 text-center text-sm font-bold text-primary transition-colors hover:bg-orange-100 lg:px-5"
                       >
                         Mostrar todos os artigos
                       </Link>
@@ -239,7 +256,7 @@ export default function NavbarClient({
                   onClick={closeMenus}
                   aria-current={pathname === '/contato' ? 'page' : undefined}
                   className={cn(
-                    'block w-full px-6 py-4 lg:px-0 lg:py-0 text-sm font-semibold transition-colors hover:text-primary',
+                    'block w-full px-6 py-4 text-sm font-semibold transition-colors hover:text-primary lg:px-0 lg:py-0',
                     pathname === '/contato' ? 'text-primary' : 'text-gray-600'
                   )}
                 >
@@ -248,19 +265,21 @@ export default function NavbarClient({
               </li>
             </ul>
 
-            <div className="px-6 py-5 lg:px-0 lg:py-0 lg:ml-8">
-              <Link
-                href="/doe-agora"
-                onClick={closeMenus}
-                className={cn(
-                  'inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-md border-2 border-primary text-primary text-sm font-bold transition-all hover:bg-primary hover:text-white active:scale-95 w-full',
-                  pathname === '/doe-agora' && 'bg-primary text-white'
-                )}
-              >
-                <Heart size={15} fill="currentColor" aria-hidden="true" />
-                Doe agora
-              </Link>
-            </div>
+            {donationIsEnabled && (
+              <div className="px-6 py-5 lg:ml-8 lg:px-0 lg:py-0">
+                <Link
+                  href="/doe-agora"
+                  onClick={closeMenus}
+                  className={cn(
+                    'inline-flex w-full items-center justify-center gap-2 rounded-md border-2 border-primary px-6 py-2.5 text-sm font-bold text-primary transition-all hover:bg-primary hover:text-white active:scale-95',
+                    pathname === '/doe-agora' && 'bg-primary text-white'
+                  )}
+                >
+                  <Heart size={15} fill="currentColor" aria-hidden="true" />
+                  Doe agora
+                </Link>
+              </div>
+            )}
           </nav>
         </div>
       </motion.header>

@@ -1,7 +1,15 @@
 'use client';
 
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+
 import FormWrapper from '@/components/ui/FormWrapper';
+import {
+  contactSchema,
+  type ContactSchemaData,
+} from '@/schemas/contact.schema';
+import { sendContactMessage } from '@/services/contact';
 
 const fieldClass = `
   bg-white/10 border border-white/20 text-white placeholder:text-white/40
@@ -9,52 +17,68 @@ const fieldClass = `
   transition-all duration-200
   focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent
   hover:border-white/40
+  aria-invalid:border-red-400 aria-invalid:ring-2 aria-invalid:ring-red-400/20
 `;
 
+function FieldError({ message }: { message?: string }) {
+  if (!message) return null;
+
+  return <p className="text-xs font-medium text-red-300">{message}</p>;
+}
+
 export default function ContactForm() {
-  const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setLoading(true);
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<ContactSchemaData>({
+    resolver: zodResolver(contactSchema),
+    mode: 'onBlur',
+    defaultValues: {
+      name: '',
+      email: '',
+      subject: '',
+      message: '',
+    },
+  });
+
+  const onSubmit = async (data: ContactSchemaData) => {
     setStatus('idle');
 
-    try {
-      const data = Object.fromEntries(new FormData(e.currentTarget));
+    const success = await sendContactMessage(data);
 
-      await fetch('https://sua-api.com', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-
-      setStatus('success');
-      (e.target as HTMLFormElement).reset();
-    } catch {
+    if (!success) {
       setStatus('error');
-    } finally {
-      setLoading(false);
+      return;
     }
-  }
+
+    setStatus('success');
+    reset();
+  };
 
   return (
     <>
-      <FormWrapper onSubmit={handleSubmit} loading={loading}>
+      <FormWrapper onSubmit={handleSubmit(onSubmit)} loading={isSubmitting}>
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="nome" className="text-sm font-medium text-white/80">
+          <label htmlFor="name" className="text-sm font-medium text-white/80">
             Nome{' '}
             <span aria-hidden="true" className="text-red-400">
               *
             </span>
           </label>
+
+          <FieldError message={errors.name?.message} />
+
           <input
-            id="nome"
-            name="nome"
+            id="name"
             type="text"
             autoComplete="name"
-            required
             placeholder="Seu nome completo"
+            aria-invalid={!!errors.name}
+            {...register('name')}
             className={fieldClass}
           />
         </div>
@@ -66,13 +90,17 @@ export default function ContactForm() {
               *
             </span>
           </label>
+
+          <FieldError message={errors.email?.message} />
+
           <input
             id="email"
-            name="email"
             type="email"
+            inputMode="email"
             autoComplete="email"
-            required
             placeholder="seu@email.com"
+            aria-invalid={!!errors.email}
+            {...register('email')}
             className={fieldClass}
           />
         </div>
@@ -87,12 +115,15 @@ export default function ContactForm() {
               *
             </span>
           </label>
+
+          <FieldError message={errors.subject?.message} />
+
           <input
             id="subject"
-            name="subject"
             type="text"
-            required
             placeholder="Como podemos ajudar?"
+            aria-invalid={!!errors.subject}
+            {...register('subject')}
             className={fieldClass}
           />
         </div>
@@ -107,12 +138,15 @@ export default function ContactForm() {
               *
             </span>
           </label>
+
+          <FieldError message={errors.message?.message} />
+
           <textarea
             id="message"
-            name="message"
             rows={5}
-            required
             placeholder="Descreva sua dúvida ou mensagem..."
+            aria-invalid={!!errors.message}
+            {...register('message')}
             className={`${fieldClass} resize-none`}
           />
         </div>
@@ -122,15 +156,16 @@ export default function ContactForm() {
         role="status"
         aria-live="polite"
         aria-atomic="true"
-        className="text-sm mt-2"
+        className="mt-2 text-sm"
       >
         {status === 'success' && (
-          <p className="text-green-400 font-medium">
+          <p className="font-medium text-green-400">
             ✓ Mensagem enviada com sucesso! Entraremos em contato em breve.
           </p>
         )}
+
         {status === 'error' && (
-          <p className="#c0292c font-medium">
+          <p className="font-medium text-red-300">
             ✗ Erro ao enviar. Tente novamente ou nos contate por e-mail.
           </p>
         )}
