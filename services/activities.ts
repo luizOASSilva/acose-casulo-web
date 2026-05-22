@@ -1,4 +1,8 @@
-import type { Activity, SaveActivityDTO } from '@/types/activity';
+import type {
+  Activity,
+  OccupiedActivitySchedule,
+  SaveActivityDTO,
+} from '@/types/activity';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -126,6 +130,36 @@ export async function getActivityBySlug(slug: string): Promise<Activity | null> 
   } catch (error) {
     console.error(error);
     return null;
+  }
+}
+
+export async function getOccupiedActivitySchedules(
+  cookieHeader?: string
+): Promise<OccupiedActivitySchedule[]> {
+  try {
+    const response = await fetch(`${getApiUrl()}/activities/schedules`, {
+      method: 'GET',
+      cache: 'no-store',
+      credentials: 'include',
+      headers: {
+        Accept: 'application/json',
+        ...(cookieHeader ? { Cookie: cookieHeader } : {}),
+      },
+    });
+
+    if (!response.ok) {
+      return [];
+    }
+
+    const payload = await response.json();
+
+    if (Array.isArray(payload)) return payload;
+    if (Array.isArray(payload?.data)) return payload.data;
+
+    return [];
+  } catch (error) {
+    console.error(error);
+    return [];
   }
 }
 

@@ -1,4 +1,6 @@
-import { getDonations } from '@/services/donation';
+import { cookies } from 'next/headers';
+
+import { getAdminDonations } from '@/services/donation';
 import DonationCard from '@/components/admin/DonationCard';
 import DonationCardFilter from '@/components/admin/DonationCardFilter';
 
@@ -14,17 +16,10 @@ export const dynamic = 'force-dynamic';
 
 function statusStyles(status: string) {
   const styles = {
-    approved:
-      'bg-emerald-100 text-emerald-700 border-emerald-200',
-
-    pending:
-      'bg-amber-100 text-amber-700 border-amber-200',
-
-    expired:
-      'bg-zinc-100 text-zinc-600 border-zinc-200',
-
-    cancelled:
-      'bg-red-100 text-red-700 border-red-200',
+    approved: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+    pending: 'bg-amber-100 text-amber-700 border-amber-200',
+    expired: 'bg-zinc-100 text-zinc-600 border-zinc-200',
+    cancelled: 'bg-red-100 text-red-700 border-red-200',
   };
 
   return (
@@ -44,7 +39,7 @@ function statusLabel(status: string) {
   return labels[status] || status;
 }
 
-export default async function AdminDonationsPage({
+export default async function AdminDoacoesPage({
   searchParams,
 }: {
   searchParams: Promise<{ status?: string; page?: string }>;
@@ -53,8 +48,11 @@ export default async function AdminDonationsPage({
   const status = params.status;
   const page = params.page ? Number(params.page) : 1;
 
-  const response = await getDonations(page, status);
-  
+  const cookieStore = await cookies();
+  const cookieHeader = cookieStore.toString();
+
+  const response = await getAdminDonations(page, status, cookieHeader);
+
   const donations = response.data ?? [];
   const stats = response.stats ?? {
     total_raised: 0,
@@ -66,7 +64,6 @@ export default async function AdminDonationsPage({
   return (
     <div className="p-6 md:p-8">
       <div className="mx-auto flex max-w-7xl flex-col gap-8">
-
         <section className="relative overflow-hidden py-4">
           <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-3xl">
@@ -75,8 +72,8 @@ export default async function AdminDonationsPage({
               </h1>
 
               <p className="mt-3 text-base leading-relaxed text-zinc-600">
-                Acompanhe pagamentos, monitore contribuições
-                aprovadas e visualize o desempenho das doações.
+                Acompanhe pagamentos, monitore contribuições aprovadas e
+                visualize o desempenho das doações.
               </p>
             </div>
           </div>
@@ -98,22 +95,19 @@ export default async function AdminDonationsPage({
 
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
             <DonationCard
-              icon={<BadgeDollarSign size={22} className="text-primary"/>}
+              icon={<BadgeDollarSign size={22} className="text-primary" />}
               title="Arrecadado"
-              value={Number(stats.total_raised).toLocaleString(
-                'pt-BR',
-                {
-                  style: 'currency',
-                  currency: 'BRL',
-                }
-              )}
+              value={Number(stats.total_raised).toLocaleString('pt-BR', {
+                style: 'currency',
+                currency: 'BRL',
+              })}
               helper="Valor total arrecadado"
               iconWrapperClassName="bg-primary/20"
             />
 
             <DonationCardFilter filterKey="approved">
               <DonationCard
-                icon={<CheckCircle2 size={22} className="text-green-900"/>}
+                icon={<CheckCircle2 size={22} className="text-green-900" />}
                 title="Aprovadas"
                 value={String(stats.approved_count)}
                 helper="Pagamentos confirmados"
@@ -123,7 +117,7 @@ export default async function AdminDonationsPage({
 
             <DonationCardFilter filterKey="pending">
               <DonationCard
-                icon={<Clock3 size={22} className="text-yellow-900"/>}
+                icon={<Clock3 size={22} className="text-yellow-900" />}
                 title="Pendentes"
                 value={String(stats.pending_count)}
                 helper="Aguardando pagamento"
@@ -133,7 +127,7 @@ export default async function AdminDonationsPage({
 
             <DonationCardFilter filterKey="has_gift">
               <DonationCard
-                icon={<Gift size={22}/>}
+                icon={<Gift size={22} />}
                 title="Brindes"
                 value={String(stats.gifts_count)}
                 helper="Doações com brindes"
@@ -204,13 +198,10 @@ export default async function AdminDonationsPage({
 
                     <td className="px-6 py-5">
                       <span className="font-semibold text-emerald-600">
-                        {Number(donation.amount).toLocaleString(
-                          'pt-BR',
-                          {
-                            style: 'currency',
-                            currency: 'BRL',
-                          }
-                        )}
+                        {Number(donation.amount).toLocaleString('pt-BR', {
+                          style: 'currency',
+                          currency: 'BRL',
+                        })}
                       </span>
                     </td>
 
@@ -235,20 +226,19 @@ export default async function AdminDonationsPage({
                           Sim
                         </span>
                       ) : (
-                        <span className="text-zinc-400">
-                          —
-                        </span>
+                        <span className="text-zinc-400">—</span>
                       )}
                     </td>
 
                     <td className="px-6 py-5 text-sm text-zinc-500">
-                      {new Date(
-                        donation.created_at
-                      ).toLocaleDateString('pt-BR', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric',
-                      })}
+                      {new Date(donation.created_at).toLocaleDateString(
+                        'pt-BR',
+                        {
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric',
+                        }
+                      )}
                     </td>
                   </tr>
                 ))}

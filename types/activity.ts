@@ -16,6 +16,15 @@ export interface ActivitySchedule {
   end_time: string;
 }
 
+export interface OccupiedActivitySchedule {
+  id: number;
+  activity_id: number;
+  activity_title: string | null;
+  weekday: Weekday;
+  start_time: string;
+  end_time: string;
+}
+
 export interface Activity {
   id: number;
   slug?: string;

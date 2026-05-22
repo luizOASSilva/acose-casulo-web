@@ -5,16 +5,24 @@ import Image from 'next/image';
 import { Calendar, Clock, Plus, Trash2 } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 
-import type { Activity, ActivitySchedule, Weekday } from '@/types/activity';
+import type {
+  Activity,
+  ActivitySchedule,
+  OccupiedActivitySchedule,
+  Weekday,
+} from '@/types/activity';
+
 import { createActivity, updateActivity } from '@/services/activities';
 import { formatSchedule, weekdayOptions } from '@/utils/activitySchedule';
 import { activitySchema } from '@/schemas/activity.schema';
+import ActivityScheduleAgenda from '@/components/ui/ActivityScheduleAgenda';
 
 interface ActivityDetailsContainerProps {
   activity?: Activity;
   isAdmin?: boolean;
   startInEditMode?: boolean;
   isNew?: boolean;
+  occupiedSchedules?: OccupiedActivitySchedule[];
 }
 
 type ActivityFormErrors = Partial<{
@@ -76,6 +84,7 @@ export default function ActivityDetailsContainer({
   isAdmin = false,
   startInEditMode = false,
   isNew = false,
+  occupiedSchedules = [],
 }: ActivityDetailsContainerProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -114,6 +123,12 @@ export default function ActivityDetailsContainer({
   const initialSchedules = useMemo(() => {
     return normalizeSchedules(activity);
   }, [activity]);
+
+  const availableOccupiedSchedules = useMemo(() => {
+    return occupiedSchedules.filter(
+      (schedule) => schedule.activity_id !== activity?.id
+    );
+  }, [occupiedSchedules, activity?.id]);
 
   const hasPendingChanges = useMemo(() => {
     return (
@@ -295,7 +310,46 @@ export default function ActivityDetailsContainer({
     router.push(`/admin/atividades/${activity?.id}`);
   };
 
+  const findScheduleConflict = (schedule: ActivitySchedule) => {
+    return availableOccupiedSchedules.find((occupied) => {
+      return (
+        occupied.weekday === schedule.weekday &&
+        schedule.start_time < occupied.end_time &&
+        schedule.end_time > occupied.start_time
+      );
+    });
+  };
+
+  const validateScheduleConflicts = (): ScheduleErrors => {
+    const nextScheduleErrors: ScheduleErrors = {};
+
+    schedules.forEach((schedule, index) => {
+      const conflict = findScheduleConflict(schedule);
+
+      if (conflict) {
+        nextScheduleErrors[index] = {
+          start_time: `Conflita com ${
+            conflict.activity_title || 'outra atividade'
+          } (${conflict.start_time} às ${conflict.end_time}).`,
+        };
+      }
+    });
+
+    return nextScheduleErrors;
+  };
+
   const handleSave = async () => {
+    const conflictErrors = validateScheduleConflicts();
+
+    if (Object.keys(conflictErrors).length > 0) {
+      setScheduleErrors(conflictErrors);
+      setErrors((current) => ({
+        ...current,
+        schedules: 'Existem horários em conflito com a agenda ocupada.',
+      }));
+      return;
+    }
+
     const parsed = activitySchema.safeParse({
       title,
       content,
@@ -495,6 +549,14 @@ export default function ActivityDetailsContainer({
             </div>
           </div>
         </div>
+      )}
+
+      {isEditMode && (
+        <ActivityScheduleAgenda
+          occupiedSchedules={availableOccupiedSchedules}
+          currentActivityId={activity?.id}
+          defaultOpen={isNew}
+        />
       )}
 
       {isEditMode && (
