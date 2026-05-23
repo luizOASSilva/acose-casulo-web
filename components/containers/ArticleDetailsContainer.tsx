@@ -7,6 +7,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import type { Article } from '@/types/article';
 import KeywordBadge from '@/components/ui/KeywordBadge';
 import UserBadge from '@/components/ui/UserBadge';
+import MediaPicker from '@/components/admin/MediaPicker';
 
 import { updateArticle, createArticle } from '@/services/articles';
 import { articleSchema } from '@/schemas/article.schema';
@@ -472,30 +473,20 @@ export default function ArticleDetailsContainer({
               Mídia da Publicação
             </h3>
 
+            <MediaPicker
+              collection="articles"
+              value={imageUrl}
+              onChange={(url) => {
+                setImageUrl(url);
+                clearError('image_url');
+              }}
+              label="Imagem do artigo"
+              helperText="Envie ou escolha uma imagem para a publicação."
+            />
+
+            <FieldError message={errors.image_url} />
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-gray-500">
-                  URL da Imagem
-                </label>
-
-                <input
-                  type="text"
-                  value={imageUrl}
-                  onChange={(event) => {
-                    setImageUrl(event.target.value);
-                    clearError('image_url');
-                  }}
-                  className={fieldClass(
-                    errors.image_url,
-                    'w-full text-xs bg-white border rounded-md px-3 py-2 focus:outline-none text-gray-700 font-mono'
-                  )}
-                  placeholder="https://..."
-                  maxLength={2048}
-                />
-
-                <FieldError message={errors.image_url} />
-              </div>
-
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-gray-500">
                   Texto Alternativo
@@ -525,7 +516,7 @@ export default function ArticleDetailsContainer({
                 </div>
               </div>
 
-              <div className="space-y-1 md:col-span-2">
+              <div className="space-y-1">
                 <label className="text-xs font-semibold text-gray-500">
                   Legenda da Imagem
                 </label>

@@ -263,14 +263,14 @@ export default function DocumentDetailsContainer({
           </h1>
 
           <p className="text-sm text-gray-600 bg-emerald-50 px-3 py-1.5 rounded-md inline-block border border-emerald-100">
-            Pipeline conectado ao banco de dados Laravel. Alterações são refletidas em tempo real.
+            Painel conectado ao banco de dados. Alterações são refletidas em tempo real.
           </p>
         </div>
       </header>
 
       <section className="rounded-md border border-dashed border-gray-300 bg-white p-6 md:p-8">
         <div className="flex flex-col items-center text-center gap-4 mb-8">
-          <div className="w-16 h-16 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center">
+          <div className="w-16 h-16 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center">
             <FileText className="w-8 h-8" aria-hidden="true" />
           </div>
 
