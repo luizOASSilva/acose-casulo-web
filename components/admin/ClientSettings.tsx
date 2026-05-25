@@ -18,6 +18,7 @@ import {
   Pencil,
 } from 'lucide-react';
 
+import MediaPicker from '@/components/admin/MediaPicker';
 import UserBadge from '@/components/ui/UserBadge';
 
 import type {
@@ -36,6 +37,7 @@ import {
   updateSettings,
 } from '@/services/admin/settings';
 
+import { uploadMediaFile } from '@/services/admin/media-library';
 import { settingsSchema } from '@/schemas/settings.schema';
 import { useConfirmDialog } from '@/context/ConfirmDialogContext';
 
@@ -58,11 +60,15 @@ type UserFormErrors = Partial<{
   name: string;
   email: string;
   role: string;
-  password: string;
-  password_confirmation: string;
+  is_active: string;
 }>;
 
-type UserForm = CreateAdminDTO;
+type UserForm = {
+  name: string;
+  email: string;
+  role: AdminRole;
+  is_active: boolean;
+};
 
 const sections: {
   id: SectionId;
@@ -103,6 +109,17 @@ const sections: {
     masterOnly: true,
   },
 ];
+
+const IMAGE_SETTING_KEYS = [
+  'site_logo_url',
+  'site_footer_logo_url',
+  'site_og_image_url',
+  'og_image_url',
+];
+
+function isImageSetting(key: string) {
+  return IMAGE_SETTING_KEYS.includes(key);
+}
 
 function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -159,6 +176,18 @@ function roleBadgeClass(role?: string) {
   return 'bg-primary/10 text-primary';
 }
 
+function statusBadgeClass(isActive?: boolean) {
+  return isActive
+    ? 'bg-emerald-50 text-emerald-700'
+    : 'bg-zinc-100 text-zinc-500';
+}
+
+function getAdminIsActive(admin: AdminUser): boolean {
+  return (admin as any).is_active === undefined
+    ? true
+    : Boolean((admin as any).is_active);
+}
+
 export default function ClientSettings({
   currentAdmin,
   initialAdmins = [],
@@ -179,6 +208,9 @@ export default function ClientSettings({
   );
 
   const [settingErrors, setSettingErrors] = useState<SettingErrors>({});
+  const [pendingSettingFiles, setPendingSettingFiles] = useState<
+    Record<string, File | null>
+  >({});
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [isClearingCache, setIsClearingCache] = useState(false);
 
@@ -191,8 +223,7 @@ export default function ClientSettings({
     name: '',
     email: '',
     role: 'admin',
-    password: '',
-    password_confirmation: '',
+    is_active: true,
   });
 
   const visibleSections = useMemo(() => {
@@ -266,9 +297,22 @@ export default function ClientSettings({
     });
   };
 
-  const validateSettings = (): SettingErrors => {
+  const clearSettingError = (key: string) => {
+    setSettingErrors((current) => {
+      if (!current[key]) return current;
+
+      const next = { ...current };
+      delete next[key];
+
+      return next;
+    });
+  };
+
+  const validateSettings = (
+    settingsToValidate: SettingItem[] = settings
+  ): SettingErrors => {
     const payload = {
-      settings: settings.map((setting) => ({
+      settings: settingsToValidate.map((setting) => ({
         key: setting.key,
         type: setting.type,
         value: setting.value?.trim() || null,
@@ -291,7 +335,7 @@ export default function ClientSettings({
 
       if (index === null) return;
 
-      const setting = settings[index];
+      const setting = settingsToValidate[index];
 
       if (!setting?.key) return;
 
@@ -302,43 +346,86 @@ export default function ClientSettings({
   };
 
   const handleSaveSettings = async () => {
-    const nextErrors = validateSettings();
-
-    if (Object.keys(nextErrors).length > 0) {
-      setSettingErrors(nextErrors);
-      return;
-    }
-
     setIsSavingSettings(true);
 
-    const success = await updateSettings({
-      settings: settings.map((setting) => ({
-        key: setting.key,
-        value: setting.value?.trim() || null,
-      })),
-    });
+    try {
+      let nextSettings = [...settings];
 
-    setIsSavingSettings(false);
+      for (const [key, file] of Object.entries(pendingSettingFiles)) {
+        if (!file) continue;
 
-    if (!success) {
+        const uploaded = await uploadMediaFile('general', file);
+
+        if (!uploaded?.url) {
+          throw new Error(
+            `Não foi possível enviar a imagem da configuração ${key}.`
+          );
+        }
+
+        nextSettings = nextSettings.map((setting) =>
+          setting.key === key
+            ? {
+                ...setting,
+                value: uploaded.url,
+              }
+            : setting
+        );
+      }
+
+      const nextErrors = validateSettings(nextSettings);
+
+      if (Object.keys(nextErrors).length > 0) {
+        setSettingErrors(nextErrors);
+        setIsSavingSettings(false);
+        return;
+      }
+
+      const success = await updateSettings({
+        settings: nextSettings.map((setting) => ({
+          key: setting.key,
+          value: setting.value?.trim() || null,
+        })),
+      });
+
+      setIsSavingSettings(false);
+
+      if (!success) {
+        await confirm({
+          title: 'Erro ao salvar',
+          description:
+            'Não foi possível salvar as configurações agora. Tente novamente em alguns instantes.',
+          confirmText: 'Entendi',
+          cancelText: 'Fechar',
+          variant: 'danger',
+        });
+        return;
+      }
+
+      setSettings(nextSettings);
+      setPendingSettingFiles({});
+      setSettingErrors({});
+
+      await confirm({
+        title: 'Configurações salvas',
+        description: 'As alterações foram salvas com sucesso.',
+        confirmText: 'Entendi',
+        cancelText: 'Fechar',
+        variant: 'success',
+      });
+    } catch (error) {
+      setIsSavingSettings(false);
+
       await confirm({
         title: 'Erro ao salvar',
         description:
-          'Não foi possível salvar as configurações agora. Tente novamente em alguns instantes.',
+          error instanceof Error
+            ? error.message
+            : 'Não foi possível salvar as configurações agora.',
         confirmText: 'Entendi',
         cancelText: 'Fechar',
         variant: 'danger',
       });
-      return;
     }
-
-    await confirm({
-      title: 'Configurações salvas',
-      description: 'As alterações foram salvas com sucesso.',
-      confirmText: 'Entendi',
-      cancelText: 'Fechar',
-      variant: 'success',
-    });
   };
 
   const handleClearCache = async () => {
@@ -385,8 +472,7 @@ export default function ClientSettings({
       name: '',
       email: '',
       role: 'admin',
-      password: '',
-      password_confirmation: '',
+      is_active: true,
     });
 
     setUserErrors({});
@@ -402,8 +488,7 @@ export default function ClientSettings({
       name: '',
       email: '',
       role: 'admin',
-      password: '',
-      password_confirmation: '',
+      is_active: true,
     });
 
     setIsUserFormOpen(true);
@@ -417,8 +502,7 @@ export default function ClientSettings({
       name: admin.name,
       email: admin.email,
       role: admin.role,
-      password: '',
-      password_confirmation: '',
+      is_active: getAdminIsActive(admin),
     });
 
     setIsUserFormOpen(true);
@@ -435,7 +519,7 @@ export default function ClientSettings({
     });
   };
 
-  const validateUserForm = (isEdit: boolean): UserFormErrors => {
+  const validateUserForm = (): UserFormErrors => {
     const nextErrors: UserFormErrors = {};
 
     if (!userForm.name.trim()) {
@@ -454,16 +538,8 @@ export default function ClientSettings({
       nextErrors.role = 'Nível inválido.';
     }
 
-    if (!isEdit || userForm.password.trim()) {
-      if (!userForm.password.trim()) {
-        nextErrors.password = 'Senha é obrigatória.';
-      } else if (userForm.password.length < 8) {
-        nextErrors.password = 'Senha deve ter ao menos 8 caracteres.';
-      }
-
-      if (userForm.password !== userForm.password_confirmation) {
-        nextErrors.password_confirmation = 'As senhas não conferem.';
-      }
+    if (typeof userForm.is_active !== 'boolean') {
+      nextErrors.is_active = 'Status inválido.';
     }
 
     return nextErrors;
@@ -471,7 +547,7 @@ export default function ClientSettings({
 
   const handleSaveUser = async () => {
     const isEdit = editingAdminId !== null;
-    const nextErrors = validateUserForm(isEdit);
+    const nextErrors = validateUserForm();
 
     if (Object.keys(nextErrors).length > 0) {
       setUserErrors(nextErrors);
@@ -480,27 +556,16 @@ export default function ClientSettings({
 
     setIsSavingUser(true);
 
-    const basePayload = {
+    const payload = {
       name: userForm.name.trim(),
       email: userForm.email.trim(),
       role: userForm.role as AdminRole,
+      is_active: userForm.is_active,
     };
 
     const response = isEdit
-      ? await updateAdmin(editingAdminId, {
-          ...basePayload,
-          ...(userForm.password.trim()
-            ? {
-                password: userForm.password,
-                password_confirmation: userForm.password_confirmation,
-              }
-            : {}),
-        } as UpdateAdminDTO)
-      : await createAdmin({
-          ...basePayload,
-          password: userForm.password,
-          password_confirmation: userForm.password_confirmation,
-        });
+      ? await updateAdmin(editingAdminId, payload as UpdateAdminDTO)
+      : await createAdmin(payload as CreateAdminDTO);
 
     setIsSavingUser(false);
 
@@ -532,7 +597,7 @@ export default function ClientSettings({
       title: isEdit ? 'Usuário atualizado' : 'Usuário criado',
       description: isEdit
         ? 'O usuário administrativo foi atualizado com sucesso.'
-        : 'O novo usuário administrativo foi criado com sucesso.',
+        : 'O novo usuário administrativo foi criado com sucesso. Para criar ou trocar a senha, ele deve usar “Esqueceu sua senha?” na tela de login.',
       confirmText: 'Entendi',
       cancelText: 'Fechar',
       variant: 'success',
@@ -588,6 +653,38 @@ export default function ClientSettings({
 
   const renderSettingInput = (setting: SettingItem) => {
     const error = settingErrors[setting.key];
+
+    if (isImageSetting(setting.key)) {
+      return (
+        <div className="space-y-3">
+          <MediaPicker
+            collection="general"
+            value={setting.value ?? ''}
+            pendingFile={pendingSettingFiles[setting.key] ?? null}
+            onPendingFileChange={(file) => {
+              setPendingSettingFiles((current) => ({
+                ...current,
+                [setting.key]: file,
+              }));
+
+              clearSettingError(setting.key);
+            }}
+            onChange={(url) => {
+              updateSettingValue(setting.key, url);
+
+              setPendingSettingFiles((current) => ({
+                ...current,
+                [setting.key]: null,
+              }));
+
+              clearSettingError(setting.key);
+            }}
+            label={setting.label || 'Imagem'}
+            helperText="Escolha uma imagem existente ou selecione uma nova do computador. O upload acontece ao salvar."
+          />
+        </div>
+      );
+    }
 
     if (setting.type === 'textarea') {
       return (
@@ -699,13 +796,6 @@ export default function ClientSettings({
                 </p>
               )}
 
-              {setting.key === 'site_logo_url' && (
-                <p className="mt-1 text-[11px] leading-relaxed text-zinc-500">
-                  Use somente o caminho público da logo. Exemplo:{' '}
-                  <span className="font-mono text-zinc-700">/logo.svg</span>
-                </p>
-              )}
-
               <FieldError message={settingErrors[setting.key]} />
 
               <p className="mt-2 text-[11px] font-mono text-zinc-400">
@@ -792,7 +882,7 @@ export default function ClientSettings({
 
               <p className="mt-1 text-sm text-zinc-600">
                 {editingAdminId
-                  ? 'Atualize os dados do administrador.'
+                  ? 'Atualize acesso, e-mail e status do administrador.'
                   : 'Adicione um novo acesso administrativo.'}
               </p>
             </div>
@@ -801,6 +891,7 @@ export default function ClientSettings({
               type="button"
               onClick={resetUserForm}
               className="rounded-md bg-zinc-100 p-2 text-zinc-600 transition"
+              aria-label="Fechar formulário"
             >
               <X className="h-4 w-4" />
             </button>
@@ -881,59 +972,38 @@ export default function ClientSettings({
               <FieldError message={userErrors.role} />
             </div>
 
-            <div className="hidden md:block" />
-
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-zinc-600">
-                {editingAdminId ? 'Nova senha' : 'Senha'}
+                Status
               </label>
 
-              <input
-                type="password"
-                value={userForm.password}
+              <select
+                value={userForm.is_active ? '1' : '0'}
                 onChange={(event) => {
                   setUserForm((current) => ({
                     ...current,
-                    password: event.target.value,
+                    is_active: event.target.value === '1',
                   }));
-                  clearUserError('password');
+                  clearUserError('is_active');
                 }}
                 className={fieldClass(
-                  userErrors.password,
+                  userErrors.is_active,
                   'w-full rounded-md border bg-white px-3 py-2 text-zinc-800 outline-none'
                 )}
-                placeholder={
-                  editingAdminId
-                    ? 'Deixe em branco para manter'
-                    : 'Senha de acesso'
-                }
-              />
+              >
+                <option value="1">Ativo</option>
+                <option value="0">Inativo</option>
+              </select>
 
-              <FieldError message={userErrors.password} />
+              <FieldError message={userErrors.is_active} />
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-zinc-600">
-                Confirmar senha
-              </label>
-
-              <input
-                type="password"
-                value={userForm.password_confirmation}
-                onChange={(event) => {
-                  setUserForm((current) => ({
-                    ...current,
-                    password_confirmation: event.target.value,
-                  }));
-                  clearUserError('password_confirmation');
-                }}
-                className={fieldClass(
-                  userErrors.password_confirmation,
-                  'w-full rounded-md border bg-white px-3 py-2 text-zinc-800 outline-none'
-                )}
-              />
-
-              <FieldError message={userErrors.password_confirmation} />
+            <div className="rounded-md border border-orange-100 bg-orange-50 px-4 py-3 md:col-span-2">
+              <p className="text-xs leading-relaxed text-orange-800">
+                Senhas não são definidas pelo painel. O administrador deve usar
+                “Esqueceu sua senha?” na tela de login para criar ou trocar a
+                própria senha.
+              </p>
             </div>
           </div>
 
@@ -1127,64 +1197,76 @@ export default function ClientSettings({
                     <div className="overflow-hidden rounded-md border border-red-100 bg-white/90">
                       <div className="divide-y divide-zinc-100">
                         {sortedAdmins.length > 0 ? (
-                          sortedAdmins.map((admin) => (
-                            <div
-                              key={admin.id}
-                              className="grid grid-cols-1 gap-4 px-5 py-4 md:grid-cols-[1fr_auto]"
-                            >
-                              <div className="flex min-w-0 items-start gap-4">
-                                <UserBadge
-                                  name={admin.name}
-                                  subtitle={admin.email}
-                                  size="md"
-                                />
+                          sortedAdmins.map((admin) => {
+                            const isActive = getAdminIsActive(admin);
 
-                                <div className="flex flex-wrap items-center gap-2 pt-0.5">
-                                  <span
-                                    className={`rounded-md px-2 py-0.5 text-[11px] font-semibold uppercase ${roleBadgeClass(
-                                      admin.role
-                                    )}`}
-                                  >
-                                    {admin.role}
-                                  </span>
+                            return (
+                              <div
+                                key={admin.id}
+                                className="grid grid-cols-1 gap-4 px-5 py-4 md:grid-cols-[1fr_auto]"
+                              >
+                                <div className="flex min-w-0 items-start gap-4">
+                                  <UserBadge
+                                    name={admin.name}
+                                    subtitle={admin.email}
+                                    size="md"
+                                  />
 
-                                  {currentAdmin?.id === admin.id && (
-                                    <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold uppercase text-emerald-700">
-                                      Você
+                                  <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                                    <span
+                                      className={`rounded-md px-2 py-0.5 text-[11px] font-semibold uppercase ${roleBadgeClass(
+                                        admin.role
+                                      )}`}
+                                    >
+                                      {admin.role}
                                     </span>
-                                  )}
+
+                                    <span
+                                      className={`rounded-md px-2 py-0.5 text-[11px] font-semibold uppercase ${statusBadgeClass(
+                                        isActive
+                                      )}`}
+                                    >
+                                      {isActive ? 'Ativo' : 'Inativo'}
+                                    </span>
+
+                                    {currentAdmin?.id === admin.id && (
+                                      <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold uppercase text-emerald-700">
+                                        Você
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => openEditUserForm(admin)}
+                                    className="
+                                      rounded-xl p-2.5 transition-all active:scale-95
+                                      text-gray-600 bg-gray-100
+                                      hover:bg-orange-500/20 hover:text-orange-600
+                                    "
+                                    title="Editar usuário"
+                                  >
+                                    <Pencil className="h-5 w-5" />
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteUser(admin)}
+                                    className="
+                                      rounded-xl p-2.5 transition-all active:scale-95
+                                      text-red-600 bg-red-500/10
+                                      hover:bg-red-500/20
+                                    "
+                                    title="Remover usuário"
+                                  >
+                                    <Trash2 className="h-5 w-5" />
+                                  </button>
                                 </div>
                               </div>
-
-                              <div className="flex items-center gap-2">
-                                <button
-                                  type="button"
-                                  onClick={() => openEditUserForm(admin)}
-                                  className="
-                                    rounded-xl p-2.5 transition-all active:scale-95
-                                    text-gray-600 bg-gray-100
-                                    hover:bg-orange-500/20 hover:text-orange-600
-                                  "
-                                  title="Editar usuário"
-                                >
-                                  <Pencil className="h-5 w-5" />
-                                </button>
-
-                                <button
-                                  type="button"
-                                  onClick={() => handleDeleteUser(admin)}
-                                  className="
-                                    rounded-xl p-2.5 transition-all active:scale-95
-                                    text-red-600 bg-red-500/10
-                                    hover:bg-red-500/20
-                                  "
-                                  title="Remover usuário"
-                                >
-                                  <Trash2 className="h-5 w-5" />
-                                </button>
-                              </div>
-                            </div>
-                          ))
+                            );
+                          })
                         ) : (
                           <div className="px-5 py-8 text-center">
                             <p className="text-sm font-medium text-zinc-800">

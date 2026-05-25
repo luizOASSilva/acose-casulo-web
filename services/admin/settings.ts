@@ -5,35 +5,24 @@ import type {
   CreateAdminDTO,
   SettingItem,
   UpdateAdminDTO,
-  UpdateSettingsDTO,
 } from '@/types/settings';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
-function getApiUrl(): string {
-  if (!API_URL) {
-    throw new Error('NEXT_PUBLIC_API_URL não configurada');
-  }
-
-  return API_URL.replace(/\/$/, '');
+interface AdminCollectionResponse {
+  data?: AdminUser[];
+  admins?: AdminUser[];
 }
 
-function getHeaders(cookieHeader?: string): HeadersInit {
-  return {
-    Accept: 'application/json',
-    ...(cookieHeader ? { Cookie: cookieHeader } : {}),
-  };
+interface AdminSingleResponse {
+  data?: AdminUser;
+  admin?: AdminUser;
 }
 
-function normalizeAdmin(payload: any): AdminUser | null {
-  if (!payload) return null;
-  if (payload.data) return payload.data;
-  if (payload.admin) return payload.admin;
-
-  return payload;
+interface SettingsCollectionResponse {
+  data?: SettingItem[];
+  settings?: SettingItem[];
 }
 
-function normalizeAdmins(payload: any): AdminUser[] {
+function normalizeAdmins(payload: AdminCollectionResponse | AdminUser[]): AdminUser[] {
   if (Array.isArray(payload)) return payload;
   if (Array.isArray(payload?.data)) return payload.data;
   if (Array.isArray(payload?.admins)) return payload.admins;
@@ -41,7 +30,17 @@ function normalizeAdmins(payload: any): AdminUser[] {
   return [];
 }
 
-function normalizeSettings(payload: any): SettingItem[] {
+function normalizeAdmin(payload: AdminSingleResponse | AdminUser): AdminUser | null {
+  if (!payload) return null;
+  if ('data' in payload && payload.data) return payload.data;
+  if ('admin' in payload && payload.admin) return payload.admin;
+
+  return payload as AdminUser;
+}
+
+function normalizeSettings(
+  payload: SettingsCollectionResponse | SettingItem[]
+): SettingItem[] {
   if (Array.isArray(payload)) return payload;
   if (Array.isArray(payload?.data)) return payload.data;
   if (Array.isArray(payload?.settings)) return payload.settings;
@@ -53,64 +52,40 @@ export async function getCurrentAdmin(
   cookieHeader?: string
 ): Promise<AdminUser | null> {
   try {
-    const response = await fetch(`${getApiUrl()}/auth/me`, {
-      method: 'GET',
-      cache: 'no-store',
-      credentials: 'include',
-      headers: getHeaders(cookieHeader),
-    });
+    const response = await api.get<AdminSingleResponse | AdminUser>(
+      '/admin/me',
+      {
+        headers: cookieHeader
+          ? {
+              Cookie: cookieHeader,
+            }
+          : undefined,
+      }
+    );
 
-    if (!response.ok) return null;
-
-    const payload = await response.json();
-
-    return normalizeAdmin(payload);
+    return normalizeAdmin(response);
   } catch (error) {
-    console.error(error);
+    console.error('Erro ao buscar admin atual:', error);
     return null;
   }
 }
 
-export async function getAdmins(
-  cookieHeader?: string
-): Promise<AdminUser[]> {
+export async function getAdmins(cookieHeader?: string): Promise<AdminUser[]> {
   try {
-    const response = await fetch(`${getApiUrl()}/admins`, {
-      method: 'GET',
-      cache: 'no-store',
-      credentials: 'include',
-      headers: getHeaders(cookieHeader),
-    });
+    const response = await api.get<AdminCollectionResponse | AdminUser[]>(
+      '/admins',
+      {
+        headers: cookieHeader
+          ? {
+              Cookie: cookieHeader,
+            }
+          : undefined,
+      }
+    );
 
-    if (!response.ok) return [];
-
-    const payload = await response.json();
-
-    return normalizeAdmins(payload);
+    return normalizeAdmins(response);
   } catch (error) {
-    console.error(error);
-    return [];
-  }
-}
-
-export async function getSettings(
-  cookieHeader?: string
-): Promise<SettingItem[]> {
-  try {
-    const response = await fetch(`${getApiUrl()}/settings`, {
-      method: 'GET',
-      cache: 'no-store',
-      credentials: 'include',
-      headers: getHeaders(cookieHeader),
-    });
-
-    if (!response.ok) return [];
-
-    const payload = await response.json();
-
-    return normalizeSettings(payload);
-  } catch (error) {
-    console.error(error);
+    console.error('Erro ao buscar admins:', error);
     return [];
   }
 }
@@ -119,49 +94,90 @@ export async function createAdmin(
   data: CreateAdminDTO
 ): Promise<AdminUser | null> {
   try {
-    const payload = await api.post<any>('/admins', data);
+    const response = await api.post<AdminSingleResponse | AdminUser>(
+      '/admins',
+      {
+        name: data.name,
+        email: data.email,
+        role: data.role,
+        is_active: data.is_active ?? true,
+      }
+    );
 
-    return normalizeAdmin(payload);
+    return normalizeAdmin(response);
   } catch (error) {
-    console.error(error);
+    console.error('Erro ao criar admin:', error);
     return null;
   }
 }
 
 export async function updateAdmin(
-  adminId: number,
+  id: number,
   data: UpdateAdminDTO
 ): Promise<AdminUser | null> {
   try {
-    const payload = await api.put<any>(`/admins/${adminId}`, data);
+    const response = await api.put<AdminSingleResponse | AdminUser>(
+      `/admins/${id}`,
+      {
+        name: data.name,
+        email: data.email,
+        role: data.role,
+        is_active: data.is_active,
+      }
+    );
 
-    return normalizeAdmin(payload);
+    return normalizeAdmin(response);
   } catch (error) {
-    console.error(error);
+    console.error(`Erro ao atualizar admin ID ${id}:`, error);
     return null;
   }
 }
 
-export async function deleteAdmin(adminId: number): Promise<boolean> {
+export async function deleteAdmin(id: number): Promise<boolean> {
   try {
-    await api.delete(`/admins/${adminId}`);
+    await api.delete(`/admins/${id}`);
 
     return true;
   } catch (error) {
-    console.error(error);
+    console.error(`Erro ao remover admin ID ${id}:`, error);
     return false;
   }
 }
 
-export async function updateSettings(
-  data: UpdateSettingsDTO
-): Promise<boolean> {
+export async function getSettings(
+  cookieHeader?: string
+): Promise<SettingItem[]> {
+  try {
+    const response = await api.get<SettingsCollectionResponse | SettingItem[]>(
+      '/settings',
+      {
+        headers: cookieHeader
+          ? {
+              Cookie: cookieHeader,
+            }
+          : undefined,
+      }
+    );
+
+    return normalizeSettings(response);
+  } catch (error) {
+    console.error('Erro ao buscar configurações:', error);
+    return [];
+  }
+}
+
+export async function updateSettings(data: {
+  settings: {
+    key: string;
+    value: string | null;
+  }[];
+}): Promise<boolean> {
   try {
     await api.put('/settings', data);
 
     return true;
   } catch (error) {
-    console.error(error);
+    console.error('Erro ao atualizar configurações:', error);
     return false;
   }
 }
@@ -172,7 +188,7 @@ export async function clearSettingsCache(): Promise<boolean> {
 
     return true;
   } catch (error) {
-    console.error(error);
+    console.error('Erro ao limpar cache de configurações:', error);
     return false;
   }
 }
