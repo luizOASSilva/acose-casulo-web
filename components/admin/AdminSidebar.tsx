@@ -24,7 +24,7 @@ import {
 
 import { cn } from '@/lib/cn';
 import { useAuth } from '@/context/AuthContext';
-import type { AdminUser } from '@/types/settings';
+import type { AdminUser } from '@/types/admin/settings';
 
 const nav = [
   { label: 'Dashboard', href: 'dashboard', icon: LayoutDashboard },

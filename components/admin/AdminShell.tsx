@@ -7,7 +7,7 @@ import { AuthProvider } from '@/context/AuthContext';
 import { EditModeProvider } from '@/context/admin/EditModeContext';
 import { ConfirmDialogProvider } from '@/context/ConfirmDialogContext';
 
-import type { AdminUser } from '@/types/settings';
+import type { AdminUser } from '@/types/admin/settings';
 
 interface AdminShellProps {
   children: React.ReactNode;

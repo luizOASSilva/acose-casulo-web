@@ -21,6 +21,37 @@ interface MediaPickerProps {
   helperText?: string;
 }
 
+function normalizeMediaUrl(
+  url?: string | null,
+  collection?: MediaCollection
+): string {
+  if (!url) return '';
+
+  const cleanUrl = url.trim();
+
+  if (!cleanUrl) return '';
+
+  if (
+    cleanUrl.startsWith('http://') ||
+    cleanUrl.startsWith('https://') ||
+    cleanUrl.startsWith('blob:') ||
+    cleanUrl.startsWith('data:') ||
+    cleanUrl.startsWith('/storage/')
+  ) {
+    return cleanUrl;
+  }
+
+  if (cleanUrl.startsWith('storage/')) {
+    return `/${cleanUrl}`;
+  }
+
+  if (cleanUrl.startsWith('media/')) {
+    return `/storage/${cleanUrl}`;
+  }
+
+  return `/storage/media/${collection}/${cleanUrl}`;
+}
+
 export default function MediaPicker({
   collection,
   value,
@@ -36,7 +67,7 @@ export default function MediaPicker({
   const [files, setFiles] = useState<MediaFile[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const selectedUrl = value?.trim() || '';
+  const selectedUrl = normalizeMediaUrl(value, collection);
 
   const pendingPreviewUrl = useMemo(() => {
     if (!pendingFile) return '';
@@ -118,11 +149,13 @@ export default function MediaPicker({
   }
 
   function handleUseFile(file: MediaFile) {
+    const fileUrl = normalizeMediaUrl(file.url, collection);
+
     onPendingFileChange?.(null);
 
-    if (file.url === selectedUrl) return;
+    if (fileUrl === selectedUrl) return;
 
-    onChange(file.url);
+    onChange(fileUrl);
   }
 
   function handleRemovePendingFile() {
@@ -149,7 +182,7 @@ export default function MediaPicker({
                   alt="Imagem selecionada"
                   fill
                   sizes="144px"
-                  className="object-cover"
+                  className="object-contain p-2"
                 />
               ) : (
                 <ImageIcon className="h-8 w-8 text-zinc-300" />
@@ -239,7 +272,8 @@ export default function MediaPicker({
         ) : (
           <div className="grid max-h-[390px] grid-cols-2 gap-3 overflow-y-auto pr-1 md:grid-cols-3 xl:grid-cols-4">
             {files.map((file) => {
-              const isSelected = !pendingFile && file.url === selectedUrl;
+              const fileUrl = normalizeMediaUrl(file.url, collection);
+              const isSelected = !pendingFile && fileUrl === selectedUrl;
 
               return (
                 <button
@@ -261,13 +295,19 @@ export default function MediaPicker({
                       : `Selecionar imagem ${file.original_name}`
                   }
                 >
-                  <Image
-                    src={file.url}
-                    alt={file.original_name}
-                    fill
-                    sizes="220px"
-                    className="object-cover transition duration-200 group-hover:scale-105"
-                  />
+                  {fileUrl ? (
+                    <Image
+                      src={fileUrl}
+                      alt={file.original_name}
+                      fill
+                      sizes="220px"
+                      className="object-contain p-3 transition duration-200 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-zinc-300">
+                      <ImageIcon className="h-7 w-7" aria-hidden="true" />
+                    </div>
+                  )}
 
                   <span
                     className={`

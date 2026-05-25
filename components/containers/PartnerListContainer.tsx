@@ -8,6 +8,7 @@ import { Pencil, Trash2 } from 'lucide-react';
 import { useConfirmDialog } from '@/context/ConfirmDialogContext';
 import {
   deletePartner,
+  storageUrlToPath,
   type PartnerApiItem,
   updatePartner,
 } from '@/services/partners';
@@ -18,31 +19,19 @@ interface PartnerListContainerProps {
 
 const ADMIN_PARTNERS_PATH = '/admin/parceiros';
 
-function storageUrlToPath(url?: string | null): string {
-  if (!url) return '';
-
-  const marker = '/storage/';
-  const index = url.indexOf(marker);
-
-  if (index >= 0) {
-    return url.slice(index + marker.length);
-  }
-
-  if (url.startsWith('storage/')) {
-    return url.replace(/^storage\//, '');
-  }
-
-  return url;
-}
-
 export default function PartnerListContainer({
   partners,
 }: PartnerListContainerProps) {
   const router = useRouter();
   const { confirm } = useConfirmDialog();
 
-  const activePartners = partners.filter((partner) => partner.is_active).length;
-  const inactivePartners = partners.length - activePartners;
+  const safePartners = Array.isArray(partners) ? partners : [];
+
+  const activePartners = safePartners.filter(
+    (partner) => partner.is_active
+  ).length;
+
+  const inactivePartners = safePartners.length - activePartners;
 
   const handleToggleActive = async (partner: PartnerApiItem) => {
     try {
@@ -117,7 +106,8 @@ export default function PartnerListContainer({
               </h1>
 
               <p className="mt-3 text-base leading-relaxed text-zinc-600">
-                Gerencie logos, links, cores e ordem de exibição dos parceiros institucionais da plataforma.
+                Gerencie logos, links, cores e ordem de exibição dos parceiros
+                institucionais da plataforma.
               </p>
             </div>
 
@@ -149,7 +139,7 @@ export default function PartnerListContainer({
                 </p>
 
                 <h3 className="text-2xl font-semibold tracking-tight text-zinc-900">
-                  {partners.length}
+                  {safePartners.length}
                 </h3>
               </div>
             </div>
@@ -182,13 +172,15 @@ export default function PartnerListContainer({
 
         <section className="rounded-md border border-orange-100 bg-orange-50 px-4 py-3">
           <p className="text-xs font-medium text-orange-800">
-            Passe o mouse sobre uma logo para editar ou remover. Clique no selo <strong>Ativo</strong> ou <strong>Inativo</strong> para alternar a exibição pública do parceiro.
+            Passe o mouse sobre uma logo para editar ou remover. Clique no selo{' '}
+            <strong>Ativo</strong> ou <strong>Inativo</strong> para alternar a
+            exibição pública do parceiro.
           </p>
         </section>
 
-        {partners.length > 0 ? (
+        {safePartners.length > 0 ? (
           <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {partners.map((partner, index) => (
+            {safePartners.map((partner, index) => (
               <article
                 key={partner.id}
                 className="group overflow-hidden rounded-md border border-zinc-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
@@ -206,6 +198,7 @@ export default function PartnerListContainer({
                       fill
                       sizes="(max-width: 768px) 90vw, (max-width: 1280px) 45vw, 360px"
                       priority={index < 3}
+                      unoptimized
                       className="object-contain p-7 transition duration-500 group-hover:scale-105"
                     />
                   ) : (
@@ -322,7 +315,8 @@ export default function PartnerListContainer({
               </h2>
 
               <p className="mt-2 text-sm text-zinc-500">
-                Cadastre o primeiro parceiro para exibir na seção pública do site.
+                Cadastre o primeiro parceiro para exibir na seção pública do
+                site.
               </p>
 
               <Link
