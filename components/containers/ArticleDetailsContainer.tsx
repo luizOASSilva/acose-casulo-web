@@ -9,6 +9,7 @@ import KeywordBadge from '@/components/ui/KeywordBadge';
 import UserBadge from '@/components/ui/UserBadge';
 import MediaPicker from '@/components/admin/MediaPicker';
 
+import { uploadMediaFile } from '@/services/admin/media-library';
 import { updateArticle, createArticle } from '@/services/articles';
 import { articleSchema } from '@/schemas/article.schema';
 import { useConfirmDialog } from '@/context/ConfirmDialogContext';
@@ -99,6 +100,8 @@ export default function ArticleDetailsContainer({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<ArticleFormErrors>({});
 
+  const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
+
   const [title, setTitle] = useState(article?.title || '');
   const [summary, setSummary] = useState(article?.summary || '');
   const [content, setContent] = useState(article?.content || '');
@@ -115,6 +118,22 @@ export default function ArticleDetailsContainer({
 
   const [keywordSearch, setKeywordSearch] = useState('');
 
+  const pendingImagePreviewUrl = useMemo(() => {
+    if (!pendingImageFile) return '';
+
+    return URL.createObjectURL(pendingImageFile);
+  }, [pendingImageFile]);
+
+  const displayImageUrl = pendingImagePreviewUrl || imageUrl;
+
+  useEffect(() => {
+    return () => {
+      if (pendingImagePreviewUrl) {
+        URL.revokeObjectURL(pendingImagePreviewUrl);
+      }
+    };
+  }, [pendingImagePreviewUrl]);
+
   const allDatabaseKeywords = useMemo(() => {
     return normalizeKeywordList(allKeywords);
   }, [allKeywords]);
@@ -129,6 +148,7 @@ export default function ArticleDetailsContainer({
     setImageAlt(article.media?.alt_text || '');
     setImageCaption(article.media?.caption || '');
     setKeywordsArray(parseInitialKeywords(article));
+    setPendingImageFile(null);
     setErrors({});
   }, [article]);
 
@@ -138,6 +158,7 @@ export default function ArticleDetailsContainer({
 
   const hasPendingChanges = useMemo(() => {
     return (
+      pendingImageFile !== null ||
       title !== (article?.title || '') ||
       summary !== (article?.summary || '') ||
       content !== (article?.content || '') ||
@@ -148,6 +169,7 @@ export default function ArticleDetailsContainer({
         JSON.stringify([...initialKeywords].sort())
     );
   }, [
+    pendingImageFile,
     title,
     summary,
     content,
@@ -256,6 +278,7 @@ export default function ArticleDetailsContainer({
     setImageAlt(article?.media?.alt_text || '');
     setImageCaption(article?.media?.caption || '');
     setKeywordsArray(parseInitialKeywords(article));
+    setPendingImageFile(null);
     setKeywordSearch('');
     setErrors({});
   };
@@ -297,89 +320,133 @@ export default function ArticleDetailsContainer({
     router.push(`${ADMIN_ARTICLES_PATH}/${article?.id}`);
   };
 
+  const applyValidationErrors = (
+    issues: Array<{
+      path: (string | number)[];
+      message: string;
+    }>
+  ) => {
+    const nextErrors: ArticleFormErrors = {};
+
+    issues.forEach((issue) => {
+      const field = issue.path[0] as keyof ArticleFormErrors | undefined;
+
+      if (field && !nextErrors[field]) {
+        nextErrors[field] = issue.message;
+        return;
+      }
+
+      if (!field && !nextErrors.keywords) {
+        nextErrors.keywords = issue.message;
+      }
+    });
+
+    setErrors(nextErrors);
+  };
+
   const handleSave = async () => {
+    const validationImageUrl =
+      pendingImageFile && !imageUrl ? '__pending_image__' : imageUrl;
+
     const parsed = articleSchema.safeParse({
       title,
       summary,
       content,
-      image_url: imageUrl,
+      image_url: validationImageUrl,
       image_description: imageAlt,
       image_caption: imageCaption.trim() || null,
       keywords: keywordsArray,
     });
 
     if (!parsed.success) {
-      const nextErrors: ArticleFormErrors = {};
-
-      parsed.error.issues.forEach((issue) => {
-        const field = issue.path[0] as keyof ArticleFormErrors | undefined;
-
-        if (field && !nextErrors[field]) {
-          nextErrors[field] = issue.message;
-          return;
-        }
-
-        if (!field && !nextErrors.keywords) {
-          nextErrors.keywords = issue.message;
-        }
-      });
-
-      setErrors(nextErrors);
+      applyValidationErrors(parsed.error.issues);
       return;
     }
 
     setErrors({});
     setIsSubmitting(true);
 
-    const response = isCreationFlow
-      ? await createArticle(parsed.data)
-      : article?.id
-        ? await updateArticle(article.id, parsed.data)
-        : null;
+    try {
+      let finalImageUrl = imageUrl;
 
-    setIsSubmitting(false);
+      if (pendingImageFile) {
+        const uploaded = await uploadMediaFile('articles', pendingImageFile);
 
-    if (response) {
-      setIsEditMode(false);
+        if (!uploaded?.url) {
+          throw new Error('Não foi possível enviar a imagem selecionada.');
+        }
 
-      if (isCreationFlow) {
-        router.push(ADMIN_ARTICLES_PATH);
-
-        await confirm({
-          title: 'Artigo criado',
-          description: 'O artigo foi criado com sucesso.',
-          confirmText: 'Entendi',
-          cancelText: 'Fechar',
-          variant: 'success',
-        });
-      } else {
-        router.push(`${ADMIN_ARTICLES_PATH}/${article?.id}`);
-
-        await confirm({
-          title: 'Alterações salvas',
-          description: 'As alterações do artigo foram salvas com sucesso.',
-          confirmText: 'Entendi',
-          cancelText: 'Fechar',
-          variant: 'success',
-        });
+        finalImageUrl = uploaded.url;
+        setImageUrl(uploaded.url);
+        setPendingImageFile(null);
       }
 
-      router.refresh();
-      return;
-    }
+      const payload = {
+        ...parsed.data,
+        image_url: finalImageUrl,
+      };
 
-    await confirm({
-      title: 'Erro ao salvar',
-      description:
-        'Não foi possível salvar os dados. Verifique as permissões, CORS ou as rotas da API.',
-      confirmText: 'Entendi',
-      cancelText: 'Fechar',
-      variant: 'danger',
-    });
+      const response = isCreationFlow
+        ? await createArticle(payload)
+        : article?.id
+          ? await updateArticle(article.id, payload)
+          : null;
+
+      if (response) {
+        setIsEditMode(false);
+
+        if (isCreationFlow) {
+          router.push(ADMIN_ARTICLES_PATH);
+
+          await confirm({
+            title: 'Artigo criado',
+            description: 'O artigo foi criado com sucesso.',
+            confirmText: 'Entendi',
+            cancelText: 'Fechar',
+            variant: 'success',
+          });
+        } else {
+          router.push(`${ADMIN_ARTICLES_PATH}/${article?.id}`);
+
+          await confirm({
+            title: 'Alterações salvas',
+            description: 'As alterações do artigo foram salvas com sucesso.',
+            confirmText: 'Entendi',
+            cancelText: 'Fechar',
+            variant: 'success',
+          });
+        }
+
+        router.refresh();
+        return;
+      }
+
+      await confirm({
+        title: 'Erro ao salvar',
+        description:
+          'Não foi possível salvar os dados. Verifique as permissões, CORS ou as rotas da API.',
+        confirmText: 'Entendi',
+        cancelText: 'Fechar',
+        variant: 'danger',
+      });
+    } catch (error) {
+      await confirm({
+        title: 'Erro ao salvar',
+        description:
+          error instanceof Error
+            ? error.message
+            : 'Não foi possível salvar os dados. Tente novamente em alguns instantes.',
+        confirmText: 'Entendi',
+        cancelText: 'Fechar',
+        variant: 'danger',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <main className="w-[90%] max-w-3xl mx-auto py-20 selection:bg-primary selection:text-white">
+    <main className="w-full max-w-6xl mx-auto py-12 md:py-20 px-6 selection:bg-primary selection:text-white">
       <div className="flex items-center justify-between border-b border-gray-100 pb-4">
         <button
           type="button"
@@ -427,17 +494,16 @@ export default function ArticleDetailsContainer({
 
             <UserBadge name={authorName} subtitle={formattedArticleDate} />
 
-            {imageUrl && (
+            {displayImageUrl && (
               <figure className="w-full overflow-hidden">
                 <div className="relative w-full h-72 md:h-96 bg-gray-50 overflow-hidden rounded-md">
                   <Image
-                    src={imageUrl}
+                    src={displayImageUrl}
                     alt={imageAlt || title || 'Imagem do artigo'}
                     fill
                     sizes="(max-width: 768px) 90vw, 768px"
                     className="object-cover"
                     priority
-                    unoptimized
                   />
                 </div>
 
@@ -476,12 +542,18 @@ export default function ArticleDetailsContainer({
             <MediaPicker
               collection="articles"
               value={imageUrl}
+              pendingFile={pendingImageFile}
+              onPendingFileChange={(file) => {
+                setPendingImageFile(file);
+                clearError('image_url');
+              }}
               onChange={(url) => {
                 setImageUrl(url);
+                setPendingImageFile(null);
                 clearError('image_url');
               }}
               label="Imagem do artigo"
-              helperText="Envie ou escolha uma imagem para a publicação."
+              helperText="Escolha uma imagem existente ou selecione uma nova do seu computador. O upload só acontece ao salvar."
             />
 
             <FieldError message={errors.image_url} />
@@ -735,17 +807,16 @@ export default function ArticleDetailsContainer({
             </div>
           </div>
 
-          {imageUrl && (
+          {displayImageUrl && (
             <figure className="w-full overflow-hidden">
               <div className="relative w-full h-72 md:h-96 bg-gray-50 overflow-hidden rounded-md">
                 <Image
-                  src={imageUrl}
+                  src={displayImageUrl}
                   alt={imageAlt || title || 'Imagem do artigo'}
                   fill
                   sizes="(max-width: 768px) 90vw, 768px"
                   className="object-cover"
                   priority
-                  unoptimized
                 />
               </div>
 
@@ -797,7 +868,9 @@ export default function ArticleDetailsContainer({
                   className="text-xs bg-green-600 hover:bg-green-700 text-white font-semibold px-5 py-2.5 rounded-md transition-all cursor-pointer disabled:opacity-60"
                 >
                   {isSubmitting
-                    ? 'Salvando...'
+                    ? pendingImageFile
+                      ? 'Enviando imagem...'
+                      : 'Salvando...'
                     : isCreationFlow
                       ? 'Criar Artigo'
                       : 'Confirmar e Salvar no Banco ✔'}

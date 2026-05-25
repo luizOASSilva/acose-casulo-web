@@ -1,5 +1,11 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
+type RequestBody = BodyInit | Record<string, unknown> | null | undefined;
+
+interface ApiRequestInit extends Omit<RequestInit, 'body'> {
+  body?: RequestBody;
+}
+
 function getApiUrl(): string {
   if (!API_URL) {
     throw new Error('NEXT_PUBLIC_API_URL não configurada');
@@ -20,19 +26,57 @@ function getCookie(name: string): string | null {
   return decodeURIComponent(cookie.split('=')[1] || '');
 }
 
+function isFormData(body: unknown): body is FormData {
+  return typeof FormData !== 'undefined' && body instanceof FormData;
+}
+
+function isBodyInit(body: unknown): body is BodyInit {
+  return (
+    typeof body === 'string' ||
+    body instanceof Blob ||
+    body instanceof ArrayBuffer ||
+    body instanceof URLSearchParams ||
+    isFormData(body)
+  );
+}
+
 async function ensureCSRF(): Promise<void> {
   await fetch(`${getApiUrl()}/sanctum/csrf-cookie`, {
     method: 'GET',
     credentials: 'include',
     headers: {
       Accept: 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
     },
   });
 }
 
+async function parseErrorMessage(response: Response): Promise<string> {
+  try {
+    const data = await response.json();
+
+    if (data?.errors && typeof data.errors === 'object') {
+      const messages = Object.values(data.errors)
+        .flatMap((value) => (Array.isArray(value) ? value : [value]))
+        .filter(Boolean)
+        .map(String);
+
+      if (messages.length > 0) {
+        return messages.join('\n');
+      }
+    }
+
+    if (data?.message) {
+      return String(data.message);
+    }
+  } catch {}
+
+  return 'Erro na requisição';
+}
+
 async function request<T>(
   endpoint: string,
-  options: RequestInit = {}
+  options: ApiRequestInit = {}
 ): Promise<T> {
   const method = (options.method || 'GET').toUpperCase();
   const needsCSRF = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method);
@@ -43,16 +87,37 @@ async function request<T>(
 
   const xsrfToken = getCookie('XSRF-TOKEN');
   const hasBody = options.body !== undefined && options.body !== null;
+  const bodyIsFormData = isFormData(options.body);
+
+  const headers = new Headers(options.headers);
+
+  headers.set('Accept', 'application/json');
+  headers.set('X-Requested-With', 'XMLHttpRequest');
+
+  if (xsrfToken) {
+    headers.set('X-XSRF-TOKEN', xsrfToken);
+  }
+
+  let body: BodyInit | undefined;
+
+  if (hasBody) {
+    if (bodyIsFormData) {
+      body = options.body as FormData;
+      headers.delete('Content-Type');
+    } else if (isBodyInit(options.body)) {
+      body = options.body;
+    } else {
+      body = JSON.stringify(options.body);
+      headers.set('Content-Type', 'application/json');
+    }
+  }
 
   const response = await fetch(`${getApiUrl()}${endpoint}`, {
     ...options,
+    method,
+    body,
     credentials: 'include',
-    headers: {
-      Accept: 'application/json',
-      ...(hasBody ? { 'Content-Type': 'application/json' } : {}),
-      ...(xsrfToken ? { 'X-XSRF-TOKEN': xsrfToken } : {}),
-      ...(options.headers || {}),
-    },
+    headers,
   });
 
   if (response.status === 401) {
@@ -64,13 +129,7 @@ async function request<T>(
   }
 
   if (!response.ok) {
-    let message = 'Erro na requisição';
-
-    try {
-      const data = await response.json();
-      message = data?.message || message;
-    } catch {}
-
+    const message = await parseErrorMessage(response);
     throw new Error(message);
   }
 
@@ -82,31 +141,48 @@ async function request<T>(
 }
 
 export const api = {
-  get: <T>(url: string) =>
+  get: <T>(url: string, options?: Omit<ApiRequestInit, 'method'>) =>
     request<T>(url, {
+      ...options,
       method: 'GET',
     }),
 
-  post: <T>(url: string, body?: unknown) =>
+  post: <T>(
+    url: string,
+    body?: RequestBody,
+    options?: Omit<ApiRequestInit, 'method' | 'body'>
+  ) =>
     request<T>(url, {
+      ...options,
       method: 'POST',
-      body: JSON.stringify(body ?? {}),
+      body,
     }),
 
-  put: <T>(url: string, body?: unknown) =>
+  put: <T>(
+    url: string,
+    body?: RequestBody,
+    options?: Omit<ApiRequestInit, 'method' | 'body'>
+  ) =>
     request<T>(url, {
+      ...options,
       method: 'PUT',
-      body: JSON.stringify(body ?? {}),
+      body,
     }),
 
-  patch: <T>(url: string, body?: unknown) =>
+  patch: <T>(
+    url: string,
+    body?: RequestBody,
+    options?: Omit<ApiRequestInit, 'method' | 'body'>
+  ) =>
     request<T>(url, {
+      ...options,
       method: 'PATCH',
-      body: JSON.stringify(body ?? {}),
+      body,
     }),
 
-  delete: <T>(url: string) =>
+  delete: <T>(url: string, options?: Omit<ApiRequestInit, 'method'>) =>
     request<T>(url, {
+      ...options,
       method: 'DELETE',
     }),
 };

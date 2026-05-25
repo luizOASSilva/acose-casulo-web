@@ -5,7 +5,7 @@ export default async function AdminArtigosPage() {
   const articles = await getArticles();
 
   return (
-    <div className="w-full min-h-screen bg-white">
+    <div className="w-full min-h-screen">
       <ArticleListContainer articles={articles} isAdmin={true} />
     </div>
   );

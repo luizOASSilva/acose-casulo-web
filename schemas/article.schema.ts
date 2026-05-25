@@ -21,8 +21,7 @@ export const articleSchema = z.object({
   image_url: z
     .string()
     .trim()
-    .min(1, 'URL da imagem obrigatória')
-    .url('URL da imagem inválida')
+    .min(1, 'Imagem obrigatória')
     .max(2048, 'URL da imagem muito longa'),
 
   image_description: z

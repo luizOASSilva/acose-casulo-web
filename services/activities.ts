@@ -1,3 +1,5 @@
+import { api } from '@/lib/api';
+
 import type {
   Activity,
   OccupiedActivitySchedule,
@@ -167,26 +169,17 @@ export async function createActivity(
   data: SaveActivityDTO
 ): Promise<Activity | null> {
   try {
-    const response = await fetch(`${getApiUrl()}/activities`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      throw new Error('Erro ao criar atividade');
-    }
-
-    const payload = await response.json();
+    const payload = await api.post<any>('/activities', data);
 
     return normalizeActivity(payload);
   } catch (error) {
-    console.error(error);
-    return null;
+    console.error('Erro ao criar atividade:', error);
+
+    if (error instanceof Error) {
+      throw error;
+    }
+
+    throw new Error('Erro ao criar atividade');
   }
 }
 
@@ -195,42 +188,27 @@ export async function updateActivity(
   data: SaveActivityDTO
 ): Promise<Activity | null> {
   try {
-    const response = await fetch(`${getApiUrl()}/activities/${activityId}`, {
-      method: 'PUT',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      throw new Error('Erro ao atualizar atividade');
-    }
-
-    const payload = await response.json();
+    const payload = await api.put<any>(`/activities/${activityId}`, data);
 
     return normalizeActivity(payload);
   } catch (error) {
-    console.error(error);
-    return null;
+    console.error('Erro ao atualizar atividade:', error);
+
+    if (error instanceof Error) {
+      throw error;
+    }
+
+    throw new Error('Erro ao atualizar atividade');
   }
 }
 
 export async function deleteActivity(activityId: number): Promise<boolean> {
   try {
-    const response = await fetch(`${getApiUrl()}/activities/${activityId}`, {
-      method: 'DELETE',
-      credentials: 'include',
-      headers: {
-        Accept: 'application/json',
-      },
-    });
+    await api.delete<null>(`/activities/${activityId}`);
 
-    return response.ok;
+    return true;
   } catch (error) {
-    console.error(error);
+    console.error('Erro ao deletar atividade:', error);
     return false;
   }
 }
@@ -239,26 +217,17 @@ export async function toggleActivityLike(
   activityIdentifier: string | number
 ): Promise<ToggleActivityLikeResponse | null> {
   try {
-    const response = await fetch(
-      `${getApiUrl()}/activities/${activityIdentifier}/like`,
+    const payload = await api.post<any>(
+      `/activities/${activityIdentifier}/like`,
       {
-        method: 'POST',
-        cache: 'no-store',
+        visitor_id: getVisitorId(),
+      },
+      {
         headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
           ...getVisitorHeaders(),
         },
-        body: JSON.stringify({}),
       }
     );
-
-    const payload = await response.json();
-
-    if (!response.ok) {
-      console.error('Erro ao curtir atividade:', payload);
-      return null;
-    }
 
     const likesCount = Number(payload.likes_count ?? payload.likes ?? 0);
 

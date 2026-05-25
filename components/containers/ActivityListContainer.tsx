@@ -56,7 +56,7 @@ export default function ActivityListContainer({
   return (
     <main className="w-full max-w-6xl mx-auto py-12 md:py-20 px-6">
       <header className="mb-10 space-y-2">
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight">
+        <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 md:text-4xl">
           {isAdmin
             ? 'Painel de Controle de Atividades'
             : 'Atividades do Centro Dia'}
@@ -186,7 +186,7 @@ export default function ActivityListContainer({
                       <button
                         type="button"
                         onClick={() => handleDelete(activity.id)}
-                        className="p-2.5 text-red-500 bg-white hover:bg-red-500 hover:text-white rounded-xl transition-all active:scale-95"
+                        className="p-2.5 text-red-500 bg-gray-100 hover:bg-red-500 hover:text-white rounded-xl transition-all active:scale-95"
                         title="Deletar Atividade"
                         aria-label="Deletar atividade"
                       >

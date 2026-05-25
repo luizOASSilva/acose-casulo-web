@@ -132,7 +132,6 @@ export default function ActivityDetail({
               className="object-cover"
               loading="eager"
               priority
-              unoptimized
             />
           ) : (
             <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-gray-400">

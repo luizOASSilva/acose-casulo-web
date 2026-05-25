@@ -40,7 +40,68 @@ type DocumentFormErrors = Partial<{
   year: string;
 }>;
 
+type PreviewTheme = {
+  card: string;
+  header: string;
+  folderBox: string;
+  folderIcon: string;
+  title: string;
+  subtitle: string;
+  row: string;
+  documentTitle: string;
+  documentDate: string;
+  icon: string;
+};
+
 const ADMIN_TRANSPARENCY_PATH = '/admin/transparencia';
+
+function getPreviewTheme(index: number): PreviewTheme {
+  const isSecondary = index % 6 === 2;
+  const isPrimary = index % 6 === 5;
+
+  if (isSecondary) {
+    return {
+      card: 'border-secondary bg-secondary text-white',
+      header: 'border-white/10 bg-secondary',
+      folderBox: 'bg-white text-secondary',
+      folderIcon: 'text-secondary',
+      title: 'text-white',
+      subtitle: 'text-white/70',
+      row: 'border-white/10 hover:bg-white/10',
+      documentTitle: 'text-white group-hover:text-white',
+      documentDate: 'text-white/60',
+      icon: 'text-white/70 group-hover:text-white',
+    };
+  }
+
+  if (isPrimary) {
+    return {
+      card: 'border-primary bg-primary text-white',
+      header: 'border-white/10 bg-primary',
+      folderBox: 'bg-white text-primary',
+      folderIcon: 'text-primary',
+      title: 'text-white',
+      subtitle: 'text-white/75',
+      row: 'border-white/10 hover:bg-white/10',
+      documentTitle: 'text-white group-hover:text-white',
+      documentDate: 'text-white/65',
+      icon: 'text-white/75 group-hover:text-white',
+    };
+  }
+
+  return {
+    card: 'border-zinc-200 bg-white text-zinc-900',
+    header: 'border-zinc-100 bg-zinc-50',
+    folderBox: 'bg-primary/10 text-primary',
+    folderIcon: 'text-primary',
+    title: 'text-zinc-900',
+    subtitle: 'text-zinc-500',
+    row: 'border-zinc-100 hover:bg-zinc-50',
+    documentTitle: 'text-zinc-800 group-hover:text-primary',
+    documentDate: 'text-zinc-500',
+    icon: 'text-zinc-400 group-hover:text-primary',
+  };
+}
 
 function fieldClass(error?: string, className = '') {
   return `
@@ -103,6 +164,18 @@ export default function DocumentDetailsContainer({
   const selectedCategory = useMemo(() => {
     return categories.find((category) => category.id === Number(categoryId));
   }, [categories, categoryId]);
+
+  const selectedCategoryIndex = useMemo(() => {
+    const index = categories.findIndex(
+      (category) => category.id === Number(categoryId)
+    );
+
+    return index >= 0 ? index : 0;
+  }, [categories, categoryId]);
+
+  const previewTheme = useMemo(() => {
+    return getPreviewTheme(selectedCategoryIndex);
+  }, [selectedCategoryIndex]);
 
   const formattedDate = useMemo(() => {
     const date = document?.created_at
@@ -172,6 +245,25 @@ export default function DocumentDetailsContainer({
     router.push(ADMIN_TRANSPARENCY_PATH);
   };
 
+  const applyValidationErrors = (
+    issues: Array<{
+      path: (string | number)[];
+      message: string;
+    }>
+  ) => {
+    const nextErrors: DocumentFormErrors = {};
+
+    issues.forEach((issue) => {
+      const field = issue.path[0] as keyof DocumentFormErrors | undefined;
+
+      if (field && !nextErrors[field]) {
+        nextErrors[field] = issue.message;
+      }
+    });
+
+    setErrors(nextErrors);
+  };
+
   const handleSave = async () => {
     const parsed = documentSchema.safeParse({
       title,
@@ -181,17 +273,7 @@ export default function DocumentDetailsContainer({
     });
 
     if (!parsed.success) {
-      const nextErrors: DocumentFormErrors = {};
-
-      parsed.error.issues.forEach((issue) => {
-        const field = issue.path[0] as keyof DocumentFormErrors | undefined;
-
-        if (field && !nextErrors[field]) {
-          nextErrors[field] = issue.message;
-        }
-      });
-
-      setErrors(nextErrors);
+      applyValidationErrors(parsed.error.issues);
       return;
     }
 
@@ -204,8 +286,6 @@ export default function DocumentDetailsContainer({
       const response = isNew
         ? await createDocument(payload)
         : await updateDocument(document.id, payload);
-
-      setIsSubmitting(false);
 
       if (response) {
         await confirm({
@@ -231,19 +311,39 @@ export default function DocumentDetailsContainer({
         cancelText: 'Fechar',
         variant: 'danger',
       });
-    } catch {
-      setIsSubmitting(false);
-
+    } catch (error) {
       await confirm({
         title: 'Erro ao salvar',
         description:
-          'Não foi possível salvar o documento agora. Tente novamente em alguns instantes.',
+          error instanceof Error
+            ? error.message
+            : 'Não foi possível salvar o documento agora. Tente novamente em alguns instantes.',
         confirmText: 'Entendi',
         cancelText: 'Fechar',
         variant: 'danger',
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
+  const previewContent = (
+    <>
+      <div className="min-w-0">
+        <p className={`truncate text-sm font-medium ${previewTheme.documentTitle}`}>
+          {title || 'Título do documento'}
+        </p>
+
+        <p className={`mt-1 text-xs ${previewTheme.documentDate}`}>
+          {formattedDate}
+        </p>
+      </div>
+
+      <div className={`rounded-md p-2 transition ${previewTheme.icon}`}>
+        <ExternalLink size={15} aria-hidden="true" />
+      </div>
+    </>
+  );
 
   return (
     <main className="w-full max-w-4xl mx-auto py-12 md:py-20 px-6 selection:bg-primary selection:text-white">
@@ -268,7 +368,7 @@ export default function DocumentDetailsContainer({
         </div>
       </header>
 
-      <section className="rounded-md border border-dashed border-gray-300 bg-white p-6 md:p-8">
+      <section className="p-6 md:p-8">
         <div className="flex flex-col items-center text-center gap-4 mb-8">
           <div className="w-16 h-16 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center">
             <FileText className="w-8 h-8" aria-hidden="true" />
@@ -436,53 +536,47 @@ export default function DocumentDetailsContainer({
             </div>
           </div>
 
-          <section className="overflow-hidden rounded-md border border-zinc-200 bg-white shadow-sm">
-            <div className="flex items-center justify-between border-b border-zinc-100 bg-zinc-50 px-5 py-4">
+          <section className={`overflow-hidden rounded-md border shadow-sm ${previewTheme.card}`}>
+            <div
+              className={`flex items-center justify-between border-b px-5 py-4 ${previewTheme.header}`}
+            >
               <div className="flex items-center gap-3">
-                <div className="rounded-md bg-primary/10 p-2 text-primary">
-                  <FolderOpen size={18} aria-hidden="true" />
+                <div className={`rounded-md p-2 ${previewTheme.folderBox}`}>
+                  <FolderOpen
+                    size={18}
+                    aria-hidden="true"
+                    className={previewTheme.folderIcon}
+                  />
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-zinc-900">
+                  <h3 className={`font-semibold ${previewTheme.title}`}>
                     {selectedCategory?.name || 'Categoria'}
                   </h3>
 
-                  <p className="text-xs text-zinc-500">
+                  <p className={`text-xs ${previewTheme.subtitle}`}>
                     Prévia do documento
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center justify-between border-b border-zinc-100 px-5 py-3 transition hover:bg-zinc-50">
-              <div className="min-w-0">
-                <p className="truncate text-sm font-medium text-zinc-800">
-                  {title || 'Título do documento'}
-                </p>
-
-                <p className="mt-1 text-xs text-zinc-500">
-                  {formattedDate}
-                </p>
+            {fileUrl ? (
+              <a
+                href={fileUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`group flex items-center justify-between border-b px-5 py-3 transition ${previewTheme.row}`}
+                title="Abrir documento"
+                aria-label="Abrir documento"
+              >
+                {previewContent}
+              </a>
+            ) : (
+              <div className={`flex items-center justify-between border-b px-5 py-3 ${previewTheme.row}`}>
+                {previewContent}
               </div>
-
-              {fileUrl ? (
-                <a
-                  href={fileUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="rounded-md p-2 text-zinc-400 transition hover:bg-primary/10 hover:text-primary"
-                  title="Abrir documento"
-                  aria-label="Abrir documento"
-                >
-                  <ExternalLink size={15} aria-hidden="true" />
-                </a>
-              ) : (
-                <div className="rounded-md p-2 text-zinc-300">
-                  <ExternalLink size={15} aria-hidden="true" />
-                </div>
-              )}
-            </div>
+            )}
           </section>
 
           <div className="flex flex-col md:flex-row items-stretch md:items-center justify-end gap-3 pt-4 border-t border-gray-100">

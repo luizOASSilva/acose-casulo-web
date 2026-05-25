@@ -64,7 +64,7 @@ export default function ArticleListContainer({
   return (
     <main className="w-full max-w-4xl mx-auto py-12 md:py-20 px-6">
       <header className="mb-10 space-y-2">
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight">
+          <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 md:text-4xl">
           {isAdmin ? 'Painel de Controle de Artigos' : 'Artigos do Centro Dia'}
         </h1>
 
@@ -104,7 +104,7 @@ export default function ArticleListContainer({
           {safeArticles.map((article) => (
             <li
               key={article.id}
-              className="relative group py-4 flex justify-between items-center transition-all hover:bg-gray-50/50 rounded-xl px-4 cursor-pointer"
+              className="relative group py-2 flex justify-between items-center transition-all hover:bg-gray-50/50 rounded-xl cursor-pointer"
               onClick={() =>
                 isAdmin && router.push(`/admin/artigos/${article.id}`)
               }

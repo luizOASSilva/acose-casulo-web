@@ -1,21 +1,22 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useRef, useState } from 'react';
-import { ImageIcon, ImagePlus, RefreshCcw, Upload } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { ImageIcon, ImagePlus, RefreshCcw, Upload, X } from 'lucide-react';
 
 import { useConfirmDialog } from '@/context/ConfirmDialogContext';
 import {
   getMediaFiles,
   type MediaCollection,
   type MediaFile,
-  uploadMediaFile,
 } from '@/services/admin/media-library';
 
 interface MediaPickerProps {
   collection: MediaCollection;
   value?: string | null;
+  pendingFile?: File | null;
   onChange: (url: string) => void;
+  onPendingFileChange?: (file: File | null) => void;
   label?: string;
   helperText?: string;
 }
@@ -23,7 +24,9 @@ interface MediaPickerProps {
 export default function MediaPicker({
   collection,
   value,
+  pendingFile = null,
   onChange,
+  onPendingFileChange,
   label = 'Imagem',
   helperText = 'Envie ou escolha uma imagem da biblioteca.',
 }: MediaPickerProps) {
@@ -32,17 +35,37 @@ export default function MediaPicker({
 
   const [files, setFiles] = useState<MediaFile[]>([]);
   const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
 
   const selectedUrl = value?.trim() || '';
+
+  const pendingPreviewUrl = useMemo(() => {
+    if (!pendingFile) return '';
+
+    return URL.createObjectURL(pendingFile);
+  }, [pendingFile]);
+
+  const previewUrl = pendingPreviewUrl || selectedUrl;
+
+  useEffect(() => {
+    return () => {
+      if (pendingPreviewUrl) {
+        URL.revokeObjectURL(pendingPreviewUrl);
+      }
+    };
+  }, [pendingPreviewUrl]);
 
   async function loadFiles() {
     setLoading(true);
 
-    const data = await getMediaFiles(collection);
-
-    setFiles(data);
-    setLoading(false);
+    try {
+      const data = await getMediaFiles(collection);
+      setFiles(data);
+    } catch (error) {
+      console.error('Erro ao carregar mídias:', error);
+      setFiles([]);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -53,7 +76,7 @@ export default function MediaPicker({
     inputRef.current?.click();
   }
 
-  async function handleUpload(event: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
 
     event.target.value = '';
@@ -91,42 +114,19 @@ export default function MediaPicker({
       return;
     }
 
-    setUploading(true);
-
-    const uploaded = await uploadMediaFile(collection, file);
-
-    setUploading(false);
-
-    if (!uploaded) {
-      await confirm({
-        title: 'Erro ao enviar',
-        description:
-          'Não foi possível enviar a imagem agora. Tente novamente em alguns instantes.',
-        confirmText: 'Entendi',
-        cancelText: 'Fechar',
-        variant: 'danger',
-      });
-
-      return;
-    }
-
-    onChange(uploaded.url);
-
-    await loadFiles();
-
-    await confirm({
-      title: 'Imagem enviada',
-      description: 'A imagem foi enviada e selecionada com sucesso.',
-      confirmText: 'Entendi',
-      cancelText: 'Fechar',
-      variant: 'success',
-    });
+    onPendingFileChange?.(file);
   }
 
   function handleUseFile(file: MediaFile) {
+    onPendingFileChange?.(null);
+
     if (file.url === selectedUrl) return;
 
     onChange(file.url);
+  }
+
+  function handleRemovePendingFile() {
+    onPendingFileChange?.(null);
   }
 
   return (
@@ -135,7 +135,7 @@ export default function MediaPicker({
         ref={inputRef}
         type="file"
         accept=".svg,.png,.jpg,.jpeg,.webp,image/svg+xml,image/png,image/jpeg,image/webp"
-        onChange={handleUpload}
+        onChange={handleFileChange}
         className="hidden"
       />
 
@@ -143,14 +143,13 @@ export default function MediaPicker({
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex min-w-0 items-center gap-4">
             <div className="relative flex h-24 w-36 shrink-0 items-center justify-center overflow-hidden rounded-md border border-zinc-200 bg-zinc-50">
-              {selectedUrl ? (
+              {previewUrl ? (
                 <Image
-                  src={selectedUrl}
+                  src={previewUrl}
                   alt="Imagem selecionada"
                   fill
                   sizes="144px"
                   className="object-cover"
-                  unoptimized
                 />
               ) : (
                 <ImageIcon className="h-8 w-8 text-zinc-300" />
@@ -164,11 +163,26 @@ export default function MediaPicker({
                 {helperText}
               </p>
 
-              {selectedUrl && (
+              {pendingFile ? (
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <p className="text-xs font-medium text-orange-600">
+                    Nova imagem escolhida. Ela será enviada somente ao salvar.
+                  </p>
+
+                  <button
+                    type="button"
+                    onClick={handleRemovePendingFile}
+                    className="inline-flex items-center gap-1 rounded-md bg-orange-50 px-2 py-1 text-[11px] font-semibold text-orange-700 transition hover:bg-orange-100"
+                  >
+                    <X className="h-3 w-3" aria-hidden="true" />
+                    Remover
+                  </button>
+                </div>
+              ) : selectedUrl ? (
                 <p className="mt-2 text-xs font-medium text-primary">
                   Imagem selecionada
                 </p>
-              )}
+              ) : null}
             </div>
           </div>
 
@@ -176,11 +190,10 @@ export default function MediaPicker({
             <button
               type="button"
               onClick={handleSelectFile}
-              disabled={uploading}
-              className="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-2 text-xs font-semibold text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-2 text-xs font-semibold text-white transition hover:brightness-110"
             >
               <Upload className="h-4 w-4" aria-hidden="true" />
-              {uploading ? 'Enviando...' : 'Enviar nova'}
+              Escolher do PC
             </button>
 
             <button
@@ -211,8 +224,7 @@ export default function MediaPicker({
           <button
             type="button"
             onClick={handleSelectFile}
-            disabled={uploading}
-            className="flex w-full flex-col items-center justify-center rounded-md border border-dashed border-zinc-300 bg-white p-6 text-center transition hover:border-primary hover:bg-orange-50/40 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex w-full flex-col items-center justify-center rounded-md border border-dashed border-zinc-300 bg-white p-6 text-center transition hover:border-primary hover:bg-orange-50/40"
           >
             <ImagePlus className="h-8 w-8 text-zinc-300" aria-hidden="true" />
 
@@ -221,13 +233,13 @@ export default function MediaPicker({
             </p>
 
             <p className="mt-1 text-xs text-zinc-500">
-              Clique para enviar a primeira imagem.
+              Clique para escolher uma imagem do seu computador.
             </p>
           </button>
         ) : (
           <div className="grid max-h-[390px] grid-cols-2 gap-3 overflow-y-auto pr-1 md:grid-cols-3 xl:grid-cols-4">
             {files.map((file) => {
-              const isSelected = file.url === selectedUrl;
+              const isSelected = !pendingFile && file.url === selectedUrl;
 
               return (
                 <button
@@ -255,7 +267,6 @@ export default function MediaPicker({
                     fill
                     sizes="220px"
                     className="object-cover transition duration-200 group-hover:scale-105"
-                    unoptimized
                   />
 
                   <span

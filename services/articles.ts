@@ -5,6 +5,7 @@ function normalizeArticles(response: any): Article[] {
   if (Array.isArray(response)) return response;
   if (Array.isArray(response?.data)) return response.data;
   if (Array.isArray(response?.articles)) return response.articles;
+
   return [];
 }
 
@@ -12,12 +13,14 @@ function normalizeArticle(response: any): Article | null {
   if (!response) return null;
   if (response?.data) return response.data;
   if (response?.article) return response.article;
+
   return response;
 }
 
 export async function getRecentArticles(): Promise<Article[]> {
   try {
     const response = await api.get<any>('/articles/recent');
+
     return normalizeArticles(response);
   } catch (error) {
     console.error('Erro ao buscar artigos recentes:', error);
@@ -28,6 +31,7 @@ export async function getRecentArticles(): Promise<Article[]> {
 export async function getArticles(): Promise<Article[]> {
   try {
     const response = await api.get<any>('/articles');
+
     return normalizeArticles(response);
   } catch (error) {
     console.error('Erro ao buscar listagem de artigos:', error);
@@ -38,6 +42,7 @@ export async function getArticles(): Promise<Article[]> {
 export async function getArticleById(id: number): Promise<Article | null> {
   try {
     const response = await api.get<any>(`/articles/${id}`);
+
     return normalizeArticle(response);
   } catch (error) {
     console.error(`Erro ao buscar artigo com o ID ${id}:`, error);
@@ -48,6 +53,7 @@ export async function getArticleById(id: number): Promise<Article | null> {
 export async function getArticleBySlug(slug: string): Promise<Article | null> {
   try {
     const response = await api.get<any>(`/articles/${slug}`);
+
     return normalizeArticle(response);
   } catch (error) {
     console.error(`Erro ao buscar artigo com o slug ${slug}:`, error);
@@ -60,10 +66,16 @@ export async function createArticle(
 ): Promise<Article | null> {
   try {
     const response = await api.post<any>('/articles', data);
+
     return normalizeArticle(response);
   } catch (error) {
     console.error('Erro ao criar novo artigo no Laravel:', error);
-    return null;
+
+    if (error instanceof Error) {
+      throw error;
+    }
+
+    throw new Error('Erro ao criar artigo');
   }
 }
 
@@ -73,16 +85,23 @@ export async function updateArticle(
 ): Promise<Article | null> {
   try {
     const response = await api.put<any>(`/articles/${id}`, data);
+
     return normalizeArticle(response);
   } catch (error) {
     console.error(`Erro ao atualizar o artigo ID ${id} no Laravel:`, error);
-    return null;
+
+    if (error instanceof Error) {
+      throw error;
+    }
+
+    throw new Error('Erro ao atualizar artigo');
   }
 }
 
 export async function deleteArticle(id: number): Promise<boolean> {
   try {
     await api.delete(`/articles/${id}`);
+
     return true;
   } catch (error) {
     console.error(`Erro ao deletar o artigo ID ${id}:`, error);

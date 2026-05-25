@@ -5,6 +5,8 @@ import Image from 'next/image';
 import { Calendar, Clock, Plus, Trash2 } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 
+import { uploadMediaFile } from '@/services/admin/media-library';
+
 import type {
   Activity,
   ActivitySchedule,
@@ -98,6 +100,8 @@ export default function ActivityDetailsContainer({
   const [errors, setErrors] = useState<ActivityFormErrors>({});
   const [scheduleErrors, setScheduleErrors] = useState<ScheduleErrors>({});
 
+  const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
+
   const [title, setTitle] = useState(activity?.title || '');
   const [content, setContent] = useState(activity?.content || '');
   const [imageUrl, setImageUrl] = useState(activity?.media?.url || '');
@@ -110,6 +114,22 @@ export default function ActivityDetailsContainer({
     normalizeSchedules(activity)
   );
 
+  const pendingImagePreviewUrl = useMemo(() => {
+    if (!pendingImageFile) return '';
+
+    return URL.createObjectURL(pendingImageFile);
+  }, [pendingImageFile]);
+
+  const displayImageUrl = pendingImagePreviewUrl || imageUrl;
+
+  useEffect(() => {
+    return () => {
+      if (pendingImagePreviewUrl) {
+        URL.revokeObjectURL(pendingImagePreviewUrl);
+      }
+    };
+  }, [pendingImagePreviewUrl]);
+
   useEffect(() => {
     if (!activity) return;
 
@@ -119,6 +139,7 @@ export default function ActivityDetailsContainer({
     setImageAlt(activity.media?.alt_text || '');
     setImageCaption(activity.media?.caption || '');
     setSchedules(normalizeSchedules(activity));
+    setPendingImageFile(null);
     setErrors({});
     setScheduleErrors({});
   }, [activity]);
@@ -135,6 +156,7 @@ export default function ActivityDetailsContainer({
 
   const hasPendingChanges = useMemo(() => {
     return (
+      pendingImageFile !== null ||
       title !== (activity?.title || '') ||
       content !== (activity?.content || '') ||
       imageUrl !== (activity?.media?.url || '') ||
@@ -143,6 +165,7 @@ export default function ActivityDetailsContainer({
       JSON.stringify(schedules) !== JSON.stringify(initialSchedules)
     );
   }, [
+    pendingImageFile,
     title,
     content,
     imageUrl,
@@ -272,6 +295,7 @@ export default function ActivityDetailsContainer({
     setImageAlt(activity?.media?.alt_text || '');
     setImageCaption(activity?.media?.caption || '');
     setSchedules(normalizeSchedules(activity));
+    setPendingImageFile(null);
     setErrors({});
     setScheduleErrors({});
   };
@@ -346,6 +370,49 @@ export default function ActivityDetailsContainer({
     return nextScheduleErrors;
   };
 
+  const applyValidationErrors = (
+    issues: Array<{
+      path: (string | number)[];
+      message: string;
+    }>
+  ) => {
+    const nextErrors: ActivityFormErrors = {};
+    const nextScheduleErrors: ScheduleErrors = {};
+
+    issues.forEach((issue) => {
+      const [field, index, nestedField] = issue.path;
+
+      if (field === 'schedules' && typeof index === 'number') {
+        const key = nestedField as keyof ScheduleErrors[number] | undefined;
+
+        if (key) {
+          nextScheduleErrors[index] = {
+            ...nextScheduleErrors[index],
+            [key]: issue.message,
+          };
+        } else if (!nextErrors.schedules) {
+          nextErrors.schedules = issue.message;
+        }
+
+        return;
+      }
+
+      if (field === 'schedules' && !nextErrors.schedules) {
+        nextErrors.schedules = issue.message;
+        return;
+      }
+
+      const errorField = field as keyof ActivityFormErrors | undefined;
+
+      if (errorField && !nextErrors[errorField]) {
+        nextErrors[errorField] = issue.message;
+      }
+    });
+
+    setErrors(nextErrors);
+    setScheduleErrors(nextScheduleErrors);
+  };
+
   const handleSave = async () => {
     const conflictErrors = validateScheduleConflicts();
 
@@ -358,10 +425,15 @@ export default function ActivityDetailsContainer({
       return;
     }
 
+    const validationImageUrl =
+      pendingImageFile && !imageUrl
+        ? 'http://localhost/imagem-pendente.jpg'
+        : imageUrl;
+
     const parsed = activitySchema.safeParse({
       title,
       content,
-      image_url: imageUrl,
+      image_url: validationImageUrl,
       image_description: imageAlt,
       image_caption: imageCaption.trim() || null,
       schedules: schedules.map((schedule) => ({
@@ -372,41 +444,7 @@ export default function ActivityDetailsContainer({
     });
 
     if (!parsed.success) {
-      const nextErrors: ActivityFormErrors = {};
-      const nextScheduleErrors: ScheduleErrors = {};
-
-      parsed.error.issues.forEach((issue) => {
-        const [field, index, nestedField] = issue.path;
-
-        if (field === 'schedules' && typeof index === 'number') {
-          const key = nestedField as keyof ScheduleErrors[number] | undefined;
-
-          if (key) {
-            nextScheduleErrors[index] = {
-              ...nextScheduleErrors[index],
-              [key]: issue.message,
-            };
-          } else if (!nextErrors.schedules) {
-            nextErrors.schedules = issue.message;
-          }
-
-          return;
-        }
-
-        if (field === 'schedules' && !nextErrors.schedules) {
-          nextErrors.schedules = issue.message;
-          return;
-        }
-
-        const errorField = field as keyof ActivityFormErrors | undefined;
-
-        if (errorField && !nextErrors[errorField]) {
-          nextErrors[errorField] = issue.message;
-        }
-      });
-
-      setErrors(nextErrors);
-      setScheduleErrors(nextScheduleErrors);
+      applyValidationErrors(parsed.error.issues);
       return;
     }
 
@@ -414,38 +452,70 @@ export default function ActivityDetailsContainer({
     setScheduleErrors({});
     setIsSubmitting(true);
 
-    const response = isNew
-      ? await createActivity(parsed.data)
-      : activity?.id
-        ? await updateActivity(activity.id, parsed.data)
-        : null;
+    try {
+      let finalImageUrl = imageUrl;
 
-    setIsSubmitting(false);
+      if (pendingImageFile) {
+        const uploaded = await uploadMediaFile('activities', pendingImageFile);
 
-    if (response) {
+        if (!uploaded?.url) {
+          throw new Error('Não foi possível enviar a imagem selecionada.');
+        }
+
+        finalImageUrl = uploaded.url;
+        setImageUrl(uploaded.url);
+        setPendingImageFile(null);
+      }
+
+      const payload = {
+        ...parsed.data,
+        image_url: finalImageUrl,
+      };
+
+      const response = isNew
+        ? await createActivity(payload)
+        : activity?.id
+          ? await updateActivity(activity.id, payload)
+          : null;
+
+      if (response) {
+        await confirm({
+          title: isNew ? 'Atividade criada' : 'Alterações salvas',
+          description: isNew
+            ? 'A atividade foi criada com sucesso.'
+            : 'As alterações da atividade foram salvas com sucesso.',
+          confirmText: 'Entendi',
+          cancelText: 'Fechar',
+          variant: 'success',
+        });
+
+        router.push('/admin/atividades');
+        router.refresh();
+        return;
+      }
+
       await confirm({
-        title: isNew ? 'Atividade criada' : 'Alterações salvas',
-        description: isNew
-          ? 'A atividade foi criada com sucesso.'
-          : 'As alterações da atividade foram salvas com sucesso.',
+        title: 'Erro ao salvar',
+        description:
+          'Não foi possível salvar a atividade agora. Tente novamente em alguns instantes.',
         confirmText: 'Entendi',
         cancelText: 'Fechar',
-        variant: 'success',
+        variant: 'danger',
       });
-
-      router.push('/admin/atividades');
-      router.refresh();
-      return;
+    } catch (error) {
+      await confirm({
+        title: 'Erro ao salvar',
+        description:
+          error instanceof Error
+            ? error.message
+            : 'Não foi possível salvar a atividade agora. Tente novamente em alguns instantes.',
+        confirmText: 'Entendi',
+        cancelText: 'Fechar',
+        variant: 'danger',
+      });
+    } finally {
+      setIsSubmitting(false);
     }
-
-    await confirm({
-      title: 'Erro ao salvar',
-      description:
-        'Não foi possível salvar a atividade agora. Tente novamente em alguns instantes.',
-      confirmText: 'Entendi',
-      cancelText: 'Fechar',
-      variant: 'danger',
-    });
   };
 
   return (
@@ -483,12 +553,18 @@ export default function ActivityDetailsContainer({
           <MediaPicker
             collection="activities"
             value={imageUrl}
+            pendingFile={pendingImageFile}
+            onPendingFileChange={(file) => {
+              setPendingImageFile(file);
+              clearError('image_url');
+            }}
             onChange={(url) => {
               setImageUrl(url);
+              setPendingImageFile(null);
               clearError('image_url');
             }}
             label="Imagem da atividade"
-            helperText="Envie ou escolha uma imagem para a atividade."
+            helperText="Escolha uma imagem existente ou selecione uma nova do seu computador. O upload só acontece ao salvar."
           />
 
           <FieldError message={errors.image_url} />
@@ -711,15 +787,14 @@ export default function ActivityDetailsContainer({
         </div>
       )}
 
-      {imageUrl && (
+      {displayImageUrl && (
         <div className="relative w-full h-64 md:h-105 rounded-md overflow-hidden bg-gray-50 border border-gray-100">
           <Image
-            src={imageUrl}
+            src={displayImageUrl}
             alt={imageAlt || 'Capa da atividade'}
             fill
             className="object-cover"
             priority
-            unoptimized
           />
 
           {!isEditMode && imageCaption && (
@@ -877,7 +952,9 @@ export default function ActivityDetailsContainer({
               className="text-xs bg-green-600 hover:bg-green-700 text-white font-semibold px-5 py-2.5 rounded-md transition-all cursor-pointer disabled:opacity-60"
             >
               {isSubmitting
-                ? 'Salvando...'
+                ? pendingImageFile
+                  ? 'Enviando imagem...'
+                  : 'Salvando...'
                 : isNew
                   ? 'Criar Atividade'
                   : 'Confirmar e Salvar'}

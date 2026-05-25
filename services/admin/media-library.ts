@@ -47,7 +47,7 @@ export async function getMediaFiles(
 export async function uploadMediaFile(
   collection: MediaCollection,
   file: File
-): Promise<MediaFile | null> {
+): Promise<MediaFile> {
   try {
     const formData = new FormData();
 
@@ -61,7 +61,12 @@ export async function uploadMediaFile(
     return response.data;
   } catch (error) {
     console.error('Erro ao enviar mídia:', error);
-    return null;
+
+    if (error instanceof Error) {
+      throw error;
+    }
+
+    throw new Error('Erro ao enviar imagem.');
   }
 }
 

@@ -42,7 +42,6 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
             className="object-cover transition-transform duration-500 group-hover:scale-105"
-            unoptimized
           />
         ) : (
           <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-gray-400">

@@ -35,9 +35,24 @@ function normalizeCategories(payload: any): DocumentCategory[] {
   return [];
 }
 
-export async function getDocuments(): Promise<DocumentItem[]> {
+export async function getDocuments(params?: {
+  year?: number | string;
+  category_id?: number | string;
+}): Promise<DocumentItem[]> {
   try {
-    const res = await api.get<any>('/documents');
+    const searchParams = new URLSearchParams();
+
+    if (params?.year) {
+      searchParams.set('year', String(params.year));
+    }
+
+    if (params?.category_id) {
+      searchParams.set('category_id', String(params.category_id));
+    }
+
+    const query = searchParams.toString();
+
+    const res = await api.get<any>(`/documents${query ? `?${query}` : ''}`);
 
     return normalizeDocuments(res);
   } catch (error) {
@@ -77,7 +92,12 @@ export async function createDocument(
     return normalizeDocument(res);
   } catch (error) {
     console.error('Erro ao criar documento:', error);
-    throw error;
+
+    if (error instanceof Error) {
+      throw error;
+    }
+
+    throw new Error('Erro ao criar documento.');
   }
 }
 
@@ -91,7 +111,12 @@ export async function updateDocument(
     return normalizeDocument(res);
   } catch (error) {
     console.error('Erro ao atualizar documento:', error);
-    throw error;
+
+    if (error instanceof Error) {
+      throw error;
+    }
+
+    throw new Error('Erro ao atualizar documento.');
   }
 }
 

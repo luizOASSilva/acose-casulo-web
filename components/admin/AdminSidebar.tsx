@@ -94,8 +94,7 @@ export function AdminSidebar({
       <aside
         className={`
           fixed inset-y-0 left-0 z-80 flex h-screen flex-col
-          border-r border-zinc-200 bg-white
-          transition-[width,transform] duration-300 ease-in-out
+        bg-white transition-[width,transform] duration-300 ease-in-out
           ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}
           lg:translate-x-0 lg:sticky lg:top-0 lg:shrink-0
           ${collapsed ? 'w-22' : 'w-65'}
@@ -118,7 +117,6 @@ export function AdminSidebar({
               height={collapsed ? 55 : 75}
               className="transition-all duration-300"
               priority
-              unoptimized
             />
           </Link>
         </div>
