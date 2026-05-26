@@ -329,9 +329,7 @@ export default function ActivityListContainer({
 
                 <select
                   value={dia}
-                  onChange={(event) =>
-                    setDia(event.target.value as ActivityListFilters['dia'])
-                  }
+                  onChange={(event) => setDia(event.target.value)}
                   className="w-full cursor-pointer rounded-md border border-gray-200 px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
                   aria-label="Filtrar por dia da semana"
                 >
