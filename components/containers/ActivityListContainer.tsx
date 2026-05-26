@@ -2,7 +2,15 @@
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Clock, Edit3, Search, Trash2, X } from 'lucide-react';
+import {
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  Edit3,
+  Search,
+  Trash2,
+  X,
+} from 'lucide-react';
 
 import ActivityCard from '@/components/ui/ActivityCard';
 import Reveal from '@/components/animations/Reveal';
@@ -73,8 +81,10 @@ export default function ActivityListContainer({
   const searchParams = useSearchParams();
   const { confirm } = useConfirmDialog();
 
-  const filterRef = useRef<HTMLElement | null>(null);
-  const [isFilterSticky, setIsFilterSticky] = useState(false);
+  const stickySentinelRef = useRef<HTMLDivElement | null>(null);
+
+  const [isMobileSticky, setIsMobileSticky] = useState(false);
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
   const [busca, setBusca] = useState(filters?.busca || '');
   const [dia, setDia] = useState(filters?.dia || '');
@@ -88,6 +98,8 @@ export default function ActivityListContainer({
 
   const currentPage = pagination?.current_page || 1;
   const lastPage = pagination?.last_page || 1;
+
+  const shouldHideExtraMobileFilters = isMobileSticky && !isMobileFilterOpen;
 
   const hasActiveFilters = Boolean(
     filters?.busca ||
@@ -113,18 +125,48 @@ export default function ActivityListContainer({
   useEffect(() => {
     if (!isAdmin) return;
 
-    function handleScroll() {
-      const element = filterRef.current;
-      if (!element) return;
+    const sentinel = stickySentinelRef.current;
+    if (!sentinel) return;
 
-      setIsFilterSticky(element.getBoundingClientRect().top <= 16);
+    function isMobileViewport() {
+      return window.matchMedia('(max-width: 767px)').matches;
     }
 
-    handleScroll();
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        const nextSticky = isMobileViewport() && !entry.isIntersecting;
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
+        setIsMobileSticky((current) => {
+          if (current === nextSticky) return current;
+          return nextSticky;
+        });
 
-    return () => window.removeEventListener('scroll', handleScroll);
+        if (!nextSticky) {
+          setIsMobileFilterOpen(false);
+        }
+      },
+      {
+        root: null,
+        threshold: 0,
+        rootMargin: '-16px 0px 0px 0px',
+      }
+    );
+
+    observer.observe(sentinel);
+
+    function handleResize() {
+      if (!isMobileViewport()) {
+        setIsMobileSticky(false);
+        setIsMobileFilterOpen(false);
+      }
+    }
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', handleResize);
+    };
   }, [isAdmin]);
 
   function getCurrentListPath() {
@@ -187,6 +229,7 @@ export default function ActivityListContainer({
     setInicio('');
     setFim('');
     setOrdem('recentes');
+    setIsMobileFilterOpen(false);
 
     router.push('/admin/atividades');
   }
@@ -245,7 +288,8 @@ export default function ActivityListContainer({
 
         {isAdmin && (
           <p className="text-sm text-gray-600 bg-emerald-50 px-3 py-1.5 rounded-lg inline-block border border-emerald-100">
-            Painel conectado ao banco de dados. Alterações são refletidas em tempo real.
+            Painel conectado ao banco de dados. Alterações são refletidas em
+            tempo real.
           </p>
         )}
       </header>
@@ -295,125 +339,181 @@ export default function ActivityListContainer({
             </button>
           )}
 
+          {isAdmin && <div ref={stickySentinelRef} className="h-px" />}
+
           {isAdmin && (
             <section
-              ref={filterRef}
               className={`
                 sticky top-4 z-30 rounded-md border border-gray-200 bg-zinc-50 p-4
                 transition-shadow duration-200
                 ${
-                  isFilterSticky
+                  isMobileSticky
                     ? 'shadow-[0_12px_18px_-18px_rgba(0,0,0,0.65)]'
                     : ''
                 }
               `}
             >
-              <form
-                onSubmit={handleFilterSubmit}
-                className="grid grid-cols-1 gap-3 lg:grid-cols-[1fr_180px_150px_150px_180px_auto]"
-              >
-                <div className="relative">
-                  <Search
-                    className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
-                    aria-hidden="true"
-                  />
+              <form onSubmit={handleFilterSubmit} className="space-y-3">
+                <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_180px_150px_150px_180px_auto]">
+                  <div className="relative min-w-0">
+                    <Search
+                      className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+                      aria-hidden="true"
+                    />
 
-                  <input
-                    type="search"
-                    value={busca}
-                    onChange={(event) => setBusca(event.target.value)}
-                    placeholder="Buscar atividade..."
-                    className="w-full rounded-md border border-gray-200 py-3 pl-10 pr-4 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
-                  />
-                </div>
+                    <input
+                      type="search"
+                      value={busca}
+                      onChange={(event) => setBusca(event.target.value)}
+                      placeholder="Buscar atividade..."
+                      className="w-full min-w-0 rounded-md border border-gray-200 py-3 pl-10 pr-4 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
+                    />
+                  </div>
 
-                <select
-                  value={dia}
-                  onChange={(event) => setDia(event.target.value)}
-                  className="w-full cursor-pointer rounded-md border border-gray-200 px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
-                  aria-label="Filtrar por dia da semana"
-                >
-                  <option value="">Todos os dias</option>
-
-                  {weekdayOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-
-                <div className="relative">
-                  <Clock
-                    className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
-                    aria-hidden="true"
-                  />
-
-                  <input
-                    type="time"
-                    value={inicio}
-                    onChange={(event) => setInicio(event.target.value)}
-                    className="w-full cursor-pointer rounded-md border border-gray-200 py-3 pl-10 pr-4 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
-                    aria-label="Horário inicial"
-                  />
-                </div>
-
-                <div className="relative">
-                  <Clock
-                    className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
-                    aria-hidden="true"
-                  />
-
-                  <input
-                    type="time"
-                    value={fim}
-                    onChange={(event) => setFim(event.target.value)}
-                    className="w-full cursor-pointer rounded-md border border-gray-200 py-3 pl-10 pr-4 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
-                    aria-label="Horário final"
-                  />
-                </div>
-
-                <select
-                  value={ordem}
-                  onChange={(event) =>
-                    setOrdem(event.target.value as ActivityOrder)
-                  }
-                  className="w-full cursor-pointer rounded-md border border-gray-200 px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
-                  aria-label="Ordenar atividades"
-                >
-                  {sortOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-
-                <div className="flex gap-2">
-                  <button
-                    type="submit"
-                    className="inline-flex cursor-pointer items-center justify-center rounded-md bg-primary px-4 py-3 text-sm font-semibold text-white transition hover:brightness-110 active:scale-95"
+                  <select
+                    value={dia}
+                    onChange={(event) => setDia(event.target.value)}
+                    className={`
+                      w-full min-w-0 cursor-pointer rounded-md border border-gray-200 px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10
+                      ${
+                        shouldHideExtraMobileFilters ? 'hidden md:block' : ''
+                      }
+                    `}
+                    aria-label="Filtrar por dia da semana"
                   >
-                    Filtrar
-                  </button>
+                    <option value="">Todos os dias</option>
 
-                  {hasActiveFilters && (
+                    {weekdayOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+
+                  <div
+                    className={`
+                      relative min-w-0
+                      ${
+                        shouldHideExtraMobileFilters ? 'hidden md:block' : ''
+                      }
+                    `}
+                  >
+                    <Clock
+                      className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+                      aria-hidden="true"
+                    />
+
+                    <input
+                      type="time"
+                      value={inicio}
+                      onChange={(event) => setInicio(event.target.value)}
+                      className="w-full min-w-0 max-w-full cursor-pointer appearance-none rounded-md border border-gray-200 py-3 pl-10 pr-2 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10 [color-scheme:light] [&::-webkit-date-and-time-value]:text-left"
+                      aria-label="Horário inicial"
+                    />
+                  </div>
+
+                  <div
+                    className={`
+                      relative min-w-0
+                      ${
+                        shouldHideExtraMobileFilters ? 'hidden md:block' : ''
+                      }
+                    `}
+                  >
+                    <Clock
+                      className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+                      aria-hidden="true"
+                    />
+
+                    <input
+                      type="time"
+                      value={fim}
+                      onChange={(event) => setFim(event.target.value)}
+                      className="w-full min-w-0 max-w-full cursor-pointer appearance-none rounded-md border border-gray-200 py-3 pl-10 pr-2 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10 [color-scheme:light] [&::-webkit-date-and-time-value]:text-left"
+                      aria-label="Horário final"
+                    />
+                  </div>
+
+                  <select
+                    value={ordem}
+                    onChange={(event) =>
+                      setOrdem(event.target.value as ActivityOrder)
+                    }
+                    className={`
+                      w-full min-w-0 cursor-pointer rounded-md border border-gray-200 px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10
+                      ${
+                        shouldHideExtraMobileFilters ? 'hidden md:block' : ''
+                      }
+                    `}
+                    aria-label="Ordenar atividades"
+                  >
+                    {sortOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+
+                  <div
+                    className={`
+                      flex min-w-0 gap-2
+                      ${
+                        shouldHideExtraMobileFilters ? 'hidden md:flex' : ''
+                      }
+                    `}
+                  >
                     <button
-                      type="button"
-                      onClick={handleClearFilters}
-                      className="inline-flex cursor-pointer items-center justify-center rounded-md bg-gray-100 px-3 py-3 text-gray-600 transition hover:bg-gray-200 active:scale-95"
-                      aria-label="Limpar filtros"
-                      title="Limpar filtros"
+                      type="submit"
+                      className="inline-flex flex-1 cursor-pointer items-center justify-center rounded-md bg-primary px-4 py-3 text-sm font-semibold text-white transition hover:brightness-110 active:scale-95 lg:flex-none"
                     >
-                      <X className="h-4 w-4" aria-hidden="true" />
+                      Filtrar
                     </button>
-                  )}
+
+                    {hasActiveFilters && (
+                      <button
+                        type="button"
+                        onClick={handleClearFilters}
+                        className="inline-flex cursor-pointer items-center justify-center rounded-md bg-gray-100 px-3 py-3 text-gray-600 transition hover:bg-gray-200 active:scale-95"
+                        aria-label="Limpar filtros"
+                        title="Limpar filtros"
+                      >
+                        <X className="h-4 w-4" aria-hidden="true" />
+                      </button>
+                    )}
+                  </div>
                 </div>
+
+                {isMobileSticky && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setIsMobileFilterOpen((current) => !current)
+                    }
+                    className="flex w-full items-center justify-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-2.5 text-xs font-semibold text-gray-700 transition active:scale-[0.99] md:hidden"
+                    aria-expanded={isMobileFilterOpen}
+                  >
+                    {isMobileFilterOpen ? (
+                      <>
+                        Recolher filtros
+                        <ChevronUp className="h-4 w-4" aria-hidden="true" />
+                      </>
+                    ) : (
+                      <>
+                        Mostrar filtros
+                        <ChevronDown className="h-4 w-4" aria-hidden="true" />
+                      </>
+                    )}
+                  </button>
+                )}
               </form>
 
               {pagination && (
                 <p className="mt-3 text-xs text-gray-500">
                   {pagination.total === 0
                     ? 'Nenhuma atividade encontrada.'
-                    : `Mostrando ${pagination.from ?? 0}–${pagination.to ?? 0} de ${pagination.total} atividades.`}
+                    : `Mostrando ${pagination.from ?? 0}–${
+                        pagination.to ?? 0
+                      } de ${pagination.total} atividades.`}
                 </p>
               )}
             </section>

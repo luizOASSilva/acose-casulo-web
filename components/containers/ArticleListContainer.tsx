@@ -2,7 +2,15 @@
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Edit3, Search, Tag, Trash2, X } from 'lucide-react';
+import {
+  ChevronDown,
+  ChevronUp,
+  Edit3,
+  Search,
+  Tag,
+  Trash2,
+  X,
+} from 'lucide-react';
 
 import ArticleRow from '@/components/ui/ArticleRow';
 import Reveal from '@/components/animations/Reveal';
@@ -71,8 +79,10 @@ export default function ArticleListContainer({
 
   const filterRef = useRef<HTMLElement | null>(null);
   const keywordBoxRef = useRef<HTMLDivElement | null>(null);
+  const rafRef = useRef<number | null>(null);
 
-  const [isFilterSticky, setIsFilterSticky] = useState(false);
+  const [isMobileSticky, setIsMobileSticky] = useState(false);
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [isKeywordOpen, setIsKeywordOpen] = useState(false);
 
   const [busca, setBusca] = useState(filters?.busca || '');
@@ -85,6 +95,8 @@ export default function ArticleListContainer({
 
   const currentPage = pagination?.current_page || 1;
   const lastPage = pagination?.last_page || 1;
+
+  const shouldHideExtraMobileFilters = isMobileSticky && !isMobileFilterOpen;
 
   const hasActiveFilters = Boolean(
     filters?.busca ||
@@ -147,18 +159,45 @@ export default function ArticleListContainer({
   useEffect(() => {
     if (!isAdmin) return;
 
-    function handleScroll() {
+    function updateStickyState() {
       const element = filterRef.current;
       if (!element) return;
 
-      setIsFilterSticky(element.getBoundingClientRect().top <= 16);
+      const isMobile = window.matchMedia('(max-width: 767px)').matches;
+      const nextSticky = isMobile && element.getBoundingClientRect().top <= 16;
+
+      setIsMobileSticky((current) => {
+        if (current === nextSticky) return current;
+        return nextSticky;
+      });
+
+      if (!nextSticky) {
+        setIsMobileFilterOpen(false);
+      }
     }
 
-    handleScroll();
+    function handleScrollOrResize() {
+      if (rafRef.current) return;
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
+      rafRef.current = window.requestAnimationFrame(() => {
+        rafRef.current = null;
+        updateStickyState();
+      });
+    }
 
-    return () => window.removeEventListener('scroll', handleScroll);
+    updateStickyState();
+
+    window.addEventListener('scroll', handleScrollOrResize, { passive: true });
+    window.addEventListener('resize', handleScrollOrResize);
+
+    return () => {
+      window.removeEventListener('scroll', handleScrollOrResize);
+      window.removeEventListener('resize', handleScrollOrResize);
+
+      if (rafRef.current) {
+        window.cancelAnimationFrame(rafRef.current);
+      }
+    };
   }, [isAdmin]);
 
   useEffect(() => {
@@ -229,6 +268,7 @@ export default function ArticleListContainer({
     setPalavra('');
     setOrdem('recentes');
     setIsKeywordOpen(false);
+    setIsMobileFilterOpen(false);
 
     router.push('/admin/artigos');
   }
@@ -339,143 +379,192 @@ export default function ArticleListContainer({
                 sticky top-4 z-30 rounded-md border border-gray-200 bg-zinc-50 p-4
                 transition-shadow duration-200
                 ${
-                  isFilterSticky
+                  isMobileSticky
                     ? 'shadow-[0_12px_18px_-18px_rgba(0,0,0,0.65)]'
                     : ''
                 }
               `}
             >
-              <form
-                onSubmit={handleFilterSubmit}
-                className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_260px_180px_auto]"
-              >
-                <div className="relative">
-                  <Search
-                    className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
-                    aria-hidden="true"
-                  />
+              <form onSubmit={handleFilterSubmit} className="space-y-3">
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_260px_180px_auto]">
+                  <div className="relative min-w-0">
+                    <Search
+                      className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+                      aria-hidden="true"
+                    />
 
-                  <input
-                    type="search"
-                    value={busca}
-                    onChange={(event) => setBusca(event.target.value)}
-                    placeholder="Buscar artigo..."
-                    className="w-full rounded-md border border-gray-200 py-3 pl-10 pr-4 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
-                  />
-                </div>
+                    <input
+                      type="search"
+                      value={busca}
+                      onChange={(event) => setBusca(event.target.value)}
+                      placeholder="Buscar artigo..."
+                      className="w-full rounded-md border border-gray-200 py-3 pl-10 pr-4 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
+                    />
+                  </div>
 
-                <div ref={keywordBoxRef} className="relative">
-                  <Tag
-                    className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
-                    aria-hidden="true"
-                  />
+                  <div
+                    ref={keywordBoxRef}
+                    className={`
+                      relative min-w-0
+                      ${
+                        shouldHideExtraMobileFilters
+                          ? 'hidden md:block'
+                          : 'block'
+                      }
+                    `}
+                  >
+                    <Tag
+                      className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+                      aria-hidden="true"
+                    />
 
-                  <input
-                    type="text"
-                    value={palavra}
-                    onFocus={() => setIsKeywordOpen(true)}
-                    onChange={(event) => {
-                      setPalavra(event.target.value);
-                      setIsKeywordOpen(true);
-                    }}
-                    placeholder="Palavra-chave"
-                    className="w-full rounded-md border border-gray-200 py-3 pl-10 pr-9 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
-                  />
-
-                  {palavra && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setPalavra('');
+                    <input
+                      type="text"
+                      value={palavra}
+                      onFocus={() => setIsKeywordOpen(true)}
+                      onChange={(event) => {
+                        setPalavra(event.target.value);
                         setIsKeywordOpen(true);
                       }}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 cursor-pointer"
-                      aria-label="Limpar palavra-chave"
-                    >
-                      <X className="h-3.5 w-3.5" aria-hidden="true" />
-                    </button>
-                  )}
+                      placeholder="Palavra-chave"
+                      className="w-full rounded-md border border-gray-200 py-3 pl-10 pr-9 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
+                    />
 
-                  {isKeywordOpen && (
-                    <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-40 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
-                      <div className="max-h-64 overflow-y-auto p-2">
-                        {filteredKeywordSuggestions.length > 0 ? (
-                          <div className="flex flex-wrap gap-2">
-                            {filteredKeywordSuggestions.map((keyword) => {
-                              const selected =
-                                palavra.trim().toLowerCase() ===
-                                keyword.toLowerCase();
-                              return (
-                                <button
-                                  key={keyword}
-                                  type="button"
-                                  onClick={() => handleKeywordSelect(keyword)}
-                                  className={`
-                                    rounded-md border px-3 py-1.5 text-xs font-semibold transition cursor-pointer
-                                    ${
-                                      selected
-                                        ? 'border-primary bg-primary text-white'
-                                        : 'border-orange-100 bg-orange-50 text-orange-700 hover:border-orange-200 hover:bg-orange-100'
+                    {palavra && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPalavra('');
+                          setIsKeywordOpen(true);
+                        }}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 cursor-pointer"
+                        aria-label="Limpar palavra-chave"
+                      >
+                        <X className="h-3.5 w-3.5" aria-hidden="true" />
+                      </button>
+                    )}
+
+                    {isKeywordOpen && (
+                      <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-40 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
+                        <div className="max-h-64 overflow-y-auto p-2">
+                          {filteredKeywordSuggestions.length > 0 ? (
+                            <div className="flex flex-wrap gap-2">
+                              {filteredKeywordSuggestions.map((keyword) => {
+                                const selected =
+                                  palavra.trim().toLowerCase() ===
+                                  keyword.toLowerCase();
+
+                                return (
+                                  <button
+                                    key={keyword}
+                                    type="button"
+                                    onClick={() =>
+                                      handleKeywordSelect(keyword)
                                     }
-                                  `}
-                                >
-                                  {keyword}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        ) : (
-                          <p className="px-3 py-2 text-xs text-gray-500">
-                            Nenhuma palavra-chave encontrada.
-                          </p>
-                        )}
+                                    className={`
+                                      rounded-md border px-3 py-1.5 text-xs font-semibold transition cursor-pointer
+                                      ${
+                                        selected
+                                          ? 'border-primary bg-primary text-white'
+                                          : 'border-orange-100 bg-orange-50 text-orange-700 hover:border-orange-200 hover:bg-orange-100'
+                                      }
+                                    `}
+                                  >
+                                    {keyword}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          ) : (
+                            <p className="px-3 py-2 text-xs text-gray-500">
+                              Nenhuma palavra-chave encontrada.
+                            </p>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
 
-                <select
-                  value={ordem}
-                  onChange={(event) =>
-                    setOrdem(event.target.value as ArticleOrder)
-                  }
-                  className="w-full cursor-pointer rounded-md border border-gray-200 px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
-                  aria-label="Ordenar artigos"
-                >
-                  {sortOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-
-                <div className="flex gap-2">
-                  <button
-                    type="submit"
-                    className="inline-flex cursor-pointer items-center justify-center rounded-md bg-primary px-4 py-3 text-sm font-semibold text-white transition hover:brightness-110 active:scale-95"
+                  <select
+                    value={ordem}
+                    onChange={(event) =>
+                      setOrdem(event.target.value as ArticleOrder)
+                    }
+                    className={`
+                      w-full min-w-0 cursor-pointer rounded-md border border-gray-200 px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10
+                      ${
+                        shouldHideExtraMobileFilters ? 'hidden md:block' : ''
+                      }
+                    `}
+                    aria-label="Ordenar artigos"
                   >
-                    Filtrar
-                  </button>
+                    {sortOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
 
-                  {hasActiveFilters && (
+                  <div
+                    className={`
+                      flex min-w-0 gap-2
+                      ${
+                        shouldHideExtraMobileFilters ? 'hidden md:flex' : ''
+                      }
+                    `}
+                  >
                     <button
-                      type="button"
-                      onClick={handleClearFilters}
-                      className="inline-flex cursor-pointer items-center justify-center rounded-md bg-gray-100 px-3 py-3 text-gray-600 transition hover:bg-gray-200 active:scale-95"
-                      aria-label="Limpar filtros"
-                      title="Limpar filtros"
+                      type="submit"
+                      className="inline-flex flex-1 cursor-pointer items-center justify-center rounded-md bg-primary px-4 py-3 text-sm font-semibold text-white transition hover:brightness-110 active:scale-95 md:flex-none"
                     >
-                      <X className="h-4 w-4" aria-hidden="true" />
+                      Filtrar
                     </button>
-                  )}
+
+                    {hasActiveFilters && (
+                      <button
+                        type="button"
+                        onClick={handleClearFilters}
+                        className="inline-flex cursor-pointer items-center justify-center rounded-md bg-gray-100 px-3 py-3 text-gray-600 transition hover:bg-gray-200 active:scale-95"
+                        aria-label="Limpar filtros"
+                        title="Limpar filtros"
+                      >
+                        <X className="h-4 w-4" aria-hidden="true" />
+                      </button>
+                    )}
+                  </div>
                 </div>
+
+                {isMobileSticky && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setIsMobileFilterOpen((current) => !current)
+                    }
+                    className="flex w-full items-center justify-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-2.5 text-xs font-semibold text-gray-700 transition active:scale-[0.99] md:hidden"
+                    aria-expanded={isMobileFilterOpen}
+                  >
+                    {isMobileFilterOpen ? (
+                      <>
+                        Recolher filtros
+                        <ChevronUp className="h-4 w-4" aria-hidden="true" />
+                      </>
+                    ) : (
+                      <>
+                        Mostrar filtros
+                        <ChevronDown className="h-4 w-4" aria-hidden="true" />
+                      </>
+                    )}
+                  </button>
+                )}
               </form>
 
               {pagination && (
                 <p className="mt-3 text-xs text-gray-500">
                   {pagination.total === 0
                     ? 'Nenhum artigo encontrado.'
-                    : `Mostrando ${pagination.from ?? 0}–${pagination.to ?? 0} de ${pagination.total} artigos.`}
+                    : `Mostrando ${pagination.from ?? 0}–${
+                        pagination.to ?? 0
+                      } de ${pagination.total} artigos.`}
                 </p>
               )}
             </section>

@@ -2,6 +2,8 @@
 
 import Image from 'next/image';
 import {
+  ChevronDown,
+  ChevronUp,
   Copy,
   ExternalLink,
   FileImage,
@@ -145,7 +147,7 @@ export default function MediaLibraryContainer({
   const { confirm } = useConfirmDialog();
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const filterRef = useRef<HTMLElement | null>(null);
+  const stickySentinelRef = useRef<HTMLDivElement | null>(null);
   const copiedTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const collectionFilter = normalizeCollection(
@@ -165,7 +167,9 @@ export default function MediaLibraryContainer({
   const [isMounted, setIsMounted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
-  const [isFilterSticky, setIsFilterSticky] = useState(false);
+
+  const [isMobileSticky, setIsMobileSticky] = useState(false);
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
   const [searchDraft, setSearchDraft] = useState(search);
 
@@ -175,6 +179,8 @@ export default function MediaLibraryContainer({
   const activeUploadLabel = activeUploadCollection
     ? getCollectionLabel(activeUploadCollection)
     : null;
+
+  const shouldHideExtraMobileFilters = isMobileSticky && !isMobileFilterOpen;
 
   useEffect(() => {
     setIsMounted(true);
@@ -219,18 +225,48 @@ export default function MediaLibraryContainer({
   }, [collectionFilter]);
 
   useEffect(() => {
-    function handleScroll() {
-      const element = filterRef.current;
-      if (!element) return;
+    const sentinel = stickySentinelRef.current;
+    if (!sentinel) return;
 
-      setIsFilterSticky(element.getBoundingClientRect().top <= 16);
+    function isMobileViewport() {
+      return window.matchMedia('(max-width: 767px)').matches;
     }
 
-    handleScroll();
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        const nextSticky = isMobileViewport() && !entry.isIntersecting;
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
+        setIsMobileSticky((current) => {
+          if (current === nextSticky) return current;
+          return nextSticky;
+        });
 
-    return () => window.removeEventListener('scroll', handleScroll);
+        if (!nextSticky) {
+          setIsMobileFilterOpen(false);
+        }
+      },
+      {
+        root: null,
+        threshold: 0,
+        rootMargin: '-16px 0px 0px 0px',
+      }
+    );
+
+    observer.observe(sentinel);
+
+    function handleResize() {
+      if (!isMobileViewport()) {
+        setIsMobileSticky(false);
+        setIsMobileFilterOpen(false);
+      }
+    }
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
   const filteredFiles = useMemo(() => {
@@ -275,9 +311,7 @@ export default function MediaLibraryContainer({
     return pages;
   }, [safeCurrentPage, totalPages]);
 
-  const hasActiveFilters = Boolean(
-    search.trim() || collectionFilter !== 'all'
-  );
+  const hasActiveFilters = Boolean(search.trim() || collectionFilter !== 'all');
 
   useEffect(() => {
     if (currentPage <= totalPages) return;
@@ -327,6 +361,7 @@ export default function MediaLibraryContainer({
 
   function handleClearFilters() {
     setSearchDraft('');
+    setIsMobileFilterOpen(false);
 
     router.push(ADMIN_MEDIA_PATH);
   }
@@ -334,11 +369,6 @@ export default function MediaLibraryContainer({
   function handlePageChange(page: number) {
     pushWithQuery({
       page,
-    });
-
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth',
     });
   }
 
@@ -448,29 +478,31 @@ export default function MediaLibraryContainer({
         </h1>
 
         <p className="text-sm text-gray-600 bg-emerald-50 px-3 py-1.5 rounded-md inline-block border border-emerald-100">
-          Gerencie imagens usadas em artigos, atividades, parceiros e configurações.
+          Gerencie imagens usadas em artigos, atividades, parceiros e
+          configurações.
         </p>
       </header>
 
       <div className="space-y-8">
+        <div ref={stickySentinelRef} className="h-px" />
+
         <section
-          ref={filterRef}
           className={`
             sticky top-4 z-30 rounded-md border border-gray-200 bg-zinc-50 p-4
             transition-shadow duration-200
             ${
-              isFilterSticky
+              isMobileSticky
                 ? 'shadow-[0_12px_18px_-18px_rgba(0,0,0,0.65)]'
                 : ''
             }
           `}
         >
-          <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1fr_auto] xl:items-start">
+          <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start">
             <form
               onSubmit={handleSearchSubmit}
               className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_auto_auto]"
             >
-              <div className="relative">
+              <div className="relative min-w-0">
                 <Search
                   className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
                   aria-hidden="true"
@@ -496,7 +528,7 @@ export default function MediaLibraryContainer({
                 <button
                   type="button"
                   onClick={handleClearFilters}
-                  className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-md bg-gray-100 text-gray-600 transition hover:bg-gray-200 active:scale-95"
+                  className="inline-flex h-11 w-full cursor-pointer items-center justify-center rounded-md bg-gray-100 text-gray-600 transition hover:bg-gray-200 active:scale-95 md:w-11"
                   aria-label="Limpar filtros"
                   title="Limpar filtros"
                 >
@@ -505,7 +537,12 @@ export default function MediaLibraryContainer({
               )}
             </form>
 
-            <div className="flex flex-col gap-1 xl:items-end">
+            <div
+              className={`
+                flex flex-col gap-1 xl:items-end
+                ${shouldHideExtraMobileFilters ? 'hidden md:flex' : ''}
+              `}
+            >
               {activeUploadCollection ? (
                 <>
                   <button
@@ -522,6 +559,7 @@ export default function MediaLibraryContainer({
                     ) : (
                       <Upload className="h-4 w-4" aria-hidden="true" />
                     )}
+
                     {isUploading
                       ? 'Enviando...'
                       : `Enviar imagem em ${activeUploadLabel}`}
@@ -547,7 +585,12 @@ export default function MediaLibraryContainer({
             </div>
           </div>
 
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div
+            className={`
+              mt-4 flex flex-wrap gap-2
+              ${shouldHideExtraMobileFilters ? 'hidden md:flex' : ''}
+            `}
+          >
             {collections.map((collection) => {
               const active = collectionFilter === collection.value;
 
@@ -571,6 +614,27 @@ export default function MediaLibraryContainer({
               );
             })}
           </div>
+
+          {isMobileSticky && (
+            <button
+              type="button"
+              onClick={() => setIsMobileFilterOpen((current) => !current)}
+              className="mt-3 flex w-full items-center justify-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-2.5 text-xs font-semibold text-gray-700 transition active:scale-[0.99] md:hidden"
+              aria-expanded={isMobileFilterOpen}
+            >
+              {isMobileFilterOpen ? (
+                <>
+                  Recolher filtros
+                  <ChevronUp className="h-4 w-4" aria-hidden="true" />
+                </>
+              ) : (
+                <>
+                  Mostrar filtros
+                  <ChevronDown className="h-4 w-4" aria-hidden="true" />
+                </>
+              )}
+            </button>
+          )}
 
           <p className="mt-3 text-xs text-gray-500">
             {filteredFiles.length === 0
@@ -645,7 +709,8 @@ export default function MediaLibraryContainer({
               </h2>
 
               <p className="mt-2 text-sm text-zinc-500">
-                Envie uma imagem ou ajuste os filtros para visualizar a biblioteca.
+                Envie uma imagem ou ajuste os filtros para visualizar a
+                biblioteca.
               </p>
 
               {activeUploadCollection ? (

@@ -1,4 +1,4 @@
-import MediaLibraryContainer from '@/components/admin/MediaLibraryContainer';
+import MediaLibraryContainer from '@/components/containers/MediaLibraryContainer';
 
 import type { MediaCollection } from '@/services/admin/media-library';
 
