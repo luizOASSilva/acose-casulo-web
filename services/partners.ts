@@ -42,6 +42,7 @@ function normalizePartnerItem(partner: any): PartnerApiItem {
     name: partner.name,
     logo_path: partner.logo_path ?? null,
     logo_url: normalizePartnerLogoUrl(rawLogoUrl),
+    logo_alt: partner.logo_alt ?? null,
     website_url: partner.website_url ?? null,
     bg_color: partner.bg_color ?? '#ffffff',
     order: partner.order ?? null,
@@ -148,6 +149,7 @@ function partnerToFormData(data: SavePartnerInput, method?: 'PUT'): FormData {
 
   formData.append('name', data.name);
   formData.append('logo_path', storageUrlToPath(data.logo_path));
+  formData.append('logo_alt', data.logo_alt || '');
   formData.append('website_url', data.website_url || '');
   formData.append('bg_color', data.bg_color || '#ffffff');
   formData.append('order', String(data.order ?? 0));
