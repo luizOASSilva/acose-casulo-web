@@ -2,7 +2,9 @@ import { api } from '@/lib/api';
 
 import type {
   Activity,
+  AdminActivityFilters,
   OccupiedActivitySchedule,
+  PaginatedActivitiesResponse,
   SaveActivityDTO,
 } from '@/types/activity';
 
@@ -36,6 +38,36 @@ function normalizeActivity(payload: any): Activity | null {
   if (payload?.activity) return payload.activity;
 
   return payload;
+}
+
+function normalizePaginatedActivities(
+  payload: any
+): PaginatedActivitiesResponse {
+  return {
+    data: normalizeActivities(payload),
+    meta: {
+      current_page: Number(
+        payload?.meta?.current_page ?? payload?.current_page ?? 1
+      ),
+      from: payload?.meta?.from ?? payload?.from ?? null,
+      last_page: Number(payload?.meta?.last_page ?? payload?.last_page ?? 1),
+      per_page: Number(payload?.meta?.per_page ?? payload?.per_page ?? 9),
+      to: payload?.meta?.to ?? payload?.to ?? null,
+      total: Number(payload?.meta?.total ?? payload?.total ?? 0),
+    },
+    links: payload?.links,
+  };
+}
+
+function mapOrderToApi(ordem?: string): string {
+  const map: Record<string, string> = {
+    recentes: 'recent',
+    antigas: 'oldest',
+    curtidas: 'likes',
+    az: 'az',
+  };
+
+  return map[ordem || 'recentes'] || 'recent';
 }
 
 export function getVisitorId(): string {
@@ -84,6 +116,67 @@ export async function getActivities(): Promise<Activity[]> {
   } catch (error) {
     console.error(error);
     return [];
+  }
+}
+
+export async function getAdminActivities(
+  filters: AdminActivityFilters = {},
+  cookieHeader?: string
+): Promise<PaginatedActivitiesResponse> {
+  try {
+    const params = new URLSearchParams();
+
+    if (filters.busca?.trim()) {
+      params.set('q', filters.busca.trim());
+    }
+
+    if (filters.dia?.trim()) {
+      params.set('weekday', filters.dia.trim());
+    }
+
+    if (filters.inicio?.trim()) {
+      params.set('start_time', filters.inicio.trim());
+    }
+
+    if (filters.fim?.trim()) {
+      params.set('end_time', filters.fim.trim());
+    }
+
+    params.set('sort', mapOrderToApi(filters.ordem));
+    params.set('page', String(filters.page || 1));
+    params.set('per_page', String(filters.per_page || 9));
+
+    const response = await fetch(`${getApiUrl()}/activities?${params}`, {
+      method: 'GET',
+      cache: 'no-store',
+      credentials: 'include',
+      headers: {
+        Accept: 'application/json',
+        ...(cookieHeader ? { Cookie: cookieHeader } : {}),
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Erro ao buscar atividades do admin');
+    }
+
+    const payload = await response.json();
+
+    return normalizePaginatedActivities(payload);
+  } catch (error) {
+    console.error(error);
+
+    return {
+      data: [],
+      meta: {
+        current_page: 1,
+        from: null,
+        last_page: 1,
+        per_page: 9,
+        to: null,
+        total: 0,
+      },
+    };
   }
 }
 

@@ -40,6 +40,7 @@ type PartnerFormErrors = Partial<{
 }>;
 
 const ADMIN_PARTNERS_PATH = '/admin/parceiros';
+const ADMIN_PARTNERS_RETURN_PATH_KEY = 'admin.partners.returnPath';
 
 function fieldClass(error?: string, className = '') {
   return `
@@ -343,16 +344,25 @@ export default function PartnerDetailContainer({
     });
   };
 
+  const getReturnPath = () => {
+    if (typeof window === 'undefined') return ADMIN_PARTNERS_PATH;
+
+    return (
+      sessionStorage.getItem(ADMIN_PARTNERS_RETURN_PATH_KEY) ||
+      ADMIN_PARTNERS_PATH
+    );
+  };
+
   const handleBack = async () => {
     if (!(await confirmDiscard())) return;
 
-    router.push(ADMIN_PARTNERS_PATH);
+    router.push(getReturnPath());
   };
 
   const handleCancel = async () => {
     if (!(await confirmDiscard())) return;
 
-    router.push(ADMIN_PARTNERS_PATH);
+    router.push(getReturnPath());
   };
 
   const handleSave = async () => {
@@ -410,7 +420,7 @@ export default function PartnerDetailContainer({
           variant: 'success',
         });
 
-        router.push(ADMIN_PARTNERS_PATH);
+        router.push(getReturnPath());
         router.refresh();
         return;
       }
@@ -745,7 +755,7 @@ export default function PartnerDetailContainer({
           </button>
         </div>
 
-        <section className="rounded-md p-5 flex justify-center">
+        <section className="rounded-md p-5 flex justify-center flex-col">
           <div className="mb-4 flex items-center gap-3">
             <div className="rounded-md bg-primary/10 p-2 text-primary">
               <ImageIcon size={18} aria-hidden="true" />

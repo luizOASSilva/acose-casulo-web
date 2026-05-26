@@ -13,6 +13,7 @@ import {
   ChevronRight,
   FileText,
   HeartHandshake,
+  Images,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -33,6 +34,7 @@ const nav = [
   { label: 'Transparência', href: 'transparencia', icon: ShieldCheck },
   { label: 'Atividades', href: 'atividades', icon: Activity },
   { label: 'Artigos', href: 'artigos', icon: FileText },
+  { label: 'Mídias', href: 'midias', icon: Images },
   { label: 'Configurações', href: 'configuracoes', icon: Settings },
 ];
 

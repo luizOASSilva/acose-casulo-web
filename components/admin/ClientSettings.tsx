@@ -1060,8 +1060,8 @@ export default function ClientSettings({
           </div>
         </section>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[250px_1fr]">
-          <aside className="h-fit rounded-md border border-zinc-200 bg-white p-2 shadow-sm lg:sticky lg:top-6">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[270px_1fr]">
+          <aside className="h-fit rounded-md border border-zinc-200 bg-white p-2 shadow-sm lg:sticky lg:top-8">
             <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
               Navegação
             </p>
@@ -1095,7 +1095,7 @@ export default function ClientSettings({
             </nav>
           </aside>
 
-          <div className="space-y-6">
+          <div className="space-y-8">
             {renderSettingsCard(
               'geral',
               Brush,

@@ -1,30 +1,12 @@
 import { api } from '@/lib/api';
 
-export interface PartnerApiItem {
-  id: number;
-  name: string;
-  logo_path?: string | null;
-  logo_url: string | null;
-  website_url: string | null;
-  bg_color: string | null;
-  order: number | null;
-  is_active: boolean;
-  author?: {
-    id?: number | null;
-    name?: string | null;
-  } | null;
-  created_at?: string;
-  updated_at?: string;
-}
-
-export interface SavePartnerInput {
-  name: string;
-  logo_path: string;
-  website_url?: string | null;
-  bg_color?: string | null;
-  order?: number | null;
-  is_active?: boolean;
-}
+import type {
+  AdminPartnerFilters,
+  PaginatedPartnersResponse,
+  PartnerApiItem,
+  PartnerStatusFilter,
+  SavePartnerInput,
+} from '@/types/partner';
 
 function normalizePartnerLogoUrl(url?: string | null): string | null {
   if (!url) return null;
@@ -100,6 +82,31 @@ function normalizePartner(payload: any): PartnerApiItem | null {
   return normalizePartnerItem(payload);
 }
 
+function normalizePaginatedPartners(response: any): PaginatedPartnersResponse {
+  return {
+    data: normalizePartners(response),
+    meta: {
+      current_page: Number(
+        response?.meta?.current_page ?? response?.current_page ?? 1
+      ),
+      from: response?.meta?.from ?? response?.from ?? null,
+      last_page: Number(response?.meta?.last_page ?? response?.last_page ?? 1),
+      per_page: Number(response?.meta?.per_page ?? response?.per_page ?? 18),
+      to: response?.meta?.to ?? response?.to ?? null,
+      total: Number(response?.meta?.total ?? response?.total ?? 0),
+    },
+    links: response?.links,
+  };
+}
+
+function normalizeStatus(status?: string): PartnerStatusFilter {
+  if (status === 'active' || status === 'inactive' || status === 'all') {
+    return status;
+  }
+
+  return 'all';
+}
+
 export function storageUrlToPath(url?: string | null): string {
   if (!url) return '';
 
@@ -160,10 +167,70 @@ export async function getPartners(): Promise<PartnerApiItem[]> {
   }
 }
 
+export async function getAdminPartners(
+  filters: AdminPartnerFilters = {},
+  cookieHeader?: string
+): Promise<PaginatedPartnersResponse> {
+  try {
+    const params = new URLSearchParams();
+
+    if (filters.busca?.trim()) {
+      params.set('q', filters.busca.trim());
+    }
+
+    const status = normalizeStatus(filters.status);
+
+    if (status !== 'all') {
+      params.set('status', status);
+    }
+
+    params.set('page', String(filters.page || 1));
+    params.set('per_page', String(filters.per_page || 18));
+
+    const response = await api.get<any>(
+      `/admin/partners?${params.toString()}`,
+      {
+        headers: cookieHeader
+          ? {
+              Cookie: cookieHeader,
+            }
+          : undefined,
+      }
+    );
+
+    return normalizePaginatedPartners(response);
+  } catch (error) {
+    console.error('Erro ao buscar parceiros do admin:', error);
+
+    return {
+      data: [],
+      meta: {
+        current_page: 1,
+        from: null,
+        last_page: 1,
+        per_page: 18,
+        to: null,
+        total: 0,
+      },
+    };
+  }
+}
+
 export async function getPartnerById(
-  id: number
+  id: number,
+  cookieHeader?: string
 ): Promise<PartnerApiItem | null> {
   try {
+    if (cookieHeader) {
+      const response = await api.get<any>(`/admin/partners/${id}`, {
+        headers: {
+          Cookie: cookieHeader,
+        },
+      });
+
+      return normalizePartner(response);
+    }
+
     const partners = await getPartners();
 
     return partners.find((partner) => Number(partner.id) === Number(id)) ?? null;

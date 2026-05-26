@@ -5,7 +5,7 @@ import type {
   CreateAdminDTO,
   SettingItem,
   UpdateAdminDTO,
-} from '@/types/settings';
+} from '@/types/admin/settings';
 
 interface AdminCollectionResponse {
   data?: AdminUser[];
@@ -22,7 +22,9 @@ interface SettingsCollectionResponse {
   settings?: SettingItem[];
 }
 
-function normalizeAdmins(payload: AdminCollectionResponse | AdminUser[]): AdminUser[] {
+function normalizeAdmins(
+  payload: AdminCollectionResponse | AdminUser[]
+): AdminUser[] {
   if (Array.isArray(payload)) return payload;
   if (Array.isArray(payload?.data)) return payload.data;
   if (Array.isArray(payload?.admins)) return payload.admins;
@@ -30,7 +32,9 @@ function normalizeAdmins(payload: AdminCollectionResponse | AdminUser[]): AdminU
   return [];
 }
 
-function normalizeAdmin(payload: AdminSingleResponse | AdminUser): AdminUser | null {
+function normalizeAdmin(
+  payload: AdminSingleResponse | AdminUser
+): AdminUser | null {
   if (!payload) return null;
   if ('data' in payload && payload.data) return payload.data;
   if ('admin' in payload && payload.admin) return payload.admin;
@@ -53,7 +57,7 @@ export async function getCurrentAdmin(
 ): Promise<AdminUser | null> {
   try {
     const response = await api.get<AdminSingleResponse | AdminUser>(
-      '/admin/me',
+      '/auth/me',
       {
         headers: cookieHeader
           ? {
@@ -101,6 +105,8 @@ export async function createAdmin(
         email: data.email,
         role: data.role,
         is_active: data.is_active ?? true,
+        password: data.password,
+        password_confirmation: data.password_confirmation,
       }
     );
 
@@ -123,6 +129,12 @@ export async function updateAdmin(
         email: data.email,
         role: data.role,
         is_active: data.is_active,
+        ...(data.password
+          ? {
+              password: data.password,
+              password_confirmation: data.password_confirmation,
+            }
+          : {}),
       }
     );
 

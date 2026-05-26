@@ -54,6 +54,7 @@ type PreviewTheme = {
 };
 
 const ADMIN_TRANSPARENCY_PATH = '/admin/transparencia';
+const ADMIN_TRANSPARENCY_RETURN_PATH_KEY = 'admin.transparency.returnPath';
 
 function getPreviewTheme(index: number): PreviewTheme {
   const isSecondary = index % 6 === 2;
@@ -233,16 +234,25 @@ export default function DocumentDetailsContainer({
     });
   };
 
+  const getReturnPath = () => {
+    if (typeof window === 'undefined') return ADMIN_TRANSPARENCY_PATH;
+
+    return (
+      sessionStorage.getItem(ADMIN_TRANSPARENCY_RETURN_PATH_KEY) ||
+      ADMIN_TRANSPARENCY_PATH
+    );
+  };
+
   const handleBack = async () => {
     if (!(await confirmDiscard())) return;
 
-    router.push(ADMIN_TRANSPARENCY_PATH);
+    router.push(getReturnPath());
   };
 
   const handleCancel = async () => {
     if (!(await confirmDiscard())) return;
 
-    router.push(ADMIN_TRANSPARENCY_PATH);
+    router.push(getReturnPath());
   };
 
   const applyValidationErrors = (
@@ -298,7 +308,7 @@ export default function DocumentDetailsContainer({
           variant: 'success',
         });
 
-        router.push(ADMIN_TRANSPARENCY_PATH);
+        router.push(getReturnPath());
         router.refresh();
         return;
       }
