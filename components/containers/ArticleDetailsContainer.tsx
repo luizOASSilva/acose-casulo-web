@@ -82,6 +82,24 @@ function FieldError({ message }: { message?: string }) {
   );
 }
 
+function normalizeZodIssues(
+  issues: Array<{
+    path: PropertyKey[];
+    message: string;
+  }>
+): Array<{
+  path: (string | number)[];
+  message: string;
+}> {
+  return issues.map((issue) => ({
+    path: issue.path.filter(
+      (path): path is string | number =>
+        typeof path === 'string' || typeof path === 'number'
+    ),
+    message: issue.message,
+  }));
+}
+
 export default function ArticleDetailsContainer({
   article,
   isAdmin = false,
@@ -362,7 +380,7 @@ export default function ArticleDetailsContainer({
 
   const applyValidationErrors = (
     issues: Array<{
-      path: PropertyKey[];
+      path: (string | number)[];
       message: string;
     }>
   ) => {
@@ -400,7 +418,7 @@ export default function ArticleDetailsContainer({
     });
 
     if (!parsed.success) {
-      applyValidationErrors(parsed.error.issues);
+      applyValidationErrors(normalizeZodIssues(parsed.error.issues));
       return;
     }
 

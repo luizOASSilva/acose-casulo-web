@@ -18,10 +18,7 @@ import type {
   DocumentItem,
 } from '@/types/document';
 
-import {
-  createDocument,
-  updateDocument,
-} from '@/services/admin/document';
+import { createDocument, updateDocument } from '@/services/admin/document';
 
 import { documentSchema } from '@/schemas/document.schema';
 import { useConfirmDialog } from '@/context/ConfirmDialogContext';
@@ -121,10 +118,26 @@ function FieldError({ message }: { message?: string }) {
   if (!message) return null;
 
   return (
-    <p className="mt-1 text-[11px] font-semibold text-red-600">
-      {message}
-    </p>
+    <p className="mt-1 text-[11px] font-semibold text-red-600">{message}</p>
   );
+}
+
+function normalizeZodIssues(
+  issues: Array<{
+    path: PropertyKey[];
+    message: string;
+  }>
+): Array<{
+  path: (string | number)[];
+  message: string;
+}> {
+  return issues.map((issue) => ({
+    path: issue.path.filter(
+      (path): path is string | number =>
+        typeof path === 'string' || typeof path === 'number'
+    ),
+    message: issue.message,
+  }));
 }
 
 export default function DocumentDetailsContainer({
@@ -283,7 +296,7 @@ export default function DocumentDetailsContainer({
     });
 
     if (!parsed.success) {
-      applyValidationErrors(parsed.error.issues);
+      applyValidationErrors(normalizeZodIssues(parsed.error.issues));
       return;
     }
 
@@ -340,7 +353,9 @@ export default function DocumentDetailsContainer({
   const previewContent = (
     <>
       <div className="min-w-0">
-        <p className={`truncate text-sm font-medium ${previewTheme.documentTitle}`}>
+        <p
+          className={`truncate text-sm font-medium ${previewTheme.documentTitle}`}
+        >
           {title || 'Título do documento'}
         </p>
 
@@ -480,9 +495,7 @@ export default function DocumentDetailsContainer({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-gray-500">
-                Ano
-              </label>
+              <label className="text-xs font-semibold text-gray-500">Ano</label>
 
               <div className="relative">
                 <Calendar
@@ -546,7 +559,9 @@ export default function DocumentDetailsContainer({
             </div>
           </div>
 
-          <section className={`overflow-hidden rounded-md border shadow-sm ${previewTheme.card}`}>
+          <section
+            className={`overflow-hidden rounded-md border shadow-sm ${previewTheme.card}`}
+          >
             <div
               className={`flex items-center justify-between border-b px-5 py-4 ${previewTheme.header}`}
             >
@@ -583,7 +598,9 @@ export default function DocumentDetailsContainer({
                 {previewContent}
               </a>
             ) : (
-              <div className={`flex items-center justify-between border-b px-5 py-3 ${previewTheme.row}`}>
+              <div
+                className={`flex items-center justify-between border-b px-5 py-3 ${previewTheme.row}`}
+              >
                 {previewContent}
               </div>
             )}
