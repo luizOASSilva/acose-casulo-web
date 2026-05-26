@@ -168,7 +168,7 @@ function getGroupTitle(group: string): string {
   return titles[group] ?? group;
 }
 
-function roleBadgeClass(role?: string) {
+function roleBadgeClass(role?: string | null) {
   if (role === 'master') {
     return 'bg-black/10 text-black';
   }
@@ -186,6 +186,10 @@ function getAdminIsActive(admin: AdminUser): boolean {
   return (admin as any).is_active === undefined
     ? true
     : Boolean((admin as any).is_active);
+}
+
+function isAdminRole(role?: string | null): role is AdminRole {
+  return role === 'admin' || role === 'master';
 }
 
 export default function ClientSettings({
@@ -494,7 +498,20 @@ export default function ClientSettings({
     setIsUserFormOpen(true);
   };
 
-  const openEditUserForm = (admin: AdminUser) => {
+  const openEditUserForm = async (admin: AdminUser) => {
+    if (!isAdminRole(admin.role)) {
+      await confirm({
+        title: 'Nível inválido',
+        description:
+          'Este usuário possui um nível de acesso desconhecido. Corrija no backend antes de editar pelo painel.',
+        confirmText: 'Entendi',
+        cancelText: 'Fechar',
+        variant: 'danger',
+      });
+
+      return;
+    }
+
     setEditingAdminId(admin.id);
     setUserErrors({});
 
@@ -559,7 +576,7 @@ export default function ClientSettings({
     const payload = {
       name: userForm.name.trim(),
       email: userForm.email.trim(),
-      role: userForm.role as AdminRole,
+      role: userForm.role,
       is_active: userForm.is_active,
     };
 

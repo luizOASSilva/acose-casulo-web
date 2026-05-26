@@ -8,6 +8,8 @@ import {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
+type DonationPayload = object;
+
 function getApiUrl(): string {
   if (!API_URL) {
     throw new Error('NEXT_PUBLIC_API_URL não configurada');
@@ -16,37 +18,36 @@ function getApiUrl(): string {
   return API_URL.replace(/\/$/, '');
 }
 
+function toRequestBody(data: DonationPayload): Record<string, unknown> {
+  return { ...data } as Record<string, unknown>;
+}
+
 export async function createDonation(
-  data: unknown
+  data: DonationPayload
 ): Promise<PixResponse> {
-  return api.post<PixResponse>('/donations', data);
+  return api.post<PixResponse>('/donations', toRequestBody(data));
 }
 
 export async function updateDonation(
   id: number,
-  data: unknown
+  data: DonationPayload
 ): Promise<void> {
-  await api.put(`/donations/${id}`, data);
+  await api.put(`/donations/${id}`, toRequestBody(data));
 }
 
 export async function updateDonationPix(
   id: number,
   amount: number
 ): Promise<PixResponse> {
-  return api.put<PixResponse>(
-    `/donations/${id}/pix`,
-    {
-      amount,
-    }
-  );
+  return api.put<PixResponse>(`/donations/${id}/pix`, {
+    amount,
+  });
 }
 
 export async function getDonationStatus(
   id: number
 ): Promise<DonationStatusResponse> {
-  return api.get<DonationStatusResponse>(
-    `/donations/${id}/status`
-  );
+  return api.get<DonationStatusResponse>(`/donations/${id}/status`);
 }
 
 export async function getDonations(

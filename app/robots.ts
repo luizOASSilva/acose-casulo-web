@@ -1,4 +1,5 @@
 import { MetadataRoute } from 'next';
+
 import { SITE_URL } from '@/lib/config';
 
 export default function robots(): MetadataRoute.Robots {
@@ -7,15 +8,55 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/acesso/'],
+        disallow: [
+          '/admin',
+          '/admin/',
+          '/admin/*',
+
+          '/acesso',
+          '/acesso/',
+          '/acesso/*',
+
+          '/login',
+          '/login/',
+          '/login/*',
+
+          '/esqueci-senha',
+          '/esqueci-senha/',
+          '/esqueci-senha/*',
+
+          '/redefinir-senha',
+          '/redefinir-senha/',
+          '/redefinir-senha/*',
+
+          '/api',
+          '/api/',
+          '/api/*',
+        ],
       },
       {
         userAgent: 'facebookexternalhit',
         allow: '/',
+        disallow: [
+          '/admin',
+          '/admin/',
+          '/admin/*',
+          '/acesso',
+          '/acesso/',
+          '/acesso/*',
+        ],
       },
       {
         userAgent: 'Twitterbot',
         allow: '/',
+        disallow: [
+          '/admin',
+          '/admin/',
+          '/admin/*',
+          '/acesso',
+          '/acesso/',
+          '/acesso/*',
+        ],
       },
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,

@@ -1,7 +1,10 @@
 import { MetadataRoute } from 'next';
+
 import { getArticles } from '@/services/articles';
 import { getActivities } from '@/services/activities';
 import { SITE_URL } from '@/lib/config';
+
+export const dynamic = 'force-dynamic';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [articles, activities] = await Promise.all([
@@ -9,19 +12,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     getActivities(),
   ]);
 
-  const articleUrls: MetadataRoute.Sitemap = articles.map((article) => ({
-    url: `${SITE_URL}/artigos/${article.slug}`,
-    lastModified: new Date(article.created_at),
-    changeFrequency: 'monthly',
-    priority: 0.6,
-  }));
+  const articleUrls: MetadataRoute.Sitemap = articles
+    .filter((article) => article.slug)
+    .map((article) => ({
+      url: `${SITE_URL}/artigos/${article.slug}`,
+      lastModified: article.created_at
+        ? new Date(article.created_at)
+        : new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    }));
 
-  const activityUrls: MetadataRoute.Sitemap = activities.map((activity) => ({
-    url: `${SITE_URL}/atividades/${activity.slug}`,
-    lastModified: new Date(),
-    changeFrequency: 'monthly',
-    priority: 0.5,
-  }));
+  const activityUrls: MetadataRoute.Sitemap = activities
+    .filter((activity) => activity.slug)
+    .map((activity) => ({
+      url: `${SITE_URL}/atividades/${activity.slug}`,
+      lastModified: activity.created_at
+        ? new Date(activity.created_at)
+        : new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.5,
+    }));
 
   return [
     {

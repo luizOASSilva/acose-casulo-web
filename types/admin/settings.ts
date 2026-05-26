@@ -4,7 +4,7 @@ export interface AdminUser {
   id: number;
   name: string;
   email: string;
-  role: AdminRole | string;
+  role?: AdminRole | string | null;
   is_active?: boolean;
   is_master?: boolean;
   created_at?: string;
@@ -14,7 +14,7 @@ export interface AdminUser {
 export interface CreateAdminDTO {
   name: string;
   email: string;
-  role: AdminRole | string;
+  role: AdminRole;
   is_active?: boolean;
   password?: string;
   password_confirmation?: string;
@@ -23,7 +23,7 @@ export interface CreateAdminDTO {
 export interface UpdateAdminDTO {
   name?: string;
   email?: string;
-  role?: AdminRole | string;
+  role?: AdminRole;
   is_active?: boolean;
   password?: string;
   password_confirmation?: string;

@@ -1,6 +1,11 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-type RequestBody = BodyInit | Record<string, unknown> | null | undefined;
+export type RequestBody =
+  | BodyInit
+  | Record<string, unknown>
+  | unknown[]
+  | null
+  | undefined;
 
 interface ApiRequestInit extends Omit<RequestInit, 'body'> {
   body?: RequestBody;
@@ -86,8 +91,8 @@ async function request<T>(
   }
 
   const xsrfToken = getCookie('XSRF-TOKEN');
-  const hasBody = options.body !== undefined && options.body !== null;
-  const bodyIsFormData = isFormData(options.body);
+  const requestBody = options.body;
+  const hasBody = requestBody !== undefined && requestBody !== null;
 
   const headers = new Headers(options.headers);
 
@@ -101,13 +106,13 @@ async function request<T>(
   let body: BodyInit | undefined;
 
   if (hasBody) {
-    if (bodyIsFormData) {
-      body = options.body as FormData;
+    if (isFormData(requestBody)) {
+      body = requestBody;
       headers.delete('Content-Type');
-    } else if (isBodyInit(options.body)) {
-      body = options.body;
+    } else if (isBodyInit(requestBody)) {
+      body = requestBody;
     } else {
-      body = JSON.stringify(options.body);
+      body = JSON.stringify(requestBody);
       headers.set('Content-Type', 'application/json');
     }
   }
