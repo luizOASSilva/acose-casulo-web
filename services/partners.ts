@@ -32,10 +32,7 @@ function normalizePartnerLogoUrl(url?: string | null): string | null {
 
 function normalizePartnerItem(partner: any): PartnerApiItem {
   const rawLogoUrl =
-    partner?.logo_url ||
-    partner?.logo_path ||
-    partner?.logo ||
-    null;
+    partner?.logo_url || partner?.logo_path || partner?.logo || null;
 
   return {
     id: Number(partner.id),
