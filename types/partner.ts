@@ -1,7 +1,18 @@
 export interface Partner {
+  id?: number;
   name: string;
   src: string;
   bgColor?: string;
+  bg_color?: string | null;
+  logo_url?: string | null;
+  logoUrl?: string | null;
+  logo_alt?: string | null;
+  logoAlt?: string | null;
+  website_url?: string | null;
+  websiteUrl?: string | null;
+  order?: number | null;
+  is_active?: boolean;
+  isActive?: boolean;
 }
 
 export interface PartnerApiItem {
@@ -9,6 +20,7 @@ export interface PartnerApiItem {
   name: string;
   logo_path?: string | null;
   logo_url: string | null;
+  logo_alt?: string | null;
   website_url: string | null;
   bg_color: string | null;
   order: number | null;
@@ -24,6 +36,7 @@ export interface PartnerApiItem {
 export interface SavePartnerInput {
   name: string;
   logo_path: string;
+  logo_alt?: string | null;
   website_url?: string | null;
   bg_color?: string | null;
   order?: number | null;
