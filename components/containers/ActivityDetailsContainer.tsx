@@ -86,6 +86,24 @@ function FieldError({ message }: { message?: string }) {
   return <p className="text-[11px] font-medium text-red-600">{message}</p>;
 }
 
+function normalizeZodIssues(
+  issues: Array<{
+    path: PropertyKey[];
+    message: string;
+  }>
+): Array<{
+  path: (string | number)[];
+  message: string;
+}> {
+  return issues.map((issue) => ({
+    path: issue.path.filter(
+      (path): path is string | number =>
+        typeof path === 'string' || typeof path === 'number'
+    ),
+    message: issue.message,
+  }));
+}
+
 export default function ActivityDetailsContainer({
   activity,
   isAdmin = false,
@@ -456,7 +474,7 @@ export default function ActivityDetailsContainer({
     });
 
     if (!parsed.success) {
-      applyValidationErrors(parsed.error.issues);
+      applyValidationErrors(normalizeZodIssues(parsed.error.issues));
       return;
     }
 
