@@ -16,13 +16,14 @@ import PartnerCard from '@/components/ui/PartnerCard';
 import MediaPicker from '@/components/admin/MediaPicker';
 import { useConfirmDialog } from '@/context/ConfirmDialogContext';
 import { uploadMediaFile } from '@/services/admin/media-library';
+
 import {
   createPartner,
-  type PartnerApiItem,
   storageUrlToPath,
   updatePartner,
 } from '@/services/partners';
-import type { Partner } from '@/types/partner';
+
+import type { Partner, PartnerApiItem } from '@/types/partner';
 
 interface PartnerDetailContainerProps {
   partner?: PartnerApiItem;
@@ -779,7 +780,10 @@ export default function PartnerDetailContainer({
               </div>
             ) : (
               <div className="flex w-full flex-col items-center justify-center rounded-md border border-dashed border-zinc-300 px-5 py-8 text-center">
-                <ImageIcon className="h-6 w-6 text-zinc-300" aria-hidden="true" />
+                <ImageIcon
+                  className="h-6 w-6 text-zinc-300"
+                  aria-hidden="true"
+                />
 
                 <p className="mt-2 text-xs text-zinc-400">
                   Nenhuma logo selecionada
