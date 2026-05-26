@@ -36,6 +36,18 @@ interface AuthProviderProps {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+const ADMIN_PREVIEW_ACTIVE_KEY = 'admin.preview.active';
+const ADMIN_PREVIEW_RETURN_TO_KEY = 'admin.preview.returnTo';
+const ADMIN_PREVIEW_DISMISSED_KEY = 'admin.preview.dismissed';
+
+function clearAdminPreviewSession() {
+  if (typeof window === 'undefined') return;
+
+  sessionStorage.removeItem(ADMIN_PREVIEW_ACTIVE_KEY);
+  sessionStorage.removeItem(ADMIN_PREVIEW_RETURN_TO_KEY);
+  sessionStorage.removeItem(ADMIN_PREVIEW_DISMISSED_KEY);
+}
+
 export function AuthProvider({
   children,
   initialAdmin = null,
@@ -91,6 +103,8 @@ export function AuthProvider({
     try {
       await api.post('/auth/logout');
     } finally {
+      clearAdminPreviewSession();
+
       setAdmin(null);
       router.push('/');
       router.refresh();

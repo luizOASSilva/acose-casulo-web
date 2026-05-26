@@ -1,8 +1,15 @@
 import type { Metadata } from 'next';
+
 import PartnerMarquee from '@/components/sections/PartnerMarquee';
 import StatCounterClient from '@/components/ui/StatCount/StatCountClient';
 import SupportCTA from '@/components/sections/SupportCTA';
+
 import { OG_IMAGE } from '@/lib/config';
+import { getPartners } from '@/services/partners';
+
+import type { Partner } from '@/types/partner';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Parceiros',
@@ -21,51 +28,17 @@ export const metadata: Metadata = {
   },
 };
 
-const partners = [
-  {
-    name: 'Apoio Social',
-    src: '/parceiros/apoio-social.svg',
-    bgColor: '#ffffff',
-  },
-  {
-    name: 'Casa do Pintor',
-    src: '/parceiros/casa-do-pintor.svg',
-    bgColor: '#ffffff',
-  },
-  { name: 'Damatsu', src: '/parceiros/damatsu.svg', bgColor: '#ffffff' },
-  { name: 'Giorgino', src: '/parceiros/giorgino.svg', bgColor: '#212121' },
-  {
-    name: 'José Paulino',
-    src: '/parceiros/jose-paulino.svg',
-    bgColor: '#ffffff',
-  },
-  { name: 'Makino', src: '/parceiros/makino.svg', bgColor: '#ffffff' },
-  {
-    name: 'Marcus Bonna',
-    src: '/parceiros/marcus-bonna.svg',
-    bgColor: '#ffffff',
-  },
-  {
-    name: 'Musical Tassara',
-    src: '/parceiros/musical-tassara.svg',
-    bgColor: '#000000',
-  },
-  {
-    name: 'Parque Brasil',
-    src: '/parceiros/parque-brasil.svg',
-    bgColor: '#ffffff',
-  },
-  { name: 'Policog', src: '/parceiros/policog.svg', bgColor: '#000000' },
-  {
-    name: 'Primeira Impressão',
-    src: '/parceiros/primeira-impressao.svg',
-    bgColor: '#4A5672',
-  },
-  { name: 'Probac', src: '/parceiros/probac.svg', bgColor: '#000000' },
-  { name: 'Woodpel', src: '/parceiros/woodpel.svg', bgColor: '#ffffff' },
-];
+export default async function Parceiros() {
+  const apiPartners = await getPartners();
 
-export default function Parceiros() {
+  const partners: Partner[] = apiPartners
+    .filter((partner) => partner.logo_url)
+    .map((partner) => ({
+      name: partner.name,
+      src: partner.logo_url || '',
+      bgColor: partner.bg_color || '#ffffff',
+    }));
+
   return (
     <main className="flex flex-col justify-between h-full py-8">
       <section>
@@ -84,7 +57,7 @@ export default function Parceiros() {
 
           <div className="text-right shrink-0">
             <StatCounterClient
-              value={13}
+              value={partners.length}
               label="Parceiros ativos"
               color="text-gray-900"
             />
@@ -101,3 +74,4 @@ export default function Parceiros() {
     </main>
   );
 }
+  

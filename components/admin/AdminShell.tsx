@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { AuthProvider } from '@/context/AuthContext';
@@ -22,8 +22,15 @@ export default function AdminShell({
 }: AdminShellProps) {
   const [collapsed, setCollapsed] = useState(false);
 
+  const authInitialAdmin = useMemo(() => {
+    return {
+      ...currentAdmin,
+      role: currentAdmin.role ?? undefined,
+    };
+  }, [currentAdmin]);
+
   return (
-    <AuthProvider initialAdmin={currentAdmin} skipInitialFetch>
+    <AuthProvider initialAdmin={authInitialAdmin} skipInitialFetch>
       <ConfirmDialogProvider>
         <EditModeProvider>
           <div className="flex min-h-screen bg-[#f5f7fa]">

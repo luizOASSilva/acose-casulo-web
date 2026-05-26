@@ -53,6 +53,9 @@ const emptySchedule: ActivitySchedule = {
   end_time: '11:00',
 };
 
+const ADMIN_ACTIVITIES_PATH = '/admin/atividades';
+const ADMIN_ACTIVITIES_RETURN_PATH_KEY = 'admin.activities.returnPath';
+
 function normalizeSchedules(activity?: Activity): ActivitySchedule[] {
   if (activity?.schedules && activity.schedules.length > 0) {
     return activity.schedules.map((schedule) => ({
@@ -81,6 +84,24 @@ function FieldError({ message }: { message?: string }) {
   if (!message) return null;
 
   return <p className="text-[11px] font-medium text-red-600">{message}</p>;
+}
+
+function normalizeZodIssues(
+  issues: Array<{
+    path: PropertyKey[];
+    message: string;
+  }>
+): Array<{
+  path: (string | number)[];
+  message: string;
+}> {
+  return issues.map((issue) => ({
+    path: issue.path.filter(
+      (path): path is string | number =>
+        typeof path === 'string' || typeof path === 'number'
+    ),
+    message: issue.message,
+  }));
 }
 
 export default function ActivityDetailsContainer({
@@ -313,11 +334,20 @@ export default function ActivityDetailsContainer({
     });
   };
 
+  const getReturnPath = () => {
+    if (typeof window === 'undefined') return ADMIN_ACTIVITIES_PATH;
+
+    return (
+      sessionStorage.getItem(ADMIN_ACTIVITIES_RETURN_PATH_KEY) ||
+      ADMIN_ACTIVITIES_PATH
+    );
+  };
+
   const handleBack = async () => {
     if (!(await confirmDiscard())) return;
 
     if (isNew) {
-      router.push('/admin/atividades');
+      router.push(getReturnPath());
       return;
     }
 
@@ -326,14 +356,14 @@ export default function ActivityDetailsContainer({
       return;
     }
 
-    router.push('/admin/atividades');
+    router.push(getReturnPath());
   };
 
   const handleCancel = async () => {
     if (!(await confirmDiscard())) return;
 
     if (isNew) {
-      router.push('/admin/atividades');
+      router.push(getReturnPath());
       return;
     }
 
@@ -449,7 +479,7 @@ export default function ActivityDetailsContainer({
     });
 
     if (!parsed.success) {
-      applyValidationErrors(parsed.error.issues);
+      applyValidationErrors(normalizeZodIssues(parsed.error.issues));
       return;
     }
 
@@ -494,7 +524,7 @@ export default function ActivityDetailsContainer({
           variant: 'success',
         });
 
-        router.push('/admin/atividades');
+        router.push(getReturnPath());
         router.refresh();
         return;
       }
@@ -944,7 +974,7 @@ export default function ActivityDetailsContainer({
             type="button"
             onClick={handleCancel}
             disabled={isSubmitting}
-            className="text-xs bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-2.5 rounded-md border border-gray-300 transition-colors cursor-pointer disabled:opacity-60"
+            className="text-xs bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-2.5 rounded-md border border-gray-300 transition-colors cursor-pointer disabled:opacity-60 shadow-md"
           >
             Descartar
           </button>

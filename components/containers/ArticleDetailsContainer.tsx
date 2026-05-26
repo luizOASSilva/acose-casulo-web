@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
+import { Plus, Search, X } from 'lucide-react';
 
 import type { Article } from '@/types/article';
 import KeywordBadge from '@/components/ui/KeywordBadge';
@@ -33,6 +34,7 @@ type ArticleFormErrors = Partial<{
 }>;
 
 const ADMIN_ARTICLES_PATH = '/admin/artigos';
+const ADMIN_ARTICLES_RETURN_PATH_KEY = 'admin.articles.returnPath';
 const MAX_KEYWORD_SUGGESTIONS = 20;
 
 function parseInitialKeywords(art?: Article): string[] {
@@ -80,6 +82,24 @@ function FieldError({ message }: { message?: string }) {
   );
 }
 
+function normalizeZodIssues(
+  issues: Array<{
+    path: PropertyKey[];
+    message: string;
+  }>
+): Array<{
+  path: (string | number)[];
+  message: string;
+}> {
+  return issues.map((issue) => ({
+    path: issue.path.filter(
+      (path): path is string | number =>
+        typeof path === 'string' || typeof path === 'number'
+    ),
+    message: issue.message,
+  }));
+}
+
 export default function ArticleDetailsContainer({
   article,
   isAdmin = false,
@@ -90,6 +110,8 @@ export default function ArticleDetailsContainer({
   const router = useRouter();
   const pathname = usePathname();
   const { confirm } = useConfirmDialog();
+
+  const keywordBoxRef = useRef<HTMLDivElement | null>(null);
 
   const isCreationFlow = isNew || !article?.id;
 
@@ -117,6 +139,7 @@ export default function ArticleDetailsContainer({
   );
 
   const [keywordSearch, setKeywordSearch] = useState('');
+  const [isKeywordOpen, setIsKeywordOpen] = useState(false);
 
   const pendingImagePreviewUrl = useMemo(() => {
     if (!pendingImageFile) return '';
@@ -149,8 +172,24 @@ export default function ArticleDetailsContainer({
     setImageCaption(article.media?.caption || '');
     setKeywordsArray(parseInitialKeywords(article));
     setPendingImageFile(null);
+    setKeywordSearch('');
+    setIsKeywordOpen(false);
     setErrors({});
   }, [article]);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (!keywordBoxRef.current) return;
+
+      if (!keywordBoxRef.current.contains(event.target as Node)) {
+        setIsKeywordOpen(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const initialKeywords = useMemo(() => {
     return parseInitialKeywords(article);
@@ -196,7 +235,11 @@ export default function ArticleDetailsContainer({
   const cleanKeywordSearch = keywordSearch.trim().toLowerCase();
 
   const filteredSuggestions = useMemo(() => {
-    if (!cleanKeywordSearch) return [];
+    if (!cleanKeywordSearch) {
+      return allDatabaseKeywords
+        .filter((keyword) => !keywordsArray.includes(keyword))
+        .slice(0, MAX_KEYWORD_SUGGESTIONS);
+    }
 
     return allDatabaseKeywords
       .filter((keyword) => keyword.includes(cleanKeywordSearch))
@@ -205,7 +248,11 @@ export default function ArticleDetailsContainer({
   }, [cleanKeywordSearch, allDatabaseKeywords, keywordsArray]);
 
   const totalMatchedSuggestions = useMemo(() => {
-    if (!cleanKeywordSearch) return 0;
+    if (!cleanKeywordSearch) {
+      return allDatabaseKeywords.filter(
+        (keyword) => !keywordsArray.includes(keyword)
+      ).length;
+    }
 
     return allDatabaseKeywords
       .filter((keyword) => keyword.includes(cleanKeywordSearch))
@@ -242,6 +289,15 @@ export default function ArticleDetailsContainer({
     });
   };
 
+  const getReturnPath = () => {
+    if (typeof window === 'undefined') return ADMIN_ARTICLES_PATH;
+
+    return (
+      sessionStorage.getItem(ADMIN_ARTICLES_RETURN_PATH_KEY) ||
+      ADMIN_ARTICLES_PATH
+    );
+  };
+
   const handleAddKeyword = (word: string) => {
     const cleanWord = word.toLowerCase().trim();
 
@@ -261,6 +317,7 @@ export default function ArticleDetailsContainer({
     }
 
     setKeywordSearch('');
+    setIsKeywordOpen(false);
   };
 
   const handleRemoveKeyword = (wordToRemove: string) => {
@@ -280,6 +337,7 @@ export default function ArticleDetailsContainer({
     setKeywordsArray(parseInitialKeywords(article));
     setPendingImageFile(null);
     setKeywordSearch('');
+    setIsKeywordOpen(false);
     setErrors({});
   };
 
@@ -304,14 +362,14 @@ export default function ArticleDetailsContainer({
       return;
     }
 
-    router.push(ADMIN_ARTICLES_PATH);
+    router.push(getReturnPath());
   };
 
   const handleCancel = async () => {
     if (!(await confirmDiscard())) return;
 
     if (isCreationFlow) {
-      router.push(ADMIN_ARTICLES_PATH);
+      router.push(getReturnPath());
       return;
     }
 
@@ -329,10 +387,11 @@ export default function ArticleDetailsContainer({
     const nextErrors: ArticleFormErrors = {};
 
     issues.forEach((issue) => {
-      const field = issue.path[0] as keyof ArticleFormErrors | undefined;
+      const rawField = issue.path[0];
+      const field = typeof rawField === 'string' ? rawField : undefined;
 
-      if (field && !nextErrors[field]) {
-        nextErrors[field] = issue.message;
+      if (field && !nextErrors[field as keyof ArticleFormErrors]) {
+        nextErrors[field as keyof ArticleFormErrors] = issue.message;
         return;
       }
 
@@ -359,7 +418,7 @@ export default function ArticleDetailsContainer({
     });
 
     if (!parsed.success) {
-      applyValidationErrors(parsed.error.issues);
+      applyValidationErrors(normalizeZodIssues(parsed.error.issues));
       return;
     }
 
@@ -396,7 +455,7 @@ export default function ArticleDetailsContainer({
         setIsEditMode(false);
 
         if (isCreationFlow) {
-          router.push(ADMIN_ARTICLES_PATH);
+          router.push(getReturnPath());
 
           await confirm({
             title: 'Artigo criado',
@@ -661,7 +720,7 @@ export default function ArticleDetailsContainer({
                       <button
                         type="button"
                         onClick={() => handleRemoveKeyword(keyword)}
-                        className="hover:text-red-600 font-bold text-[10px] ml-0.5"
+                        className="hover:text-red-600 font-bold text-[10px] ml-0.5 cursor-pointer"
                         aria-label={`Remover palavra-chave ${keyword}`}
                       >
                         ✕
@@ -678,54 +737,93 @@ export default function ArticleDetailsContainer({
 
             <FieldError message={errors.keywords} />
 
-            <div className="relative">
-              <input
-                type="text"
-                value={keywordSearch}
-                onChange={(event) => setKeywordSearch(event.target.value)}
-                className="w-full text-xs bg-white border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 selection:bg-primary selection:text-white"
-                placeholder="Buscar ou criar palavra-chave no banco..."
-                maxLength={255}
-              />
+            <div ref={keywordBoxRef} className="relative">
+              <div className="relative">
+                <Search
+                  className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+                  aria-hidden="true"
+                />
 
-              {cleanKeywordSearch && (
-                <div className="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-xl z-50 max-h-56 overflow-y-auto divide-y divide-gray-50">
-                  {filteredSuggestions.length > 0 && (
-                    <div className="px-4 py-2 text-[11px] text-gray-500 bg-gray-50">
-                      Exibindo {filteredSuggestions.length} de{' '}
-                      {totalMatchedSuggestions} resultado
-                      {totalMatchedSuggestions === 1 ? '' : 's'} encontrados
-                    </div>
-                  )}
+                <input
+                  type="text"
+                  value={keywordSearch}
+                  onFocus={() => setIsKeywordOpen(true)}
+                  onChange={(event) => {
+                    setKeywordSearch(event.target.value);
+                    setIsKeywordOpen(true);
+                  }}
+                  className="w-full text-xs bg-white border border-gray-300 rounded-md py-2.5 pl-10 pr-10 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 selection:bg-primary selection:text-white"
+                  placeholder="Buscar ou criar palavra-chave..."
+                  maxLength={255}
+                />
 
-                  {filteredSuggestions.map((word) => (
-                    <button
-                      key={word}
-                      type="button"
-                      onClick={() => handleAddKeyword(word)}
-                      className="w-full text-left px-4 py-2.5 text-xs hover:bg-orange-50 text-gray-700 font-medium block"
-                    >
-                      🔍 Associar existente:{' '}
-                      <span className="font-bold text-gray-900">{word}</span>
-                    </button>
-                  ))}
+                {keywordSearch && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setKeywordSearch('');
+                      setIsKeywordOpen(true);
+                    }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 cursor-pointer"
+                    aria-label="Limpar busca de palavra-chave"
+                  >
+                    <X className="h-3.5 w-3.5" aria-hidden="true" />
+                  </button>
+                )}
+              </div>
 
-                  {showCreateOption && (
-                    <button
-                      key="new-kw-opt"
-                      type="button"
-                      onClick={() => handleAddKeyword(cleanKeywordSearch)}
-                      className="w-full text-left px-4 py-2.5 text-xs hover:bg-orange-50 text-orange-600 font-bold block border-t border-gray-100"
-                    >
-                      Criar palavra-chave inédita: "{cleanKeywordSearch}"
-                    </button>
-                  )}
+              {isKeywordOpen && (
+                <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-50 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
+                  <div className="max-h-64 overflow-y-auto p-2">
+                    {filteredSuggestions.length > 0 && (
+                      <div className="mb-2 px-1 text-[11px] text-gray-500">
+                        Exibindo {filteredSuggestions.length} de{' '}
+                        {totalMatchedSuggestions} resultado
+                        {totalMatchedSuggestions === 1 ? '' : 's'}
+                      </div>
+                    )}
 
-                  {!showCreateOption && filteredSuggestions.length === 0 && (
-                    <p className="px-4 py-3 text-xs text-gray-500">
-                      Nenhuma palavra-chave encontrada.
-                    </p>
-                  )}
+                    {filteredSuggestions.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {filteredSuggestions.map((word) => (
+                          <button
+                            key={word}
+                            type="button"
+                            onClick={() => handleAddKeyword(word)}
+                            className="inline-flex items-center gap-1.5 rounded-md border border-orange-100 bg-orange-50 px-3 py-1.5 text-xs font-semibold text-orange-700 transition hover:border-orange-200 hover:bg-orange-100 cursor-pointer"
+                          >
+                            <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+                            {word}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {showCreateOption && (
+                      <button
+                        type="button"
+                        onClick={() => handleAddKeyword(cleanKeywordSearch)}
+                        className="mt-2 inline-flex items-center gap-1.5 rounded-md border border-primary/20 bg-primary/10 px-3 py-1.5 text-xs font-bold text-primary transition hover:bg-primary hover:text-white cursor-pointer"
+                      >
+                        <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+                        Criar "{cleanKeywordSearch}"
+                      </button>
+                    )}
+
+                    {!showCreateOption && filteredSuggestions.length === 0 && (
+                      <p className="px-3 py-2 text-xs text-gray-500">
+                        Nenhuma palavra-chave encontrada.
+                      </p>
+                    )}
+
+                    {!cleanKeywordSearch &&
+                      filteredSuggestions.length === 0 &&
+                      allDatabaseKeywords.length === 0 && (
+                        <p className="px-3 py-2 text-xs text-gray-500">
+                          Nenhuma palavra-chave cadastrada ainda.
+                        </p>
+                      )}
+                  </div>
                 </div>
               )}
             </div>

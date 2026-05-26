@@ -16,6 +16,8 @@ function MarqueeRow({
   direction?: 'left' | 'right';
   speed?: number;
 }) {
+  if (items.length === 0) return null;
+
   const repeated = [...items, ...items, ...items, ...items];
   const duration = items.length * (400 / speed);
 

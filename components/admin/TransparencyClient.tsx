@@ -252,7 +252,7 @@ export default function TransparencyClient({
           </div>
         </section>
 
-        <section className="overflow-hidden rounded-md border border-zinc-200 bg-white shadow-sm">
+        <section className="sticky top-4 z-30 overflow-hidden rounded-md border border-zinc-200 bg-zinc-50 shadow-sm">
           <YearFilter years={data.years} activeYear={data.year} />
         </section>
 

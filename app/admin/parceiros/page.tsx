@@ -1,14 +1,45 @@
+import { cookies } from 'next/headers';
+
 import PartnerListContainer from '@/components/containers/PartnerListContainer';
-import { getPartners } from '@/services/partners';
+import { getAdminPartners } from '@/services/partners';
 
 export const dynamic = 'force-dynamic';
 
-export default async function AdminParceirosPage() {
-  const partners = await getPartners();
+interface AdminParceirosPageProps {
+  searchParams: Promise<{
+    busca?: string;
+    status?: string;
+    page?: string;
+  }>;
+}
+
+export default async function AdminParceirosPage({
+  searchParams,
+}: AdminParceirosPageProps) {
+  const params = await searchParams;
+
+  const cookieStore = await cookies();
+  const cookieHeader = cookieStore.toString();
+
+  const result = await getAdminPartners(
+    {
+      busca: params.busca,
+      status: (params.status || 'all') as any,
+      page: params.page ? Number(params.page) : 1,
+      per_page: 18,
+    },
+    cookieHeader
+  );
 
   return (
-    <div className="w-full min-h-screen">
-      <PartnerListContainer partners={partners} />
-    </div>
+    <PartnerListContainer
+      partners={result.data}
+      pagination={result.meta}
+      filters={{
+        busca: params.busca || '',
+        status: (params.status || 'all') as any,
+        page: params.page ? Number(params.page) : 1,
+      }}
+    />
   );
 }

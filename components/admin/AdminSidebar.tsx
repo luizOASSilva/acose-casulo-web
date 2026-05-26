@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
 import UserBadge from '@/components/ui/UserBadge';
@@ -11,8 +11,10 @@ import {
   Activity,
   ChevronLeft,
   ChevronRight,
+  ExternalLink,
   FileText,
   HeartHandshake,
+  Images,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -33,6 +35,7 @@ const nav = [
   { label: 'Transparência', href: 'transparencia', icon: ShieldCheck },
   { label: 'Atividades', href: 'atividades', icon: Activity },
   { label: 'Artigos', href: 'artigos', icon: FileText },
+  { label: 'Mídias', href: 'midias', icon: Images },
   { label: 'Configurações', href: 'configuracoes', icon: Settings },
 ];
 
@@ -50,12 +53,21 @@ export function AdminSidebar({
   logoUrl = '/logo.svg',
 }: SidebarProps) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const userName = currentAdmin?.name ?? 'Admin';
   const userSubtitle =
     currentAdmin?.role === 'master' ? 'Master' : 'Administrador';
+
+  const currentAdminPath = `${pathname}${
+    searchParams.toString() ? `?${searchParams.toString()}` : ''
+  }`;
+
+  const sitePreviewHref = `/?adminPreview=1&returnTo=${encodeURIComponent(
+    currentAdminPath
+  )}&t=${Date.now()}`;
 
   useEffect(() => {
     function handleKey(event: KeyboardEvent) {
@@ -94,7 +106,7 @@ export function AdminSidebar({
       <aside
         className={`
           fixed inset-y-0 left-0 z-80 flex h-screen flex-col
-        bg-white transition-[width,transform] duration-300 ease-in-out
+          bg-white transition-[width,transform] duration-300 ease-in-out
           ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}
           lg:translate-x-0 lg:sticky lg:top-0 lg:shrink-0
           ${collapsed ? 'w-22' : 'w-65'}
@@ -210,6 +222,29 @@ export function AdminSidebar({
             );
           })}
         </nav>
+
+        <div className="shrink-0 border-t border-zinc-200 p-3">
+          <Link
+            href={sitePreviewHref}
+            title={collapsed ? 'Ver site' : undefined}
+            className={`
+              flex items-center rounded-md py-3 text-sm font-medium
+              transition-all duration-200 overflow-hidden
+              ${
+                collapsed
+                  ? 'lg:mx-auto lg:h-12 lg:w-12 lg:justify-center lg:px-0'
+                  : 'gap-3 px-3'
+              }
+              text-zinc-600 hover:bg-orange-50 hover:text-primary
+            `}
+          >
+            <ExternalLink size={20} className="shrink-0" aria-hidden="true" />
+
+            <span className={`truncate ${collapsed ? 'lg:hidden' : ''}`}>
+              Ver site
+            </span>
+          </Link>
+        </div>
 
         <div className="mt-auto shrink-0 border-t border-zinc-200 bg-zinc-50/50 p-3">
           <div

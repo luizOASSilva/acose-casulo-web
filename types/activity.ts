@@ -50,4 +50,44 @@ export interface Activity {
   };
 }
 
+export interface PaginationMeta {
+  current_page: number;
+  from: number | null;
+  last_page: number;
+  per_page: number;
+  to: number | null;
+  total: number;
+}
+
+export interface PaginationLinks {
+  first?: string | null;
+  last?: string | null;
+  prev?: string | null;
+  next?: string | null;
+}
+
+export interface PaginatedActivitiesResponse {
+  data: Activity[];
+  meta: PaginationMeta;
+  links?: PaginationLinks;
+}
+
+export interface AdminActivityFilters {
+  busca?: string;
+  dia?: Weekday | '';
+  inicio?: string;
+  fim?: string;
+  ordem?: 'recentes' | 'antigas' | 'curtidas' | 'az';
+  page?: number;
+  per_page?: number;
+}
+
+export interface ActivityListFilters {
+  busca?: string;
+  dia?: Weekday | '';
+  inicio?: string;
+  fim?: string;
+  ordem?: 'recentes' | 'antigas' | 'curtidas' | 'az';
+}
+
 export type SaveActivityDTO = ActivitySchemaData;

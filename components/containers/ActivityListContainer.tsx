@@ -1,28 +1,244 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { Trash2, Edit3 } from 'lucide-react';
+import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import {
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  Edit3,
+  Search,
+  Trash2,
+  X,
+} from 'lucide-react';
 
 import ActivityCard from '@/components/ui/ActivityCard';
 import Reveal from '@/components/animations/Reveal';
 
-import { Activity } from '@/types/activity';
+import type {
+  Activity,
+  ActivityListFilters,
+  PaginationMeta,
+} from '@/types/activity';
+
 import { deleteActivity } from '@/services/activities';
+import { weekdayOptions } from '@/utils/activitySchedule';
 import { useConfirmDialog } from '@/context/ConfirmDialogContext';
 
 interface ActivityListContainerProps {
   activities: Activity[];
+  pagination?: PaginationMeta;
+  filters?: ActivityListFilters;
   isAdmin?: boolean;
+}
+
+type ActivityOrder = 'recentes' | 'antigas' | 'curtidas' | 'az';
+
+const sortOptions: {
+  value: ActivityOrder;
+  label: string;
+}[] = [
+  {
+    value: 'recentes',
+    label: 'Mais recentes',
+  },
+  {
+    value: 'antigas',
+    label: 'Mais antigas',
+  },
+  {
+    value: 'curtidas',
+    label: 'Mais curtidas',
+  },
+  {
+    value: 'az',
+    label: 'A-Z',
+  },
+];
+
+const ADMIN_ACTIVITIES_RETURN_PATH_KEY = 'admin.activities.returnPath';
+
+function normalizeOrder(order?: ActivityListFilters['ordem']): ActivityOrder {
+  if (
+    order === 'recentes' ||
+    order === 'antigas' ||
+    order === 'curtidas' ||
+    order === 'az'
+  ) {
+    return order;
+  }
+
+  return 'recentes';
 }
 
 export default function ActivityListContainer({
   activities,
+  pagination,
+  filters,
   isAdmin = false,
 }: ActivityListContainerProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { confirm } = useConfirmDialog();
 
+  const stickySentinelRef = useRef<HTMLDivElement | null>(null);
+
+  const [isMobileSticky, setIsMobileSticky] = useState(false);
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+
+  const [busca, setBusca] = useState(filters?.busca || '');
+  const [dia, setDia] = useState(filters?.dia || '');
+  const [inicio, setInicio] = useState(filters?.inicio || '');
+  const [fim, setFim] = useState(filters?.fim || '');
+  const [ordem, setOrdem] = useState<ActivityOrder>(
+    normalizeOrder(filters?.ordem)
+  );
+
   const safeActivities = Array.isArray(activities) ? activities : [];
+
+  const currentPage = pagination?.current_page || 1;
+  const lastPage = pagination?.last_page || 1;
+
+  const shouldHideExtraMobileFilters = isMobileSticky && !isMobileFilterOpen;
+
+  const hasActiveFilters = Boolean(
+    filters?.busca ||
+      filters?.dia ||
+      filters?.inicio ||
+      filters?.fim ||
+      (filters?.ordem && filters.ordem !== 'recentes')
+  );
+
+  const pageNumbers = useMemo(() => {
+    const pages: number[] = [];
+
+    const start = Math.max(1, currentPage - 2);
+    const end = Math.min(lastPage, currentPage + 2);
+
+    for (let page = start; page <= end; page += 1) {
+      pages.push(page);
+    }
+
+    return pages;
+  }, [currentPage, lastPage]);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    const sentinel = stickySentinelRef.current;
+    if (!sentinel) return;
+
+    function isMobileViewport() {
+      return window.matchMedia('(max-width: 767px)').matches;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        const nextSticky = isMobileViewport() && !entry.isIntersecting;
+
+        setIsMobileSticky((current) => {
+          if (current === nextSticky) return current;
+          return nextSticky;
+        });
+
+        if (!nextSticky) {
+          setIsMobileFilterOpen(false);
+        }
+      },
+      {
+        root: null,
+        threshold: 0,
+        rootMargin: '-16px 0px 0px 0px',
+      }
+    );
+
+    observer.observe(sentinel);
+
+    function handleResize() {
+      if (!isMobileViewport()) {
+        setIsMobileSticky(false);
+        setIsMobileFilterOpen(false);
+      }
+    }
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [isAdmin]);
+
+  function getCurrentListPath() {
+    const query = searchParams.toString();
+
+    return query ? `/admin/atividades?${query}` : '/admin/atividades';
+  }
+
+  function saveReturnPath() {
+    if (typeof window === 'undefined') return;
+
+    sessionStorage.setItem(
+      ADMIN_ACTIVITIES_RETURN_PATH_KEY,
+      getCurrentListPath()
+    );
+  }
+
+  function navigateFromList(href: string) {
+    saveReturnPath();
+    router.push(href);
+  }
+
+  function buildQuery(next: Record<string, string | number | null>) {
+    const params = new URLSearchParams(searchParams.toString());
+
+    Object.entries(next).forEach(([key, value]) => {
+      if (value === null || value === '' || value === undefined) {
+        params.delete(key);
+        return;
+      }
+
+      params.set(key, String(value));
+    });
+
+    return params.toString();
+  }
+
+  function pushWithQuery(next: Record<string, string | number | null>) {
+    const query = buildQuery(next);
+
+    router.push(query ? `/admin/atividades?${query}` : '/admin/atividades');
+  }
+
+  function handleFilterSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    pushWithQuery({
+      busca: busca.trim() || null,
+      dia: dia || null,
+      inicio: inicio || null,
+      fim: fim || null,
+      ordem: ordem === 'recentes' ? null : ordem,
+      page: 1,
+    });
+  }
+
+  function handleClearFilters() {
+    setBusca('');
+    setDia('');
+    setInicio('');
+    setFim('');
+    setOrdem('recentes');
+    setIsMobileFilterOpen(false);
+
+    router.push('/admin/atividades');
+  }
+
+  function handlePageChange(page: number) {
+    pushWithQuery({
+      page,
+    });
+  }
 
   const handleDelete = async (activityId: number) => {
     const confirmed = await confirm({
@@ -39,6 +255,14 @@ export default function ActivityListContainer({
     const success = await deleteActivity(activityId);
 
     if (success) {
+      await confirm({
+        title: 'Atividade removida',
+        description: 'A atividade foi removida com sucesso.',
+        confirmText: 'Entendi',
+        cancelText: 'Fechar',
+        variant: 'success',
+      });
+
       router.refresh();
       return;
     }
@@ -49,13 +273,13 @@ export default function ActivityListContainer({
         'Não foi possível remover a atividade agora. Tente novamente em alguns instantes.',
       confirmText: 'Entendi',
       cancelText: 'Fechar',
-      variant: 'default',
+      variant: 'danger',
     });
   };
 
   return (
     <main className="w-full max-w-6xl mx-auto py-12 md:py-20 px-6">
-      <header className="mb-10 space-y-2">
+      <header className="mb-8 space-y-2">
         <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 md:text-4xl">
           {isAdmin
             ? 'Painel de Controle de Atividades'
@@ -64,7 +288,8 @@ export default function ActivityListContainer({
 
         {isAdmin && (
           <p className="text-sm text-gray-600 bg-emerald-50 px-3 py-1.5 rounded-lg inline-block border border-emerald-100">
-            Painel conectado ao banco de dados. Alterações são refletidas em tempo real.
+            Painel conectado ao banco de dados. Alterações são refletidas em
+            tempo real.
           </p>
         )}
       </header>
@@ -74,7 +299,7 @@ export default function ActivityListContainer({
           {isAdmin && (
             <button
               type="button"
-              onClick={() => router.push('/admin/atividades/novo')}
+              onClick={() => navigateFromList('/admin/atividades/novo')}
               className="
                 w-full min-h-[245px]
                 flex items-center justify-center
@@ -84,6 +309,7 @@ export default function ActivityListContainer({
                 hover:bg-orange-50/50
                 transition-colors
                 group
+                cursor-pointer
               "
             >
               <div className="flex flex-col items-center gap-4 text-center p-8">
@@ -113,12 +339,194 @@ export default function ActivityListContainer({
             </button>
           )}
 
+          {isAdmin && <div ref={stickySentinelRef} className="h-px" />}
+
+          {isAdmin && (
+            <section
+              className={`
+                sticky top-4 z-30 rounded-md border border-gray-200 bg-zinc-50 p-4
+                transition-shadow duration-200
+                ${
+                  isMobileSticky
+                    ? 'shadow-[0_12px_18px_-18px_rgba(0,0,0,0.65)]'
+                    : ''
+                }
+              `}
+            >
+              <form onSubmit={handleFilterSubmit} className="space-y-3">
+                <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_180px_150px_150px_180px_auto]">
+                  <div className="relative min-w-0">
+                    <Search
+                      className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+                      aria-hidden="true"
+                    />
+
+                    <input
+                      type="search"
+                      value={busca}
+                      onChange={(event) => setBusca(event.target.value)}
+                      placeholder="Buscar atividade..."
+                      className="w-full min-w-0 rounded-md border border-gray-200 py-3 pl-10 pr-4 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
+                    />
+                  </div>
+
+                  <select
+                    value={dia}
+                    onChange={(event) => setDia(event.target.value)}
+                    className={`
+                      w-full min-w-0 cursor-pointer rounded-md border border-gray-200 px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10
+                      ${
+                        shouldHideExtraMobileFilters ? 'hidden md:block' : ''
+                      }
+                    `}
+                    aria-label="Filtrar por dia da semana"
+                  >
+                    <option value="">Todos os dias</option>
+
+                    {weekdayOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+
+                  <div
+                    className={`
+                      relative min-w-0
+                      ${
+                        shouldHideExtraMobileFilters ? 'hidden md:block' : ''
+                      }
+                    `}
+                  >
+                    <Clock
+                      className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+                      aria-hidden="true"
+                    />
+
+                    <input
+                      type="time"
+                      value={inicio}
+                      onChange={(event) => setInicio(event.target.value)}
+                      className="w-full min-w-0 max-w-full cursor-pointer appearance-none rounded-md border border-gray-200 py-3 pl-10 pr-2 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10 [color-scheme:light] [&::-webkit-date-and-time-value]:text-left"
+                      aria-label="Horário inicial"
+                    />
+                  </div>
+
+                  <div
+                    className={`
+                      relative min-w-0
+                      ${
+                        shouldHideExtraMobileFilters ? 'hidden md:block' : ''
+                      }
+                    `}
+                  >
+                    <Clock
+                      className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+                      aria-hidden="true"
+                    />
+
+                    <input
+                      type="time"
+                      value={fim}
+                      onChange={(event) => setFim(event.target.value)}
+                      className="w-full min-w-0 max-w-full cursor-pointer appearance-none rounded-md border border-gray-200 py-3 pl-10 pr-2 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10 [color-scheme:light] [&::-webkit-date-and-time-value]:text-left"
+                      aria-label="Horário final"
+                    />
+                  </div>
+
+                  <select
+                    value={ordem}
+                    onChange={(event) =>
+                      setOrdem(event.target.value as ActivityOrder)
+                    }
+                    className={`
+                      w-full min-w-0 cursor-pointer rounded-md border border-gray-200 px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10
+                      ${
+                        shouldHideExtraMobileFilters ? 'hidden md:block' : ''
+                      }
+                    `}
+                    aria-label="Ordenar atividades"
+                  >
+                    {sortOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+
+                  <div
+                    className={`
+                      flex min-w-0 gap-2
+                      ${
+                        shouldHideExtraMobileFilters ? 'hidden md:flex' : ''
+                      }
+                    `}
+                  >
+                    <button
+                      type="submit"
+                      className="inline-flex flex-1 cursor-pointer items-center justify-center rounded-md bg-primary px-4 py-3 text-sm font-semibold text-white transition hover:brightness-110 active:scale-95 lg:flex-none"
+                    >
+                      Filtrar
+                    </button>
+
+                    {hasActiveFilters && (
+                      <button
+                        type="button"
+                        onClick={handleClearFilters}
+                        className="inline-flex cursor-pointer items-center justify-center rounded-md bg-gray-100 px-3 py-3 text-gray-600 transition hover:bg-gray-200 active:scale-95"
+                        aria-label="Limpar filtros"
+                        title="Limpar filtros"
+                      >
+                        <X className="h-4 w-4" aria-hidden="true" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {isMobileSticky && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setIsMobileFilterOpen((current) => !current)
+                    }
+                    className="flex w-full items-center justify-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-2.5 text-xs font-semibold text-gray-700 transition active:scale-[0.99] md:hidden"
+                    aria-expanded={isMobileFilterOpen}
+                  >
+                    {isMobileFilterOpen ? (
+                      <>
+                        Recolher filtros
+                        <ChevronUp className="h-4 w-4" aria-hidden="true" />
+                      </>
+                    ) : (
+                      <>
+                        Mostrar filtros
+                        <ChevronDown className="h-4 w-4" aria-hidden="true" />
+                      </>
+                    )}
+                  </button>
+                )}
+              </form>
+
+              {pagination && (
+                <p className="mt-3 text-xs text-gray-500">
+                  {pagination.total === 0
+                    ? 'Nenhuma atividade encontrada.'
+                    : `Mostrando ${pagination.from ?? 0}–${
+                        pagination.to ?? 0
+                      } de ${pagination.total} atividades.`}
+                </p>
+              )}
+            </section>
+          )}
+
           {safeActivities.length === 0 ? (
-            !isAdmin && (
-              <div className="bg-white rounded-2xl p-8 border border-gray-100 text-center">
-                <p className="text-gray-600">Nenhuma atividade cadastrada.</p>
-              </div>
-            )
+            <div className="bg-white rounded-2xl p-8 border border-gray-100 text-center">
+              <p className="text-gray-600">
+                {isAdmin
+                  ? 'Nenhuma atividade encontrada com os filtros atuais.'
+                  : 'Nenhuma atividade cadastrada.'}
+              </p>
+            </div>
           ) : (
             <ul className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
               {safeActivities.map((activity) => (
@@ -137,7 +545,8 @@ export default function ActivityListContainer({
                     cursor-pointer
                   "
                   onClick={() =>
-                    isAdmin && router.push(`/admin/atividades/${activity.id}`)
+                    isAdmin &&
+                    navigateFromList(`/admin/atividades/${activity.id}`)
                   }
                 >
                   <div className="pointer-events-none">
@@ -160,13 +569,15 @@ export default function ActivityListContainer({
                       <button
                         type="button"
                         onClick={() =>
-                          router.push(`/admin/atividades/${activity.id}/editar`)
+                          navigateFromList(
+                            `/admin/atividades/${activity.id}/editar`
+                          )
                         }
                         className="
                           w-10 h-10
                           flex items-center justify-center
                           rounded-xl
-                          bg-gray-100
+                          bg-white
                           text-gray-600
                           border border-gray-200
                           shadow-md
@@ -176,6 +587,7 @@ export default function ActivityListContainer({
                           hover:border-orange-500
                           hover:shadow-lg
                           active:scale-95
+                          cursor-pointer
                         "
                         title="Editar Atividade"
                         aria-label="Editar atividade"
@@ -186,7 +598,21 @@ export default function ActivityListContainer({
                       <button
                         type="button"
                         onClick={() => handleDelete(activity.id)}
-                        className="p-2.5 text-red-500 bg-gray-100 hover:bg-red-500 hover:text-white rounded-xl transition-all active:scale-95"
+                        className="
+                          w-10 h-10
+                          flex items-center justify-center
+                          rounded-xl
+                          bg-white
+                          text-red-500
+                          border border-gray-200
+                          shadow-md
+                          transition-all
+                          hover:bg-red-500
+                          hover:text-white
+                          hover:border-red-500
+                          hover:shadow-lg
+                          active:scale-95
+                        "
                         title="Deletar Atividade"
                         aria-label="Deletar atividade"
                       >
@@ -197,6 +623,95 @@ export default function ActivityListContainer({
                 </li>
               ))}
             </ul>
+          )}
+
+          {isAdmin && pagination && pagination.last_page > 1 && (
+            <nav
+              className="flex flex-wrap items-center justify-center gap-2 pt-4"
+              aria-label="Paginação de atividades"
+            >
+              <button
+                type="button"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage <= 1}
+                className="
+                  cursor-pointer rounded-md border border-gray-200 bg-white px-3 py-2
+                  text-sm font-semibold text-gray-700 transition
+                  hover:bg-gray-50 active:scale-95
+                  disabled:cursor-not-allowed disabled:opacity-40
+                "
+              >
+                Anterior
+              </button>
+
+              {currentPage > 3 && lastPage > 5 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => handlePageChange(1)}
+                    className="
+                      cursor-pointer rounded-md border border-gray-200 bg-white px-3 py-2
+                      text-sm font-semibold text-gray-700 transition hover:bg-gray-50 active:scale-95
+                    "
+                  >
+                    1
+                  </button>
+
+                  <span className="px-1 text-sm text-gray-400">...</span>
+                </>
+              )}
+
+              {pageNumbers.map((page) => {
+                const isCurrent = page === currentPage;
+
+                return (
+                  <button
+                    key={page}
+                    type="button"
+                    onClick={() => handlePageChange(page)}
+                    className={`rounded-md border px-3 py-2 text-sm font-semibold transition active:scale-95 ${
+                      isCurrent
+                        ? 'cursor-default border-primary bg-primary text-white'
+                        : 'cursor-pointer border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+                    }`}
+                    aria-current={isCurrent ? 'page' : undefined}
+                  >
+                    {page}
+                  </button>
+                );
+              })}
+
+              {currentPage < lastPage - 2 && lastPage > 5 && (
+                <>
+                  <span className="px-1 text-sm text-gray-400">...</span>
+
+                  <button
+                    type="button"
+                    onClick={() => handlePageChange(lastPage)}
+                    className="
+                      cursor-pointer rounded-md border border-gray-200 bg-white px-3 py-2
+                      text-sm font-semibold text-gray-700 transition hover:bg-gray-50 active:scale-95
+                    "
+                  >
+                    {lastPage}
+                  </button>
+                </>
+              )}
+
+              <button
+                type="button"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage >= lastPage}
+                className="
+                  cursor-pointer rounded-md border border-gray-200 bg-white px-3 py-2
+                  text-sm font-semibold text-gray-700 transition
+                  hover:bg-gray-50 active:scale-95
+                  disabled:cursor-not-allowed disabled:opacity-40
+                "
+              >
+                Próxima
+              </button>
+            </nav>
           )}
         </div>
       </Reveal>

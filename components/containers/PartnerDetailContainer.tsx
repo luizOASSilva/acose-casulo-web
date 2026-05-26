@@ -16,13 +16,14 @@ import PartnerCard from '@/components/ui/PartnerCard';
 import MediaPicker from '@/components/admin/MediaPicker';
 import { useConfirmDialog } from '@/context/ConfirmDialogContext';
 import { uploadMediaFile } from '@/services/admin/media-library';
+
 import {
   createPartner,
-  type PartnerApiItem,
   storageUrlToPath,
   updatePartner,
 } from '@/services/partners';
-import type { Partner } from '@/types/partner';
+
+import type { Partner, PartnerApiItem } from '@/types/partner';
 
 interface PartnerDetailContainerProps {
   partner?: PartnerApiItem;
@@ -40,6 +41,7 @@ type PartnerFormErrors = Partial<{
 }>;
 
 const ADMIN_PARTNERS_PATH = '/admin/parceiros';
+const ADMIN_PARTNERS_RETURN_PATH_KEY = 'admin.partners.returnPath';
 
 function fieldClass(error?: string, className = '') {
   return `
@@ -343,16 +345,25 @@ export default function PartnerDetailContainer({
     });
   };
 
+  const getReturnPath = () => {
+    if (typeof window === 'undefined') return ADMIN_PARTNERS_PATH;
+
+    return (
+      sessionStorage.getItem(ADMIN_PARTNERS_RETURN_PATH_KEY) ||
+      ADMIN_PARTNERS_PATH
+    );
+  };
+
   const handleBack = async () => {
     if (!(await confirmDiscard())) return;
 
-    router.push(ADMIN_PARTNERS_PATH);
+    router.push(getReturnPath());
   };
 
   const handleCancel = async () => {
     if (!(await confirmDiscard())) return;
 
-    router.push(ADMIN_PARTNERS_PATH);
+    router.push(getReturnPath());
   };
 
   const handleSave = async () => {
@@ -410,7 +421,7 @@ export default function PartnerDetailContainer({
           variant: 'success',
         });
 
-        router.push(ADMIN_PARTNERS_PATH);
+        router.push(getReturnPath());
         router.refresh();
         return;
       }
@@ -745,7 +756,7 @@ export default function PartnerDetailContainer({
           </button>
         </div>
 
-        <section className="rounded-md p-5 flex justify-center">
+        <section className="rounded-md p-5 flex justify-center flex-col">
           <div className="mb-4 flex items-center gap-3">
             <div className="rounded-md bg-primary/10 p-2 text-primary">
               <ImageIcon size={18} aria-hidden="true" />
@@ -769,7 +780,10 @@ export default function PartnerDetailContainer({
               </div>
             ) : (
               <div className="flex w-full flex-col items-center justify-center rounded-md border border-dashed border-zinc-300 px-5 py-8 text-center">
-                <ImageIcon className="h-6 w-6 text-zinc-300" aria-hidden="true" />
+                <ImageIcon
+                  className="h-6 w-6 text-zinc-300"
+                  aria-hidden="true"
+                />
 
                 <p className="mt-2 text-xs text-zinc-400">
                   Nenhuma logo selecionada

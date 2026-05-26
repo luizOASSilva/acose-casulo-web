@@ -1,5 +1,11 @@
 import { api } from '@/lib/api';
-import type { Article, SaveArticleDTO } from '@/types/article';
+
+import type {
+  AdminArticleFilters,
+  Article,
+  PaginatedArticlesResponse,
+  SaveArticleDTO,
+} from '@/types/article';
 
 function normalizeArticles(response: any): Article[] {
   if (Array.isArray(response)) return response;
@@ -15,6 +21,33 @@ function normalizeArticle(response: any): Article | null {
   if (response?.article) return response.article;
 
   return response;
+}
+
+function normalizePaginatedArticles(response: any): PaginatedArticlesResponse {
+  return {
+    data: normalizeArticles(response),
+    meta: {
+      current_page: Number(
+        response?.meta?.current_page ?? response?.current_page ?? 1
+      ),
+      from: response?.meta?.from ?? response?.from ?? null,
+      last_page: Number(response?.meta?.last_page ?? response?.last_page ?? 1),
+      per_page: Number(response?.meta?.per_page ?? response?.per_page ?? 9),
+      to: response?.meta?.to ?? response?.to ?? null,
+      total: Number(response?.meta?.total ?? response?.total ?? 0),
+    },
+    links: response?.links,
+  };
+}
+
+function mapOrderToApi(ordem?: string): string {
+  const map: Record<string, string> = {
+    recentes: 'recent',
+    antigas: 'oldest',
+    az: 'az',
+  };
+
+  return map[ordem || 'recentes'] || 'recent';
 }
 
 export async function getRecentArticles(): Promise<Article[]> {
@@ -36,6 +69,51 @@ export async function getArticles(): Promise<Article[]> {
   } catch (error) {
     console.error('Erro ao buscar listagem de artigos:', error);
     return [];
+  }
+}
+
+export async function getAdminArticles(
+  filters: AdminArticleFilters = {},
+  cookieHeader?: string
+): Promise<PaginatedArticlesResponse> {
+  try {
+    const params = new URLSearchParams();
+
+    if (filters.busca?.trim()) {
+      params.set('q', filters.busca.trim());
+    }
+
+    if (filters.palavra?.trim()) {
+      params.set('keyword', filters.palavra.trim());
+    }
+
+    params.set('sort', mapOrderToApi(filters.ordem));
+    params.set('page', String(filters.page || 1));
+    params.set('per_page', String(filters.per_page || 9));
+
+    const response = await api.get<any>(`/articles?${params.toString()}`, {
+      headers: cookieHeader
+        ? {
+            Cookie: cookieHeader,
+          }
+        : undefined,
+    });
+
+    return normalizePaginatedArticles(response);
+  } catch (error) {
+    console.error('Erro ao buscar artigos do admin:', error);
+
+    return {
+      data: [],
+      meta: {
+        current_page: 1,
+        from: null,
+        last_page: 1,
+        per_page: 9,
+        to: null,
+        total: 0,
+      },
+    };
   }
 }
 

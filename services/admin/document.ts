@@ -87,7 +87,7 @@ export async function createDocument(
   data: DocumentInput
 ): Promise<DocumentItem | null> {
   try {
-    const res = await api.post<any>('/documents', data);
+    const res = await api.post<any>('/documents', { ...data });
 
     return normalizeDocument(res);
   } catch (error) {
@@ -106,7 +106,7 @@ export async function updateDocument(
   data: Partial<DocumentInput>
 ): Promise<DocumentItem | null> {
   try {
-    const res = await api.put<any>(`/documents/${id}`, data);
+    const res = await api.put<any>(`/documents/${id}`, { ...data });
 
     return normalizeDocument(res);
   } catch (error) {
