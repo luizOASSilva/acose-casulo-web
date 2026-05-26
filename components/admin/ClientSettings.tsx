@@ -27,7 +27,7 @@ import type {
   CreateAdminDTO,
   SettingItem,
   UpdateAdminDTO,
-} from '@/types/settings';
+} from '@/types/admin/settings';
 
 import {
   clearSettingsCache,
