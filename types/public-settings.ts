@@ -1,4 +1,5 @@
 export interface PublicSettings {
+  site_name?: string | null;
   site_logo_url?: string | null;
 
   contact_email?: string | null;
