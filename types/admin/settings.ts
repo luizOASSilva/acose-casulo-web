@@ -1,8 +1,10 @@
+export type AdminRole = 'admin' | 'master';
+
 export interface AdminUser {
   id: number;
   name: string;
   email: string;
-  role?: 'admin' | 'master' | string;
+  role: AdminRole | string;
   is_active?: boolean;
   is_master?: boolean;
   created_at?: string;
@@ -12,16 +14,16 @@ export interface AdminUser {
 export interface CreateAdminDTO {
   name: string;
   email: string;
-  role: 'admin' | 'master' | string;
+  role: AdminRole | string;
   is_active?: boolean;
-  password: string;
-  password_confirmation: string;
+  password?: string;
+  password_confirmation?: string;
 }
 
 export interface UpdateAdminDTO {
   name?: string;
   email?: string;
-  role?: 'admin' | 'master' | string;
+  role?: AdminRole | string;
   is_active?: boolean;
   password?: string;
   password_confirmation?: string;
@@ -33,7 +35,10 @@ export interface SettingItem {
   value: string | null;
   type?: string | null;
   label?: string | null;
+  description?: string | null;
   group?: string | null;
+  sort_order?: number | null;
+  order?: number | null;
   created_at?: string;
   updated_at?: string;
 }
