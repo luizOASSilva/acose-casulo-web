@@ -101,6 +101,7 @@ export default function MediaPicker({
 
   useEffect(() => {
     loadFiles();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [collection]);
 
   function handleSelectFile() {
@@ -173,16 +174,17 @@ export default function MediaPicker({
       />
 
       <div className="rounded-md border border-zinc-200 bg-white p-4">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="flex min-w-0 items-center gap-4">
-            <div className="relative flex h-24 w-36 shrink-0 items-center justify-center overflow-hidden rounded-md border border-zinc-200 bg-zinc-50">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center">
+            <div className="relative flex h-28 w-full shrink-0 items-center justify-center overflow-hidden rounded-md border border-zinc-200 bg-zinc-50 sm:h-24 sm:w-36">
               {previewUrl ? (
                 <Image
                   src={previewUrl}
                   alt="Imagem selecionada"
                   fill
-                  sizes="144px"
+                  sizes="(max-width: 640px) 100vw, 144px"
                   className="object-contain p-2"
+                  unoptimized={previewUrl.startsWith('blob:')}
                 />
               ) : (
                 <ImageIcon className="h-8 w-8 text-zinc-300" />
@@ -219,11 +221,11 @@ export default function MediaPicker({
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row lg:flex-col xl:flex-row">
             <button
               type="button"
               onClick={handleSelectFile}
-              className="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-2 text-xs font-semibold text-white transition hover:brightness-110"
+              className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-3 py-2 text-xs font-semibold text-white transition hover:brightness-110"
             >
               <Upload className="h-4 w-4" aria-hidden="true" />
               Escolher do dispositivo
@@ -233,7 +235,7 @@ export default function MediaPicker({
               type="button"
               onClick={loadFiles}
               disabled={loading}
-              className="inline-flex items-center gap-2 rounded-md bg-zinc-100 px-3 py-2 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex items-center justify-center gap-2 rounded-md bg-zinc-100 px-3 py-2 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <RefreshCcw className="h-4 w-4" aria-hidden="true" />
               {loading ? 'Atualizando...' : 'Atualizar'}
@@ -270,7 +272,7 @@ export default function MediaPicker({
             </p>
           </button>
         ) : (
-          <div className="grid max-h-[390px] grid-cols-2 gap-3 overflow-y-auto pr-1 md:grid-cols-3 xl:grid-cols-4">
+          <div className="grid max-h-[390px] grid-cols-2 gap-3 overflow-y-auto pr-1 sm:grid-cols-3 xl:grid-cols-4">
             {files.map((file) => {
               const fileUrl = normalizeMediaUrl(file.url, collection);
               const isSelected = !pendingFile && fileUrl === selectedUrl;
@@ -281,7 +283,7 @@ export default function MediaPicker({
                   type="button"
                   onClick={() => handleUseFile(file)}
                   className={`
-                    group relative aspect-[4/3] overflow-hidden rounded-md border bg-zinc-50 transition
+                    group relative block h-28 w-full overflow-hidden rounded-md border bg-zinc-50 transition sm:h-32
                     ${
                       isSelected
                         ? 'border-primary ring-2 ring-primary/20'
@@ -300,7 +302,7 @@ export default function MediaPicker({
                       src={fileUrl}
                       alt={file.original_name}
                       fill
-                      sizes="220px"
+                      sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 220px"
                       className="object-contain p-3 transition duration-200 group-hover:scale-105"
                     />
                   ) : (

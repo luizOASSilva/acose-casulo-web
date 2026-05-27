@@ -446,7 +446,7 @@ export default function ArticleListContainer({
               `}
             >
               <form onSubmit={handleFilterSubmit} className="space-y-3">
-                <div className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_260px_180px_auto]">
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_260px_180px_auto] md:items-start">
                   <div className="relative min-w-0">
                     <Search
                       className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
@@ -458,7 +458,7 @@ export default function ArticleListContainer({
                       value={busca}
                       onChange={(event) => setBusca(event.target.value)}
                       placeholder="Buscar artigo..."
-                      className="w-full rounded-md border border-gray-200 py-3 pl-10 pr-4 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
+                      className="h-12 w-full rounded-md border border-gray-200 pl-10 pr-4 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
                     />
                   </div>
 
@@ -473,39 +473,41 @@ export default function ArticleListContainer({
                       }
                     `}
                   >
-                    <Tag
-                      className="pointer-events-none absolute left-3 top-[25px] h-4 w-4 -translate-y-1/2 text-gray-400"
-                      aria-hidden="true"
-                    />
+                    <div className="relative">
+                      <Tag
+                        className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+                        aria-hidden="true"
+                      />
 
-                    <input
-                      type="text"
-                      value={palavra}
-                      onFocus={() => setIsKeywordOpen(true)}
-                      onChange={(event) => {
-                        setPalavra(event.target.value);
-                        setIsKeywordOpen(true);
-                      }}
-                      placeholder="Palavras-chave:"
-                      className="w-full rounded-md border border-gray-200 py-3 pl-10 pr-9 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
-                    />
-
-                    {palavra && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setPalavra('');
+                      <input
+                        type="text"
+                        value={palavra}
+                        onFocus={() => setIsKeywordOpen(true)}
+                        onChange={(event) => {
+                          setPalavra(event.target.value);
                           setIsKeywordOpen(true);
                         }}
-                        className="absolute right-3 top-[25px] -translate-y-1/2 rounded-full p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 cursor-pointer"
-                        aria-label="Limpar palavras-chave"
-                      >
-                        <X className="h-3.5 w-3.5" aria-hidden="true" />
-                      </button>
-                    )}
+                        placeholder="Palavras-chave"
+                        className="h-12 w-full rounded-md border border-gray-200 pl-10 pr-9 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
+                      />
+
+                      {palavra && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPalavra('');
+                            setIsKeywordOpen(true);
+                          }}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 cursor-pointer"
+                          aria-label="Limpar palavras-chave"
+                        >
+                          <X className="h-3.5 w-3.5" aria-hidden="true" />
+                        </button>
+                      )}
+                    </div>
 
                     {keywordTerms.length > 0 && (
-                      <div className="mt-2 flex flex-wrap gap-1.5">
+                      <div className="mt-2 flex max-h-16 flex-wrap gap-1.5 overflow-y-auto pr-1">
                         {keywordTerms.map((term) => (
                           <button
                             key={term}
@@ -518,8 +520,14 @@ export default function ArticleListContainer({
                             "
                             title={`Remover ${term}`}
                           >
-                            {term}
-                            <X className="h-3 w-3" aria-hidden="true" />
+                            <span className="max-w-[120px] truncate">
+                              {term}
+                            </span>
+
+                            <X
+                              className="h-3 w-3 shrink-0"
+                              aria-hidden="true"
+                            />
                           </button>
                         ))}
                       </div>
@@ -574,7 +582,7 @@ export default function ArticleListContainer({
                       setOrdem(event.target.value as ArticleOrder)
                     }
                     className={`
-                      w-full min-w-0 cursor-pointer rounded-md border border-gray-200 px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10
+                      h-12 w-full min-w-0 cursor-pointer rounded-md border border-gray-200 px-4 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10
                       ${
                         shouldHideExtraMobileFilters ? 'hidden md:block' : ''
                       }
@@ -590,7 +598,7 @@ export default function ArticleListContainer({
 
                   <div
                     className={`
-                      flex min-w-0 gap-2
+                      flex h-12 min-w-0 gap-2
                       ${
                         shouldHideExtraMobileFilters ? 'hidden md:flex' : ''
                       }
@@ -599,8 +607,8 @@ export default function ArticleListContainer({
                     <button
                       type="submit"
                       className="
-                        inline-flex flex-1 cursor-pointer items-center justify-center
-                        rounded-md bg-primary px-4 py-3 text-sm font-semibold
+                        inline-flex h-12 flex-1 cursor-pointer items-center justify-center
+                        rounded-md bg-primary px-4 text-sm font-semibold
                         text-white transition hover:brightness-110 active:scale-95 md:flex-none
                       "
                     >
@@ -612,8 +620,8 @@ export default function ArticleListContainer({
                         type="button"
                         onClick={handleClearFilters}
                         className="
-                          inline-flex cursor-pointer items-center justify-center
-                          rounded-md bg-red-200 px-3 py-3 text-gray-600
+                          inline-flex h-12 w-12 shrink-0 cursor-pointer items-center justify-center
+                          rounded-md bg-red-200 text-gray-600
                           transition hover:bg-red-300 active:scale-95
                         "
                         aria-label="Limpar filtros"
