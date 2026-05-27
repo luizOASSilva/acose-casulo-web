@@ -358,11 +358,11 @@ export default function PartnerListContainer({
                 <button
                   type="button"
                   onClick={handleClearFilters}
-                  className="inline-flex cursor-pointer items-center justify-center rounded-md bg-gray-100 px-3 py-3 text-gray-600 transition hover:bg-gray-200 active:scale-95"
+                  className="inline-flex cursor-pointer items-center justify-center rounded-md bg-red-200 px-3 py-3 text-gray-600 transition hover:bg-red-300 active:scale-95"
                   aria-label="Limpar filtros"
                   title="Limpar filtros"
                 >
-                  <X className="h-4 w-4" aria-hidden="true" />
+                  <X className="h-4 w-4 text-red-600" aria-hidden="true" />
                 </button>
               )}
             </div>
@@ -449,7 +449,13 @@ export default function PartnerListContainer({
                     <div className="pointer-events-none absolute inset-0 z-20 bg-black/0 transition group-hover:bg-black/5" />
 
                     <div
-                      className="absolute left-4 top-4 z-30 translate-y-[-6px] opacity-0 transition group-hover:translate-y-0 group-hover:opacity-100"
+                      className="
+                        absolute left-4 top-4 z-30
+                        translate-y-0 opacity-100
+                        md:-translate-y-1 md:opacity-0
+                        transition
+                        md:group-hover:translate-y-0 md:group-hover:opacity-100
+                      "
                       onClick={(event) => event.stopPropagation()}
                     >
                       <button
@@ -474,7 +480,13 @@ export default function PartnerListContainer({
                     </div>
 
                     <div
-                      className="absolute right-4 top-4 z-30 flex translate-y-[-6px] items-center gap-2 opacity-0 transition group-hover:translate-y-0 group-hover:opacity-100"
+                      className="
+                        absolute right-4 top-4 z-30 flex items-center gap-2
+                        translate-y-0 opacity-100
+                        md:-translate-y-1 md:opacity-0
+                        transition
+                        md:group-hover:translate-y-0 md:group-hover:opacity-100
+                      "
                       onClick={(event) => event.stopPropagation()}
                     >
                       <Link

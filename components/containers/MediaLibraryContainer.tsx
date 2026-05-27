@@ -528,11 +528,11 @@ export default function MediaLibraryContainer({
                 <button
                   type="button"
                   onClick={handleClearFilters}
-                  className="inline-flex h-11 w-full cursor-pointer items-center justify-center rounded-md bg-gray-100 text-gray-600 transition hover:bg-gray-200 active:scale-95 md:w-11"
+                  className="inline-flex cursor-pointer items-center justify-center rounded-md bg-red-200 px-3 py-3 text-gray-600 transition hover:bg-red-300 active:scale-95"
                   aria-label="Limpar filtros"
                   title="Limpar filtros"
                 >
-                  <X className="h-4 w-4" aria-hidden="true" />
+                  <X className="h-4 w-4 text-red-600" aria-hidden="true" />
                 </button>
               )}
             </form>
@@ -825,162 +825,179 @@ export default function MediaLibraryContainer({
         selectedFile &&
         createPortal(
           <div
-            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 p-4"
+            className="
+              fixed inset-0 z-[9999]
+              overflow-y-auto overscroll-contain
+              bg-black/70 p-3 sm:p-4
+            "
             onClick={() => setSelectedFile(null)}
             role="presentation"
           >
-            <div
-              className="relative grid max-h-[92vh] w-full max-w-5xl overflow-hidden rounded-md bg-white shadow-2xl md:grid-cols-[1.3fr_0.7fr]"
-              onClick={(event) => event.stopPropagation()}
-              role="dialog"
-              aria-modal="true"
-            >
-              <button
-                type="button"
-                onClick={() => setSelectedFile(null)}
-                className="absolute right-3 top-3 z-20 rounded-md bg-white/90 p-2 text-zinc-600 shadow-sm transition hover:bg-zinc-100"
-                aria-label="Fechar preview"
+            <div className="flex min-h-full items-start justify-center py-3 md:items-center md:py-6">
+              <div
+                className="
+                  relative grid w-full max-w-5xl overflow-hidden rounded-md bg-white shadow-2xl
+                  md:max-h-[92vh] md:grid-cols-[1.3fr_0.7fr]
+                "
+                onClick={(event) => event.stopPropagation()}
+                role="dialog"
+                aria-modal="true"
               >
-                <X className="h-5 w-5" aria-hidden="true" />
-              </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedFile(null)}
+                  className="
+                    absolute right-3 top-3 z-20 rounded-md bg-white/90 p-2
+                    text-zinc-600 shadow-sm transition hover:bg-zinc-100
+                  "
+                  aria-label="Fechar preview"
+                >
+                  <X className="h-5 w-5" aria-hidden="true" />
+                </button>
 
-              <div className="relative min-h-[360px] bg-zinc-100 md:min-h-[620px]">
-                <Image
-                  src={selectedFile.url}
-                  alt={getFileName(selectedFile)}
-                  fill
-                  sizes="(max-width: 768px) 100vw, 760px"
-                  className="object-contain p-4"
-                  priority
-                />
+                <div className="relative h-[42vh] min-h-[240px] bg-zinc-100 md:h-auto md:min-h-[620px]">
+                  <Image
+                    src={selectedFile.url}
+                    alt={getFileName(selectedFile)}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 760px"
+                    className="object-contain p-4"
+                    priority
+                  />
+                </div>
+
+                <aside
+                  className="
+                    p-5 pb-[calc(env(safe-area-inset-bottom)+1.5rem)]
+                    md:max-h-[92vh] md:overflow-y-auto md:p-6
+                  "
+                >
+                  <div className="mb-6">
+                    <p className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+                      Preview da mídia
+                    </p>
+
+                    <h2 className="mt-2 break-words text-xl font-semibold text-zinc-900">
+                      {getFileName(selectedFile)}
+                    </h2>
+
+                    <p className="mt-2 inline-flex rounded-md bg-orange-50 px-2 py-1 text-xs font-semibold text-orange-700">
+                      {getCollectionLabel(selectedFile.collection)}
+                    </p>
+                  </div>
+
+                  <dl className="space-y-4 text-sm">
+                    <div>
+                      <dt className="text-xs font-semibold text-zinc-500">
+                        URL
+                      </dt>
+
+                      <dd className="mt-1 break-all rounded-md bg-zinc-50 p-3 font-mono text-xs text-zinc-700">
+                        {selectedFile.url}
+                      </dd>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <dt className="text-xs font-semibold text-zinc-500">
+                          Tamanho
+                        </dt>
+
+                        <dd className="mt-1 text-zinc-800">
+                          {formatBytes(selectedFile.size)}
+                        </dd>
+                      </div>
+
+                      <div>
+                        <dt className="text-xs font-semibold text-zinc-500">
+                          Tipo
+                        </dt>
+
+                        <dd className="mt-1 text-zinc-800">
+                          {selectedFile.mime_type || '—'}
+                        </dd>
+                      </div>
+
+                      <div>
+                        <dt className="text-xs font-semibold text-zinc-500">
+                          Enviada em
+                        </dt>
+
+                        <dd className="mt-1 text-zinc-800">
+                          {formatDate(selectedFile.created_at)}
+                        </dd>
+                      </div>
+
+                      <div>
+                        <dt className="text-xs font-semibold text-zinc-500">
+                          Disco
+                        </dt>
+
+                        <dd className="mt-1 text-zinc-800">
+                          {selectedFile.disk}
+                        </dd>
+                      </div>
+                    </div>
+
+                    <div>
+                      <dt className="text-xs font-semibold text-zinc-500">
+                        Caminho
+                      </dt>
+
+                      <dd className="mt-1 break-all rounded-md bg-zinc-50 p-3 font-mono text-xs text-zinc-700">
+                        {selectedFile.path}
+                      </dd>
+                    </div>
+                  </dl>
+
+                  <div className="mt-8 grid grid-cols-1 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => handleCopyUrl(selectedFile)}
+                      aria-pressed={copiedFileId === selectedFile.id}
+                      aria-label={
+                        copiedFileId === selectedFile.id
+                          ? 'URL copiada'
+                          : 'Copiar URL da imagem'
+                      }
+                      className="
+                        w-full bg-primary text-white py-3 rounded-md transition
+                        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2
+                        focus-visible:ring-primary active:scale-[.98] cursor-pointer
+                        inline-flex items-center justify-center gap-2 text-sm font-semibold
+                      "
+                    >
+                      {copiedFileId === selectedFile.id ? (
+                        '✓ Copiado!'
+                      ) : (
+                        <>
+                          <Copy className="h-4 w-4" aria-hidden="true" />
+                          Copiar URL
+                        </>
+                      )}
+                    </button>
+
+                    <a
+                      href={selectedFile.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-zinc-100 px-4 py-3 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-200 active:scale-95"
+                    >
+                      <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                      Abrir imagem
+                    </a>
+
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(selectedFile)}
+                      className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-red-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-red-700 active:scale-95"
+                    >
+                      <Trash2 className="h-4 w-4" aria-hidden="true" />
+                      Remover imagem
+                    </button>
+                  </div>
+                </aside>
               </div>
-
-              <aside className="max-h-[92vh] overflow-y-auto p-6">
-                <div className="mb-6">
-                  <p className="text-xs font-bold uppercase tracking-wider text-zinc-400">
-                    Preview da mídia
-                  </p>
-
-                  <h2 className="mt-2 break-words text-xl font-semibold text-zinc-900">
-                    {getFileName(selectedFile)}
-                  </h2>
-
-                  <p className="mt-2 inline-flex rounded-md bg-orange-50 px-2 py-1 text-xs font-semibold text-orange-700">
-                    {getCollectionLabel(selectedFile.collection)}
-                  </p>
-                </div>
-
-                <dl className="space-y-4 text-sm">
-                  <div>
-                    <dt className="text-xs font-semibold text-zinc-500">
-                      URL
-                    </dt>
-
-                    <dd className="mt-1 break-all rounded-md bg-zinc-50 p-3 font-mono text-xs text-zinc-700">
-                      {selectedFile.url}
-                    </dd>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <dt className="text-xs font-semibold text-zinc-500">
-                        Tamanho
-                      </dt>
-
-                      <dd className="mt-1 text-zinc-800">
-                        {formatBytes(selectedFile.size)}
-                      </dd>
-                    </div>
-
-                    <div>
-                      <dt className="text-xs font-semibold text-zinc-500">
-                        Tipo
-                      </dt>
-
-                      <dd className="mt-1 text-zinc-800">
-                        {selectedFile.mime_type || '—'}
-                      </dd>
-                    </div>
-
-                    <div>
-                      <dt className="text-xs font-semibold text-zinc-500">
-                        Enviada em
-                      </dt>
-
-                      <dd className="mt-1 text-zinc-800">
-                        {formatDate(selectedFile.created_at)}
-                      </dd>
-                    </div>
-
-                    <div>
-                      <dt className="text-xs font-semibold text-zinc-500">
-                        Disco
-                      </dt>
-
-                      <dd className="mt-1 text-zinc-800">
-                        {selectedFile.disk}
-                      </dd>
-                    </div>
-                  </div>
-
-                  <div>
-                    <dt className="text-xs font-semibold text-zinc-500">
-                      Caminho
-                    </dt>
-
-                    <dd className="mt-1 break-all rounded-md bg-zinc-50 p-3 font-mono text-xs text-zinc-700">
-                      {selectedFile.path}
-                    </dd>
-                  </div>
-                </dl>
-
-                <div className="mt-8 grid grid-cols-1 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => handleCopyUrl(selectedFile)}
-                    aria-pressed={copiedFileId === selectedFile.id}
-                    aria-label={
-                      copiedFileId === selectedFile.id
-                        ? 'URL copiada'
-                        : 'Copiar URL da imagem'
-                    }
-                    className="
-                      w-full bg-primary text-white py-3 rounded-md transition
-                      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2
-                      focus-visible:ring-primary active:scale-[.98] cursor-pointer
-                      inline-flex items-center justify-center gap-2 text-sm font-semibold
-                    "
-                  >
-                    {copiedFileId === selectedFile.id ? (
-                      '✓ Copiado!'
-                    ) : (
-                      <>
-                        <Copy className="h-4 w-4" aria-hidden="true" />
-                        Copiar URL
-                      </>
-                    )}
-                  </button>
-
-                  <a
-                    href={selectedFile.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-zinc-100 px-4 py-3 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-200 active:scale-95"
-                  >
-                    <ExternalLink className="h-4 w-4" aria-hidden="true" />
-                    Abrir imagem
-                  </a>
-
-                  <button
-                    type="button"
-                    onClick={() => handleDelete(selectedFile)}
-                    className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-red-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-red-700 active:scale-95"
-                  >
-                    <Trash2 className="h-4 w-4" aria-hidden="true" />
-                    Remover imagem
-                  </button>
-                </div>
-              </aside>
             </div>
           </div>,
           document.body

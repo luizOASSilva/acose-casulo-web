@@ -66,6 +66,50 @@ function normalizeKeyword(keyword: string) {
   return keyword.trim();
 }
 
+function normalizeSearchText(value?: string | null) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+}
+
+function getKeywordTerms(value?: string | null) {
+  return normalizeSearchText(value)
+    .split(/[,\s]+/)
+    .map((term) => term.trim())
+    .filter(Boolean);
+}
+
+function getKeywordDraftPrefix(value: string) {
+  const match = value.match(/^(.*?)([^,\s]*)$/);
+
+  return match?.[1] || '';
+}
+
+function getKeywordDraftLastTerm(value: string) {
+  const parts = value.split(/[,\s]+/);
+
+  return parts[parts.length - 1] || '';
+}
+
+function mergeKeywordSuggestion(currentValue: string, suggestion: string) {
+  const prefix = getKeywordDraftPrefix(currentValue);
+  const nextValue = `${prefix}${suggestion}`.trim();
+
+  const terms = getKeywordTerms(nextValue);
+
+  return Array.from(new Set(terms)).join(' ');
+}
+
+function removeKeywordTerm(currentValue: string, termToRemove: string) {
+  const normalizedToRemove = normalizeSearchText(termToRemove);
+
+  return getKeywordTerms(currentValue)
+    .filter((term) => term !== normalizedToRemove)
+    .join(' ');
+}
+
 export default function ArticleListContainer({
   articles,
   pagination,
@@ -97,6 +141,8 @@ export default function ArticleListContainer({
   const lastPage = pagination?.last_page || 1;
 
   const shouldHideExtraMobileFilters = isMobileSticky && !isMobileFilterOpen;
+
+  const keywordTerms = useMemo(() => getKeywordTerms(palavra), [palavra]);
 
   const hasActiveFilters = Boolean(
     filters?.busca ||
@@ -132,16 +178,25 @@ export default function ArticleListContainer({
   }, [keywordSuggestions, fallbackKeywordSuggestions]);
 
   const filteredKeywordSuggestions = useMemo(() => {
-    const search = palavra.trim().toLowerCase();
-
-    if (!search) {
-      return availableKeywordSuggestions.slice(0, 8);
-    }
+    const selectedTerms = new Set(keywordTerms);
+    const lastTerm = normalizeSearchText(getKeywordDraftLastTerm(palavra));
 
     return availableKeywordSuggestions
-      .filter((keyword) => keyword.toLowerCase().includes(search))
+      .filter((keyword) => {
+        const normalizedKeyword = normalizeSearchText(keyword);
+
+        if (selectedTerms.has(normalizedKeyword)) {
+          return false;
+        }
+
+        if (!lastTerm) {
+          return true;
+        }
+
+        return normalizedKeyword.includes(lastTerm);
+      })
       .slice(0, 8);
-  }, [availableKeywordSuggestions, palavra]);
+  }, [availableKeywordSuggestions, keywordTerms, palavra]);
 
   const pageNumbers = useMemo(() => {
     const pages: number[] = [];
@@ -257,7 +312,7 @@ export default function ArticleListContainer({
 
     pushWithQuery({
       busca: busca.trim() || null,
-      palavra: palavra.trim() || null,
+      palavra: keywordTerms.length > 0 ? keywordTerms.join(' ') : null,
       ordem: ordem === 'recentes' ? null : ordem,
       page: 1,
     });
@@ -280,7 +335,12 @@ export default function ArticleListContainer({
   }
 
   function handleKeywordSelect(keyword: string) {
-    setPalavra(keyword);
+    setPalavra((current) => mergeKeywordSuggestion(current, keyword));
+    setIsKeywordOpen(true);
+  }
+
+  function handleRemoveKeywordTerm(term: string) {
+    setPalavra((current) => removeKeywordTerm(current, term));
     setIsKeywordOpen(false);
   }
 
@@ -414,7 +474,7 @@ export default function ArticleListContainer({
                     `}
                   >
                     <Tag
-                      className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+                      className="pointer-events-none absolute left-3 top-[25px] h-4 w-4 -translate-y-1/2 text-gray-400"
                       aria-hidden="true"
                     />
 
@@ -426,7 +486,7 @@ export default function ArticleListContainer({
                         setPalavra(event.target.value);
                         setIsKeywordOpen(true);
                       }}
-                      placeholder="Palavra-chave"
+                      placeholder="Palavras-chave:"
                       className="w-full rounded-md border border-gray-200 py-3 pl-10 pr-9 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
                     />
 
@@ -437,11 +497,32 @@ export default function ArticleListContainer({
                           setPalavra('');
                           setIsKeywordOpen(true);
                         }}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 cursor-pointer"
-                        aria-label="Limpar palavra-chave"
+                        className="absolute right-3 top-[25px] -translate-y-1/2 rounded-full p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 cursor-pointer"
+                        aria-label="Limpar palavras-chave"
                       >
                         <X className="h-3.5 w-3.5" aria-hidden="true" />
                       </button>
+                    )}
+
+                    {keywordTerms.length > 0 && (
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {keywordTerms.map((term) => (
+                          <button
+                            key={term}
+                            type="button"
+                            onClick={() => handleRemoveKeywordTerm(term)}
+                            className="
+                              inline-flex items-center gap-1 rounded-md border border-orange-100
+                              bg-orange-50 px-2 py-1 text-[11px] font-semibold
+                              text-orange-700 transition hover:border-orange-200 hover:bg-orange-100
+                            "
+                            title={`Remover ${term}`}
+                          >
+                            {term}
+                            <X className="h-3 w-3" aria-hidden="true" />
+                          </button>
+                        ))}
+                      </div>
                     )}
 
                     {isKeywordOpen && (
@@ -450,9 +531,11 @@ export default function ArticleListContainer({
                           {filteredKeywordSuggestions.length > 0 ? (
                             <div className="flex flex-wrap gap-2">
                               {filteredKeywordSuggestions.map((keyword) => {
+                                const normalizedKeyword =
+                                  normalizeSearchText(keyword);
+
                                 const selected =
-                                  palavra.trim().toLowerCase() ===
-                                  keyword.toLowerCase();
+                                  keywordTerms.includes(normalizedKeyword);
 
                                 return (
                                   <button
@@ -515,7 +598,11 @@ export default function ArticleListContainer({
                   >
                     <button
                       type="submit"
-                      className="inline-flex flex-1 cursor-pointer items-center justify-center rounded-md bg-primary px-4 py-3 text-sm font-semibold text-white transition hover:brightness-110 active:scale-95 md:flex-none"
+                      className="
+                        inline-flex flex-1 cursor-pointer items-center justify-center
+                        rounded-md bg-primary px-4 py-3 text-sm font-semibold
+                        text-white transition hover:brightness-110 active:scale-95 md:flex-none
+                      "
                     >
                       Filtrar
                     </button>
@@ -524,15 +611,33 @@ export default function ArticleListContainer({
                       <button
                         type="button"
                         onClick={handleClearFilters}
-                        className="inline-flex cursor-pointer items-center justify-center rounded-md bg-gray-100 px-3 py-3 text-gray-600 transition hover:bg-gray-200 active:scale-95"
+                        className="
+                          inline-flex cursor-pointer items-center justify-center
+                          rounded-md bg-red-200 px-3 py-3 text-gray-600
+                          transition hover:bg-red-300 active:scale-95
+                        "
                         aria-label="Limpar filtros"
                         title="Limpar filtros"
                       >
-                        <X className="h-4 w-4" aria-hidden="true" />
+                        <X className="h-4 w-4 text-red-600" aria-hidden="true" />
                       </button>
                     )}
                   </div>
                 </div>
+
+                {keywordTerms.length > 1 && (
+                  <p
+                    className={`
+                      text-xs text-gray-500
+                      ${
+                        shouldHideExtraMobileFilters ? 'hidden md:block' : ''
+                      }
+                    `}
+                  >
+                    Buscando artigos que contenham todas as palavras-chave:{' '}
+                    <strong>{keywordTerms.join(' + ')}</strong>
+                  </p>
+                )}
 
                 {isMobileSticky && (
                   <button
@@ -540,7 +645,11 @@ export default function ArticleListContainer({
                     onClick={() =>
                       setIsMobileFilterOpen((current) => !current)
                     }
-                    className="flex w-full items-center justify-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-2.5 text-xs font-semibold text-gray-700 transition active:scale-[0.99] md:hidden"
+                    className="
+                      flex w-full items-center justify-center gap-2 rounded-md
+                      border border-gray-200 bg-white px-3 py-2.5 text-xs
+                      font-semibold text-gray-700 transition active:scale-[0.99] md:hidden
+                    "
                     aria-expanded={isMobileFilterOpen}
                   >
                     {isMobileFilterOpen ? (
@@ -584,7 +693,10 @@ export default function ArticleListContainer({
                 {safeArticles.map((article) => (
                   <li
                     key={article.id}
-                    className="relative group px-4 py-2 flex justify-between items-center transition-all hover:bg-gray-50/70 cursor-pointer"
+                    className="
+                      relative group px-4 py-2 flex justify-between items-center
+                      transition-all hover:bg-gray-50/70 cursor-pointer
+                    "
                     onClick={() =>
                       isAdmin &&
                       navigateFromList(`/admin/artigos/${article.id}`)
@@ -628,7 +740,10 @@ export default function ArticleListContainer({
                         <button
                           type="button"
                           onClick={() => handleDelete(article.id)}
-                          className="p-2.5 text-red-600 bg-red-500/10 hover:bg-red-500/20 rounded-xl transition-all active:scale-95"
+                          className="
+                            p-2.5 text-red-600 bg-red-500/10 hover:bg-red-500/20
+                            rounded-xl transition-all active:scale-95
+                          "
                           title="Deletar Artigo"
                           aria-label="Deletar artigo"
                         >

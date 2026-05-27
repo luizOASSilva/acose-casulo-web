@@ -39,58 +39,58 @@ type CategoryTheme = {
   actionDelete: string;
 };
 
-function getCategoryTheme(index: number): CategoryTheme {
-  const isSecondary = index % 6 === 2;
-  const isPrimary = index % 6 === 5;
+function normalizeText(value?: string | null) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+}
 
-  if (isSecondary) {
-    return {
-      card: 'border-secondary bg-secondary text-white shadow-sm',
-      header: 'border-white/10 bg-secondary',
-      folderBox: 'bg-white text-secondary',
-      folderIcon: 'text-secondary',
-      title: 'text-white',
-      subtitle: 'text-white/70',
-      divider: 'border-white/10',
-      documentRow: 'border-white/10 hover:bg-white/10',
-      documentTitle: 'text-white group-hover:text-white',
-      documentDate: 'text-white/60',
-      documentIcon: 'text-white/70 group-hover:text-white',
-      emptyBox: 'bg-white/10 text-white/70',
-      emptyIcon: 'text-white/70',
-      emptyTitle: 'text-white',
-      emptyText: 'text-white/60',
-      actionEdit:
-        'text-white bg-white/10 hover:bg-white hover:text-secondary',
-      actionDelete:
-        'text-white bg-red-500/30 hover:bg-red-500 hover:text-white',
-    };
-  }
+function getBlackTheme(): CategoryTheme {
+  return {
+    card: 'border-secondary bg-secondary text-white shadow-sm',
+    header: 'border-white/10 bg-secondary',
+    folderBox: 'bg-white text-secondary',
+    folderIcon: 'text-secondary',
+    title: 'text-white',
+    subtitle: 'text-white/70',
+    divider: 'border-white/10',
+    documentRow: 'border-white/10 hover:bg-white/10',
+    documentTitle: 'text-white group-hover:text-white',
+    documentDate: 'text-white/60',
+    documentIcon: 'text-white/70 group-hover:text-white',
+    emptyBox: 'bg-white/10 text-white/70',
+    emptyIcon: 'text-white/70',
+    emptyTitle: 'text-white',
+    emptyText: 'text-white/60',
+    actionEdit: 'text-white bg-white/10 hover:bg-white hover:text-secondary',
+    actionDelete: 'text-white bg-red-500/30 hover:bg-red-500 hover:text-white',
+  };
+}
 
-  if (isPrimary) {
-    return {
-      card: 'border-primary bg-primary text-white shadow-sm',
-      header: 'border-white/10 bg-primary',
-      folderBox: 'bg-white text-primary',
-      folderIcon: 'text-primary',
-      title: 'text-white',
-      subtitle: 'text-white/75',
-      divider: 'border-white/10',
-      documentRow: 'border-white/10 hover:bg-white/10',
-      documentTitle: 'text-white group-hover:text-white',
-      documentDate: 'text-white/65',
-      documentIcon: 'text-white/75 group-hover:text-white',
-      emptyBox: 'bg-white/10 text-white/75',
-      emptyIcon: 'text-white/75',
-      emptyTitle: 'text-white',
-      emptyText: 'text-white/65',
-      actionEdit:
-        'text-white bg-white/10 hover:bg-white hover:text-primary',
-      actionDelete:
-        'text-white bg-red-500/30 hover:bg-red-500 hover:text-white',
-    };
-  }
+function getOrangeTheme(): CategoryTheme {
+  return {
+    card: 'border-primary bg-primary text-white shadow-sm',
+    header: 'border-white/10 bg-primary',
+    folderBox: 'bg-white text-primary',
+    folderIcon: 'text-primary',
+    title: 'text-white',
+    subtitle: 'text-white/75',
+    divider: 'border-white/10',
+    documentRow: 'border-white/10 hover:bg-white/10',
+    documentTitle: 'text-white group-hover:text-white',
+    documentDate: 'text-white/65',
+    documentIcon: 'text-white/75 group-hover:text-white',
+    emptyBox: 'bg-white/10 text-white/75',
+    emptyIcon: 'text-white/75',
+    emptyTitle: 'text-white',
+    emptyText: 'text-white/65',
+    actionEdit: 'text-white bg-white/10 hover:bg-white hover:text-primary',
+    actionDelete: 'text-white bg-red-500/30 hover:bg-red-500 hover:text-white',
+  };
+}
 
+function getWhiteTheme(): CategoryTheme {
   return {
     card: 'border-zinc-200 bg-white text-zinc-900 shadow-sm',
     header: 'border-zinc-100 bg-zinc-50',
@@ -109,9 +109,35 @@ function getCategoryTheme(index: number): CategoryTheme {
     emptyText: 'text-zinc-500',
     actionEdit:
       'text-gray-600 bg-gray-100 hover:bg-orange-500/20 hover:text-orange-600',
-    actionDelete:
-      'text-red-600 bg-red-500/10 hover:bg-red-500/20',
+    actionDelete: 'text-red-600 bg-red-500/10 hover:bg-red-500/20',
   };
+}
+
+function getCategoryTheme(category: any): CategoryTheme {
+  const name = normalizeText(category?.name);
+  const slug = normalizeText(category?.slug);
+  const key = `${name} ${slug}`;
+
+  if (
+    key.includes('financeiro') ||
+    key.includes('financeira') ||
+    key.includes('balanco') ||
+    key.includes('balancos') ||
+    key.includes('prestacao') ||
+    key.includes('contas')
+  ) {
+    return getBlackTheme();
+  }
+
+  if (
+    key.includes('centro dia') ||
+    key.includes('centro-dia') ||
+    key.includes('centrodia')
+  ) {
+    return getOrangeTheme();
+  }
+
+  return getWhiteTheme();
 }
 
 function formatDate(date?: string) {
@@ -126,19 +152,34 @@ function formatDate(date?: string) {
   return parsed.toLocaleDateString('pt-BR');
 }
 
+function getDocumentDate(doc: any) {
+  return (
+    doc?.published_at ||
+    doc?.document_date ||
+    doc?.date ||
+    doc?.created_at ||
+    doc?.updated_at ||
+    ''
+  );
+}
+
 export default function TransparencyClient({
   data,
 }: AdminTransparencyClientProps) {
   const router = useRouter();
   const { confirm } = useConfirmDialog();
 
+  const categories = Array.isArray(data?.categories) ? data.categories : [];
+  const years = Array.isArray(data?.years) ? data.years : [];
+
   const totalDocuments =
-    data.categories.reduce(
-      (acc: number, cat: any) => acc + cat.documents.length,
+    categories.reduce(
+      (acc: number, cat: any) =>
+        acc + (Array.isArray(cat?.documents) ? cat.documents.length : 0),
       0
     ) || 0;
 
-  const totalCategories = data.categories.length || 0;
+  const totalCategories = categories.length || 0;
 
   const handleDelete = async (documentId: number, title: string) => {
     const confirmed = await confirm({
@@ -245,7 +286,7 @@ export default function TransparencyClient({
                 </p>
 
                 <h3 className="text-2xl font-semibold tracking-tight text-zinc-900">
-                  {data.year}
+                  {data?.year}
                 </h3>
               </div>
             </div>
@@ -253,12 +294,16 @@ export default function TransparencyClient({
         </section>
 
         <section className="sticky top-4 z-30 overflow-hidden rounded-md border border-zinc-200 bg-zinc-50 shadow-sm">
-          <YearFilter years={data.years} activeYear={data.year} />
+          <YearFilter years={years} activeYear={data?.year} />
         </section>
 
         <section className="grid gap-5 lg:grid-cols-2">
-          {data.categories.map((category: any, categoryIndex: number) => {
-            const theme = getCategoryTheme(categoryIndex);
+          {categories.map((category: any) => {
+            const documents = Array.isArray(category?.documents)
+              ? category.documents
+              : [];
+
+            const theme = getCategoryTheme(category);
 
             return (
               <div
@@ -283,92 +328,114 @@ export default function TransparencyClient({
                       </h3>
 
                       <p className={`text-xs ${theme.subtitle}`}>
-                        {category.documents.length} documentos
+                        {documents.length}{' '}
+                        {documents.length === 1 ? 'documento' : 'documentos'}
                       </p>
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  {category.documents.length > 0 ? (
-                    category.documents.map((doc: any) => (
-                      <div
-                        key={doc.id}
-                        className={`flex items-center justify-between border-b px-5 py-3 transition ${theme.documentRow}`}
-                      >
-                        {doc.file_url ? (
-                          <a
-                            href={doc.file_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="group min-w-0 flex-1"
-                            title={`Abrir documento: ${doc.title}`}
-                            aria-label={`Abrir documento ${doc.title}`}
+                  {documents.length > 0 ? (
+                    documents.map((doc: any) => {
+                      const documentDate = formatDate(getDocumentDate(doc));
+
+                      return (
+                        <div
+                          key={doc.id}
+                          className={`flex items-center justify-between border-b px-5 py-3 transition ${theme.documentRow}`}
+                        >
+                          {doc.file_url ? (
+                            <a
+                              href={doc.file_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="group min-w-0 flex-1"
+                              title={`Abrir documento: ${doc.title}`}
+                              aria-label={`Abrir documento ${doc.title}`}
+                            >
+                              <div className="flex min-w-0 items-start gap-2">
+                                <FileText
+                                  size={15}
+                                  className={`mt-0.5 shrink-0 transition ${theme.documentIcon}`}
+                                  aria-hidden="true"
+                                />
+
+                                <div className="min-w-0">
+                                  <p
+                                    className={`truncate text-sm font-medium transition ${theme.documentTitle}`}
+                                  >
+                                    {doc.title}
+                                  </p>
+
+                                  {documentDate && (
+                                    <p
+                                      className={`mt-1 text-xs ${theme.documentDate}`}
+                                    >
+                                      {documentDate}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            </a>
+                          ) : (
+                            <div className="min-w-0 flex-1">
+                              <div className="flex min-w-0 items-start gap-2">
+                                <FileText
+                                  size={15}
+                                  className={`mt-0.5 shrink-0 ${theme.documentIcon}`}
+                                  aria-hidden="true"
+                                />
+
+                                <div className="min-w-0">
+                                  <p
+                                    className={`truncate text-sm font-medium ${theme.documentTitle}`}
+                                  >
+                                    {doc.title}
+                                  </p>
+
+                                  {documentDate && (
+                                    <p
+                                      className={`mt-1 text-xs ${theme.documentDate}`}
+                                    >
+                                      {documentDate}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          <div
+                            className="
+                              ml-3 flex shrink-0 items-center gap-1
+                              opacity-100
+                              md:opacity-0 md:group-hover:opacity-100
+                              transition-opacity
+                            "
                           >
-                            <div className="flex min-w-0 items-start gap-2">
-                              <FileText
-                                size={15}
-                                className={`mt-0.5 shrink-0 transition ${theme.documentIcon}`}
-                                aria-hidden="true"
-                              />
+                            <Link
+                              href={`/admin/transparencia/${doc.id}/editar`}
+                              className={`rounded-xl p-2.5 transition-all active:scale-95 ${theme.actionEdit}`}
+                              title="Editar documento"
+                              aria-label="Editar documento"
+                            >
+                              <Pencil size={15} aria-hidden="true" />
+                            </Link>
 
-                              <div className="min-w-0">
-                                <p
-                                  className={`truncate text-sm font-medium transition ${theme.documentTitle}`}
-                                >
-                                  {doc.title}
-                                </p>
-
-                                <p className={`mt-1 text-xs ${theme.documentDate}`}>
-                                  {formatDate(doc.created_at)}
-                                </p>
-                              </div>
-                            </div>
-                          </a>
-                        ) : (
-                          <div className="min-w-0 flex-1">
-                            <div className="flex min-w-0 items-start gap-2">
-                              <FileText
-                                size={15}
-                                className={`mt-0.5 shrink-0 ${theme.documentIcon}`}
-                                aria-hidden="true"
-                              />
-
-                              <div className="min-w-0">
-                                <p className={`truncate text-sm font-medium ${theme.documentTitle}`}>
-                                  {doc.title}
-                                </p>
-
-                                <p className={`mt-1 text-xs ${theme.documentDate}`}>
-                                  {formatDate(doc.created_at)}
-                                </p>
-                              </div>
-                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleDelete(doc.id, doc.title)}
+                              className={`rounded-xl p-2.5 transition-all active:scale-95 ${theme.actionDelete}`}
+                              title="Remover documento"
+                              aria-label="Remover documento"
+                            >
+                              <Trash2 size={15} aria-hidden="true" />
+                            </button>
                           </div>
-                        )}
-
-                        <div className="ml-3 flex shrink-0 items-center gap-1">
-                          <Link
-                            href={`/admin/transparencia/${doc.id}/editar`}
-                            className={`rounded-xl p-2.5 transition-all active:scale-95 ${theme.actionEdit}`}
-                            title="Editar documento"
-                            aria-label="Editar documento"
-                          >
-                            <Pencil size={15} aria-hidden="true" />
-                          </Link>
-
-                          <button
-                            type="button"
-                            onClick={() => handleDelete(doc.id, doc.title)}
-                            className={`rounded-xl p-2.5 transition-all active:scale-95 ${theme.actionDelete}`}
-                            title="Remover documento"
-                            aria-label="Remover documento"
-                          >
-                            <Trash2 size={15} aria-hidden="true" />
-                          </button>
                         </div>
-                      </div>
-                    ))
+                      );
+                    })
                   ) : (
                     <div className="flex flex-col items-center justify-center gap-3 py-12">
                       <div className={`rounded-md p-4 ${theme.emptyBox}`}>

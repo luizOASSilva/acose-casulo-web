@@ -473,11 +473,11 @@ export default function ActivityListContainer({
                       <button
                         type="button"
                         onClick={handleClearFilters}
-                        className="inline-flex cursor-pointer items-center justify-center rounded-md bg-gray-100 px-3 py-3 text-gray-600 transition hover:bg-gray-200 active:scale-95"
+                        className="inline-flex cursor-pointer items-center justify-center rounded-md bg-red-200 px-3 py-3 text-gray-600 transition hover:bg-red-300 active:scale-95"
                         aria-label="Limpar filtros"
                         title="Limpar filtros"
                       >
-                        <X className="h-4 w-4" aria-hidden="true" />
+                        <X className="h-4 w-4 text-red-600" aria-hidden="true" />
                       </button>
                     )}
                   </div>
