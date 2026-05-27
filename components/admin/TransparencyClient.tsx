@@ -228,8 +228,8 @@ export default function TransparencyClient({
               </h1>
 
               <p className="mt-3 text-base leading-relaxed text-zinc-600">
-                Gerencie documentos institucionais, arquivos públicos e conteúdos
-                da área de transparência da plataforma.
+                Gerencie documentos institucionais, arquivos públicos e
+                conteúdos da área de transparência da plataforma.
               </p>
             </div>
 
@@ -245,9 +245,7 @@ export default function TransparencyClient({
 
         <section>
           <div className="mb-5">
-            <h2 className="text-2xl font-semibold text-zinc-900">
-              Métricas
-            </h2>
+            <h2 className="text-2xl font-semibold text-zinc-900">Métricas</h2>
 
             <p className="text-sm text-zinc-500">
               Dados gerais da transparência
@@ -281,9 +279,7 @@ export default function TransparencyClient({
 
             <div className="rounded-md border border-zinc-200 bg-white px-5 py-4 shadow-sm">
               <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-zinc-500">
-                  Ano atual
-                </p>
+                <p className="text-sm font-medium text-zinc-500">Ano atual</p>
 
                 <h3 className="text-2xl font-semibold tracking-tight text-zinc-900">
                   {data?.year}

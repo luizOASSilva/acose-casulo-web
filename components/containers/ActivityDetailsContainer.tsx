@@ -402,7 +402,7 @@ export default function ActivityDetailsContainer({
 
   const applyValidationErrors = (
     issues: Array<{
-      path: (string | number)[];
+      path: PropertyKey[];
       message: string;
     }>
   ) => {
@@ -410,7 +410,12 @@ export default function ActivityDetailsContainer({
     const nextScheduleErrors: ScheduleErrors = {};
 
     issues.forEach((issue) => {
-      const [field, index, nestedField] = issue.path;
+      const [rawField, rawIndex, rawNestedField] = issue.path;
+
+      const field = typeof rawField === 'string' ? rawField : undefined;
+      const index = typeof rawIndex === 'number' ? rawIndex : undefined;
+      const nestedField =
+        typeof rawNestedField === 'string' ? rawNestedField : undefined;
 
       if (field === 'schedules' && typeof index === 'number') {
         const key = nestedField as keyof ScheduleErrors[number] | undefined;
