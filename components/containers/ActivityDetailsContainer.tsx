@@ -831,12 +831,6 @@ export default function ActivityDetailsContainer({
             className="object-cover"
             priority
           />
-
-          {!isEditMode && imageCaption && (
-            <p className="absolute bottom-0 left-0 right-0 bg-black/40 text-white text-xs px-3 py-1.5 text-center break-words [overflow-wrap:anywhere]">
-              {imageCaption}
-            </p>
-          )}
         </div>
       )}
 

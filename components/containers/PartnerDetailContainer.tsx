@@ -438,7 +438,7 @@ export default function PartnerDetailContainer({
       await confirm({
         title: 'Erro ao salvar',
         description:
-          error instanceof Error
+          error instanceof Error && error.message
             ? error.message
             : 'Não foi possível salvar o parceiro agora. Tente novamente em alguns instantes.',
         confirmText: 'Entendi',
@@ -509,61 +509,32 @@ export default function PartnerDetailContainer({
             </p>
           )}
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-gray-500">
-                URL da Imagem
-              </label>
+          <div className="space-y-1">
+            <label className="text-xs font-semibold text-gray-500">
+              Texto Alternativo
+            </label>
 
-              <input
-                type="text"
-                value={logoUrl}
-                onChange={(event) => {
-                  const normalizedUrl = normalizeLogoDisplayUrl(
-                    event.target.value
-                  );
-                  const normalizedPath = storageUrlToPath(normalizedUrl);
+            <input
+              type="text"
+              value={logoAlt}
+              onChange={(event) => {
+                setLogoAlt(event.target.value);
+                clearError('logo_alt');
+              }}
+              className={fieldClass(
+                errors.logo_alt,
+                'w-full rounded-md border bg-white px-3 py-2 text-xs text-gray-700 focus:outline-none'
+              )}
+              placeholder="Descrição da logo"
+              maxLength={255}
+            />
 
-                  setLogoUrl(event.target.value);
-                  setLogoPath(normalizedPath);
-                  clearError('logo');
-                }}
-                className={fieldClass(
-                  errors.logo,
-                  'w-full rounded-md border bg-white px-3 py-2 font-mono text-xs text-gray-700 focus:outline-none'
-                )}
-                placeholder="/storage/media/partners/logo.svg"
-                maxLength={2048}
-              />
-            </div>
+            <div className="flex justify-between">
+              <FieldError message={errors.logo_alt} />
 
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-gray-500">
-                Texto Alternativo
-              </label>
-
-              <input
-                type="text"
-                value={logoAlt}
-                onChange={(event) => {
-                  setLogoAlt(event.target.value);
-                  clearError('logo_alt');
-                }}
-                className={fieldClass(
-                  errors.logo_alt,
-                  'w-full rounded-md border bg-white px-3 py-2 text-xs text-gray-700 focus:outline-none'
-                )}
-                placeholder="Descrição da logo"
-                maxLength={255}
-              />
-
-              <div className="flex justify-between">
-                <FieldError message={errors.logo_alt} />
-
-                <span className="ml-auto text-[11px] text-gray-400">
-                  {logoAlt.length}/255
-                </span>
-              </div>
+              <span className="ml-auto text-[11px] text-gray-400">
+                {logoAlt.length}/255
+              </span>
             </div>
           </div>
         </div>

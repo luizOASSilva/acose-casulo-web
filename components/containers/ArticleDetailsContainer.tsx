@@ -37,6 +37,47 @@ const ADMIN_ARTICLES_PATH = '/admin/artigos';
 const ADMIN_ARTICLES_RETURN_PATH_KEY = 'admin.articles.returnPath';
 const MAX_KEYWORD_SUGGESTIONS = 20;
 
+const API_URL = (
+  process.env.NEXT_PUBLIC_API_URL ||
+  process.env.NEXT_PUBLIC_BACKEND_URL ||
+  'https://api.luizoassilva.xyz'
+).replace(/\/$/, '');
+
+function normalizeArticleImageUrl(url?: string | null): string {
+  if (!url) return '';
+
+  const cleanUrl = url.trim();
+
+  if (!cleanUrl) return '';
+
+  if (
+    cleanUrl.startsWith('blob:') ||
+    cleanUrl.startsWith('data:') ||
+    cleanUrl.startsWith('http://') ||
+    cleanUrl.startsWith('https://')
+  ) {
+    return cleanUrl;
+  }
+
+  if (cleanUrl.startsWith('/storage/')) {
+    return `${API_URL}${cleanUrl}`;
+  }
+
+  if (cleanUrl.startsWith('storage/')) {
+    return `${API_URL}/${cleanUrl}`;
+  }
+
+  if (cleanUrl.startsWith('media/articles/')) {
+    return `${API_URL}/storage/${cleanUrl}`;
+  }
+
+  if (cleanUrl.startsWith('articles/')) {
+    return `${API_URL}/storage/media/${cleanUrl}`;
+  }
+
+  return `${API_URL}/storage/media/articles/${cleanUrl}`;
+}
+
 function parseInitialKeywords(art?: Article): string[] {
   if (!art?.keywords || !Array.isArray(art.keywords)) return [];
 
@@ -128,7 +169,9 @@ export default function ArticleDetailsContainer({
   const [summary, setSummary] = useState(article?.summary || '');
   const [content, setContent] = useState(article?.content || '');
 
-  const [imageUrl, setImageUrl] = useState(article?.media?.url || '');
+  const [imageUrl, setImageUrl] = useState(
+    normalizeArticleImageUrl(article?.media?.url)
+  );
   const [imageAlt, setImageAlt] = useState(article?.media?.alt_text || '');
   const [imageCaption, setImageCaption] = useState(
     article?.media?.caption || ''
@@ -167,7 +210,7 @@ export default function ArticleDetailsContainer({
     setTitle(article.title || '');
     setSummary(article.summary || '');
     setContent(article.content || '');
-    setImageUrl(article.media?.url || '');
+    setImageUrl(normalizeArticleImageUrl(article.media?.url));
     setImageAlt(article.media?.alt_text || '');
     setImageCaption(article.media?.caption || '');
     setKeywordsArray(parseInitialKeywords(article));
@@ -201,7 +244,7 @@ export default function ArticleDetailsContainer({
       title !== (article?.title || '') ||
       summary !== (article?.summary || '') ||
       content !== (article?.content || '') ||
-      imageUrl !== (article?.media?.url || '') ||
+      imageUrl !== normalizeArticleImageUrl(article?.media?.url) ||
       imageAlt !== (article?.media?.alt_text || '') ||
       imageCaption !== (article?.media?.caption || '') ||
       JSON.stringify([...keywordsArray].sort()) !==
@@ -331,7 +374,7 @@ export default function ArticleDetailsContainer({
     setTitle(article?.title || '');
     setSummary(article?.summary || '');
     setContent(article?.content || '');
-    setImageUrl(article?.media?.url || '');
+    setImageUrl(normalizeArticleImageUrl(article?.media?.url));
     setImageAlt(article?.media?.alt_text || '');
     setImageCaption(article?.media?.caption || '');
     setKeywordsArray(parseInitialKeywords(article));
@@ -435,8 +478,8 @@ export default function ArticleDetailsContainer({
           throw new Error('Não foi possível enviar a imagem selecionada.');
         }
 
-        finalImageUrl = uploaded.url;
-        setImageUrl(uploaded.url);
+        finalImageUrl = normalizeArticleImageUrl(uploaded.url);
+        setImageUrl(finalImageUrl);
         setPendingImageFile(null);
       }
 
@@ -563,6 +606,7 @@ export default function ArticleDetailsContainer({
                     sizes="(max-width: 768px) 90vw, 768px"
                     className="object-cover"
                     priority
+                    unoptimized={displayImageUrl.endsWith('.svg')}
                   />
                 </div>
 
@@ -607,7 +651,7 @@ export default function ArticleDetailsContainer({
                 clearError('image_url');
               }}
               onChange={(url) => {
-                setImageUrl(url);
+                setImageUrl(normalizeArticleImageUrl(url));
                 setPendingImageFile(null);
                 clearError('image_url');
               }}
@@ -915,6 +959,7 @@ export default function ArticleDetailsContainer({
                   sizes="(max-width: 768px) 90vw, 768px"
                   className="object-cover"
                   priority
+                  unoptimized={displayImageUrl.endsWith('.svg')}
                 />
               </div>
 
