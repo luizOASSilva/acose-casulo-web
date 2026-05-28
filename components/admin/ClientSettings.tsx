@@ -22,17 +22,18 @@ import MediaPicker from '@/components/admin/MediaPicker';
 import UserBadge from '@/components/ui/UserBadge';
 
 import type {
+  AdminCreationRequestDTO,
   AdminRole,
   AdminUser,
-  CreateAdminDTO,
   SettingItem,
   UpdateAdminDTO,
 } from '@/types/admin/settings';
 
 import {
   clearSettingsCache,
-  createAdmin,
   deleteAdmin,
+  requestAdminCreation,
+  requestAdminEmailChange,
   updateAdmin,
   updateSettings,
 } from '@/services/admin/settings';
@@ -123,6 +124,10 @@ function isImageSetting(key: string) {
 
 function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function normalizeEmail(email?: string | null): string {
+  return String(email || '').trim().toLowerCase();
 }
 
 function fieldClass(error?: string, className = '') {
@@ -571,8 +576,6 @@ export default function ClientSettings({
       return;
     }
 
-    setIsSavingUser(true);
-
     const payload = {
       name: userForm.name.trim(),
       email: userForm.email.trim(),
@@ -580,13 +583,66 @@ export default function ClientSettings({
       is_active: userForm.is_active,
     };
 
-    const response = isEdit
-      ? await updateAdmin(editingAdminId, payload as UpdateAdminDTO)
-      : await createAdmin(payload as CreateAdminDTO);
+    setIsSavingUser(true);
 
-    setIsSavingUser(false);
+    if (!isEdit) {
+      const creationMessage = await requestAdminCreation(
+        payload as AdminCreationRequestDTO
+      );
+
+      setIsSavingUser(false);
+
+      if (!creationMessage) {
+        await confirm({
+          title: 'Erro ao solicitar criação',
+          description:
+            'Não foi possível enviar a confirmação para o master. Revise os dados e tente novamente.',
+          confirmText: 'Entendi',
+          cancelText: 'Fechar',
+          variant: 'danger',
+        });
+        return;
+      }
+
+      resetUserForm();
+
+      await confirm({
+        title: 'Confirmação enviada ao master',
+        description: creationMessage,
+        confirmText: 'Entendi',
+        cancelText: 'Fechar',
+        variant: 'success',
+      });
+
+      return;
+    }
+
+    const editingAdmin = admins.find((admin) => admin.id === editingAdminId);
+
+    const normalizedCurrentEmail = normalizeEmail(editingAdmin?.email);
+    const normalizedNextEmail = normalizeEmail(userForm.email);
+    const emailChanged = Boolean(
+      editingAdmin &&
+        normalizedCurrentEmail &&
+        normalizedCurrentEmail !== normalizedNextEmail
+    );
+
+    const updatePayload = emailChanged
+      ? {
+          name: payload.name,
+          role: payload.role,
+          is_active: payload.is_active,
+        }
+      : payload;
+
+    const response = await updateAdmin(
+      editingAdminId,
+      updatePayload as UpdateAdminDTO
+    );
 
     if (!response) {
+      setIsSavingUser(false);
+
       await confirm({
         title: 'Erro ao salvar usuário',
         description:
@@ -598,23 +654,43 @@ export default function ClientSettings({
       return;
     }
 
-    setAdmins((current) => {
-      if (isEdit) {
-        return current.map((admin) =>
-          admin.id === response.id ? response : admin
-        );
-      }
+    let emailChangeMessage: string | null = null;
 
-      return [...current, response];
-    });
+    if (emailChanged && editingAdminId !== null) {
+      emailChangeMessage = await requestAdminEmailChange(
+        editingAdminId,
+        payload.email
+      );
+
+      if (!emailChangeMessage) {
+        setIsSavingUser(false);
+
+        await confirm({
+          title: 'Usuário salvo, mas e-mail não enviado',
+          description:
+            'As outras informações foram atualizadas, mas não foi possível enviar a confirmação de troca de e-mail para o master.',
+          confirmText: 'Entendi',
+          cancelText: 'Fechar',
+          variant: 'danger',
+        });
+        return;
+      }
+    }
+
+    setIsSavingUser(false);
+
+    setAdmins((current) =>
+      current.map((admin) => (admin.id === response.id ? response : admin))
+    );
 
     resetUserForm();
 
     await confirm({
-      title: isEdit ? 'Usuário atualizado' : 'Usuário criado',
-      description: isEdit
-        ? 'O usuário administrativo foi atualizado com sucesso.'
-        : 'O novo usuário administrativo foi criado com sucesso. Para criar ou trocar a senha, ele deve usar “Esqueceu sua senha?” na tela de login.',
+      title: emailChanged ? 'Confirmação enviada' : 'Usuário atualizado',
+      description: emailChanged
+        ? emailChangeMessage ||
+          'Enviamos um e-mail de confirmação para o master. O e-mail do administrador só será alterado após a confirmação.'
+        : 'O usuário administrativo foi atualizado com sucesso.',
       confirmText: 'Entendi',
       cancelText: 'Fechar',
       variant: 'success',
@@ -900,7 +976,7 @@ export default function ClientSettings({
               <p className="mt-1 text-sm text-zinc-600">
                 {editingAdminId
                   ? 'Atualize acesso, e-mail e status do administrador.'
-                  : 'Adicione um novo acesso administrativo.'}
+                  : 'Solicite a criação de um novo acesso administrativo.'}
               </p>
             </div>
 
@@ -1017,9 +1093,19 @@ export default function ClientSettings({
 
             <div className="rounded-md border border-orange-100 bg-orange-50 px-4 py-3 md:col-span-2">
               <p className="text-xs leading-relaxed text-orange-800">
-                Senhas não são definidas pelo painel. O administrador deve usar
-                “Esqueceu sua senha?” na tela de login para criar ou trocar a
-                própria senha.
+                Atenção: revise cuidadosamente o e-mail informado. Na criação de
+                um novo usuário, o acesso ainda não será criado imediatamente.
+                Um e-mail será enviado ao master para revisar e confirmar os
+                dados. Se o endereço estiver incorreto ou não pertencer à pessoa
+                correta, não confirme a solicitação.
+              </p>
+            </div>
+
+            <div className="rounded-md border border-zinc-200 bg-zinc-50 px-4 py-3 md:col-span-2">
+              <p className="text-xs leading-relaxed text-zinc-700">
+                Senhas não são definidas pelo painel. Após a confirmação do
+                master, o novo administrador receberá instruções para criar a
+                própria senha usando “Esqueceu sua senha?” na tela de login.
               </p>
             </div>
           </div>
@@ -1041,7 +1127,11 @@ export default function ClientSettings({
               className="inline-flex items-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white transition disabled:opacity-50"
             >
               <Save className="h-4 w-4" />
-              {isSavingUser ? 'Salvando...' : 'Salvar usuário'}
+              {isSavingUser
+                ? 'Salvando...'
+                : editingAdminId
+                  ? 'Salvar usuário'
+                  : 'Solicitar criação'}
             </button>
           </div>
         </div>

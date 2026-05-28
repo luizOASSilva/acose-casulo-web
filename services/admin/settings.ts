@@ -1,6 +1,10 @@
 import { api } from '@/lib/api';
 
 import type {
+  AdminCreationRequestDTO,
+  AdminCreationRequestPreview,
+  AdminCreationRequestPreviewResponse,
+  AdminMessageResponse,
   AdminUser,
   CreateAdminDTO,
   SettingItem,
@@ -20,10 +24,6 @@ interface AdminSingleResponse {
 interface SettingsCollectionResponse {
   data?: SettingItem[];
   settings?: SettingItem[];
-}
-
-interface MessageResponse {
-  message?: string;
 }
 
 function normalizeAdmins(
@@ -121,6 +121,66 @@ export async function createAdmin(
   }
 }
 
+export async function requestAdminCreation(
+  data: AdminCreationRequestDTO
+): Promise<string | null> {
+  try {
+    const response = await api.post<AdminMessageResponse>(
+      '/admins/create-request',
+      {
+        name: data.name,
+        email: data.email,
+        role: data.role,
+        is_active: data.is_active ?? true,
+      }
+    );
+
+    return (
+      response?.message ||
+      'Enviamos um e-mail para o master confirmar a criação deste usuário. O novo administrador ainda não tem acesso ao painel.'
+    );
+  } catch (error) {
+    console.error('Erro ao solicitar criação de admin:', error);
+    return null;
+  }
+}
+
+export async function getAdminCreationRequest(
+  token: string
+): Promise<AdminCreationRequestPreview | null> {
+  try {
+    const response = await api.get<AdminCreationRequestPreviewResponse>(
+      `/admins/creation-request?token=${encodeURIComponent(token)}`
+    );
+
+    return response?.data ?? null;
+  } catch (error) {
+    console.error('Erro ao buscar solicitação de criação de admin:', error);
+    return null;
+  }
+}
+
+export async function confirmAdminCreationRequest(
+  token: string
+): Promise<string | null> {
+  try {
+    const response = await api.post<AdminMessageResponse>(
+      '/admins/creation-request/confirm',
+      {
+        token,
+      }
+    );
+
+    return (
+      response?.message ||
+      'Administrador criado com sucesso. Enviamos um e-mail para o novo usuário com instruções para criar a senha.'
+    );
+  } catch (error) {
+    console.error('Erro ao confirmar criação de admin:', error);
+    return null;
+  }
+}
+
 export async function updateAdmin(
   id: number,
   data: UpdateAdminDTO
@@ -154,7 +214,7 @@ export async function requestAdminEmailChange(
   email: string
 ): Promise<string | null> {
   try {
-    const response = await api.post<MessageResponse>(
+    const response = await api.post<AdminMessageResponse>(
       `/admins/${adminId}/email-change-request`,
       {
         email,
@@ -175,7 +235,7 @@ export async function confirmAdminEmailChange(
   token: string
 ): Promise<string | null> {
   try {
-    const response = await api.post<MessageResponse>(
+    const response = await api.post<AdminMessageResponse>(
       '/admins/email-change/confirm',
       {
         token,

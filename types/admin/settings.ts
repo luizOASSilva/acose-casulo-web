@@ -37,6 +37,30 @@ export interface AdminEmailChangeConfirmDTO {
   token: string;
 }
 
+export interface AdminCreationRequestDTO {
+  name: string;
+  email: string;
+  role: AdminRole;
+  is_active?: boolean;
+}
+
+export interface AdminCreationRequestPreview {
+  name: string;
+  email: string;
+  role: AdminRole | string;
+  is_active: boolean;
+  expires_at?: string | null;
+  requested_by?: {
+    name?: string | null;
+    email?: string | null;
+  } | null;
+}
+
+export interface AdminCreationRequestPreviewResponse {
+  data?: AdminCreationRequestPreview;
+  message?: string;
+}
+
 export interface AdminMessageResponse {
   message?: string;
 }
