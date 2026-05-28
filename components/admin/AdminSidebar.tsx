@@ -13,22 +13,23 @@ import {
   ChevronRight,
   ExternalLink,
   FileText,
+  HandHeart,
   HeartHandshake,
+  History,
   Images,
   LayoutDashboard,
   LogOut,
   Menu,
-  X,
   Settings,
-  HandHeart,
   ShieldCheck,
+  X,
 } from 'lucide-react';
 
 import { cn } from '@/lib/cn';
 import { useAuth } from '@/context/AuthContext';
 import type { AdminUser } from '@/types/admin/settings';
 
-const nav = [
+const mainNav = [
   { label: 'Dashboard', href: 'dashboard', icon: LayoutDashboard },
   { label: 'Doações', href: 'doacoes', icon: HandHeart },
   { label: 'Parceiros', href: 'parceiros', icon: HeartHandshake },
@@ -36,7 +37,21 @@ const nav = [
   { label: 'Atividades', href: 'atividades', icon: Activity },
   { label: 'Artigos', href: 'artigos', icon: FileText },
   { label: 'Mídias', href: 'midias', icon: Images },
-  { label: 'Configurações', href: 'configuracoes', icon: Settings },
+];
+
+const systemNav = [
+  {
+    label: 'Auditoria',
+    href: 'auditoria',
+    icon: History,
+    roles: ['admin', 'master'],
+  },
+  {
+    label: 'Configurações',
+    href: 'configuracoes',
+    icon: Settings,
+    roles: ['master'],
+  },
 ];
 
 interface SidebarProps {
@@ -58,8 +73,8 @@ export function AdminSidebar({
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const userName = currentAdmin?.name ?? 'Admin';
-  const userSubtitle =
-    currentAdmin?.role === 'master' ? 'Master' : 'Administrador';
+  const userRole = currentAdmin?.role ?? 'admin';
+  const userSubtitle = userRole === 'master' ? 'Master' : 'Administrador';
 
   const currentAdminPath = `${pathname}${
     searchParams.toString() ? `?${searchParams.toString()}` : ''
@@ -67,7 +82,11 @@ export function AdminSidebar({
 
   const sitePreviewHref = `/?adminPreview=1&returnTo=${encodeURIComponent(
     currentAdminPath
-  )}&t=${Date.now()}`;
+  )}`;
+
+  const visibleSystemNav = systemNav.filter((item) =>
+    item.roles.includes(userRole)
+  );
 
   useEffect(() => {
     function handleKey(event: KeyboardEvent) {
@@ -82,6 +101,49 @@ export function AdminSidebar({
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
+
+  function renderNavItem({
+    label,
+    href,
+    icon: Icon,
+  }: {
+    label: string;
+    href: string;
+    icon: React.ElementType;
+  }) {
+    const fullHref = `/admin/${href}`;
+    const active =
+      pathname === fullHref || pathname.startsWith(`${fullHref}/`);
+
+    return (
+      <Link
+        key={href}
+        href={fullHref}
+        title={collapsed ? label : undefined}
+        aria-current={active ? 'page' : undefined}
+        className={`
+          flex items-center rounded-md py-3 text-sm font-medium
+          transition-all duration-200 overflow-hidden
+          ${
+            collapsed
+              ? 'lg:mx-auto lg:h-12 lg:w-12 lg:justify-center lg:px-0'
+              : 'gap-3 px-3'
+          }
+          ${
+            active
+              ? 'bg-primary text-white shadow-sm'
+              : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'
+          }
+        `}
+      >
+        <Icon size={20} className="shrink-0" aria-hidden="true" />
+
+        <span className={`truncate ${collapsed ? 'lg:hidden' : ''}`}>
+          {label}
+        </span>
+      </Link>
+    );
+  }
 
   return (
     <>
@@ -184,43 +246,26 @@ export function AdminSidebar({
         </div>
 
         <nav
-          className="flex-1 space-y-1 overflow-y-auto p-3"
+          className="flex-1 overflow-y-auto p-3"
           aria-label="Navegação administrativa"
         >
-          {nav.map(({ label, href, icon: Icon }) => {
-            const fullHref = `/admin/${href}`;
-            const active =
-              pathname === fullHref || pathname.startsWith(`${fullHref}/`);
+          <div className="space-y-1">
+            {mainNav.map((item) => renderNavItem(item))}
+          </div>
 
-            return (
-              <Link
-                key={href}
-                href={fullHref}
-                title={collapsed ? label : undefined}
-                aria-current={active ? 'page' : undefined}
-                className={`
-                  flex items-center rounded-md py-3 text-sm font-medium
-                  transition-all duration-200 overflow-hidden
-                  ${
-                    collapsed
-                      ? 'lg:mx-auto lg:h-12 lg:w-12 lg:justify-center lg:px-0'
-                      : 'gap-3 px-3'
-                  }
-                  ${
-                    active
-                      ? 'bg-primary text-white shadow-sm'
-                      : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'
-                  }
-                `}
-              >
-                <Icon size={20} className="shrink-0" aria-hidden="true" />
+          {visibleSystemNav.length > 0 && (
+            <div className="mt-5 border-t border-zinc-200 pt-4">
+              {!collapsed && (
+                <p className="mb-2 px-3 text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-400">
+                  Sistema
+                </p>
+              )}
 
-                <span className={`truncate ${collapsed ? 'lg:hidden' : ''}`}>
-                  {label}
-                </span>
-              </Link>
-            );
-          })}
+              <div className="space-y-1">
+                {visibleSystemNav.map((item) => renderNavItem(item))}
+              </div>
+            </div>
+          )}
         </nav>
 
         <div className="shrink-0 border-t border-zinc-200 p-3">

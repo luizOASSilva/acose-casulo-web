@@ -1,6 +1,13 @@
 'use client';
 
-import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  FormEvent,
+  KeyboardEvent,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   ChevronDown,
@@ -284,6 +291,18 @@ export default function ArticleListContainer({
   function navigateFromList(href: string) {
     saveReturnPath();
     router.push(href);
+  }
+
+  function handleArticleKeyDown(
+    event: KeyboardEvent<HTMLLIElement>,
+    articleId: number
+  ) {
+    if (!isAdmin) return;
+
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+
+    event.preventDefault();
+    navigateFromList(`/admin/artigos/${articleId}`);
   }
 
   function buildQuery(next: Record<string, string | number | null>) {
@@ -701,13 +720,23 @@ export default function ArticleListContainer({
                 {safeArticles.map((article) => (
                   <li
                     key={article.id}
+                    role={isAdmin ? 'button' : undefined}
+                    tabIndex={isAdmin ? 0 : undefined}
+                    aria-label={
+                      isAdmin ? `Abrir artigo ${article.title}` : undefined
+                    }
                     className="
                       relative group px-4 py-2 flex justify-between items-center
                       transition-all hover:bg-gray-50/70 cursor-pointer
+                      focus-visible:outline-none focus-visible:ring-2
+                      focus-visible:ring-primary/40 focus-visible:ring-offset-2
                     "
                     onClick={() =>
                       isAdmin &&
                       navigateFromList(`/admin/artigos/${article.id}`)
+                    }
+                    onKeyDown={(event) =>
+                      handleArticleKeyDown(event, article.id)
                     }
                   >
                     <div className="flex-1 min-w-0">
@@ -724,15 +753,15 @@ export default function ArticleListContainer({
                           md:group-hover:translate-x-0
                           transition-all duration-200
                         "
-                        onClick={(event) => event.stopPropagation()}
                       >
                         <button
                           type="button"
-                          onClick={() =>
+                          onClick={(event) => {
+                            event.stopPropagation();
                             navigateFromList(
                               `/admin/artigos/${article.id}/editar`
-                            )
-                          }
+                            );
+                          }}
                           className="
                             p-2.5 rounded-xl transition-all active:scale-95
                             text-gray-600 bg-gray-100
@@ -747,10 +776,13 @@ export default function ArticleListContainer({
 
                         <button
                           type="button"
-                          onClick={() => handleDelete(article.id)}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            handleDelete(article.id);
+                          }}
                           className="
                             p-2.5 text-red-600 bg-red-500/10 hover:bg-red-500/20
-                            rounded-xl transition-all active:scale-95
+                            rounded-xl transition-all active:scale-95 cursor-pointer
                           "
                           title="Deletar Artigo"
                           aria-label="Deletar artigo"

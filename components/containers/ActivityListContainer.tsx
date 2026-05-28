@@ -1,6 +1,13 @@
 'use client';
 
-import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  FormEvent,
+  KeyboardEvent,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   ChevronDown,
@@ -187,6 +194,18 @@ export default function ActivityListContainer({
   function navigateFromList(href: string) {
     saveReturnPath();
     router.push(href);
+  }
+
+  function handleActivityKeyDown(
+    event: KeyboardEvent<HTMLLIElement>,
+    activityId: number
+  ) {
+    if (!isAdmin) return;
+
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+
+    event.preventDefault();
+    navigateFromList(`/admin/atividades/${activityId}`);
   }
 
   function buildQuery(next: Record<string, string | number | null>) {
@@ -532,21 +551,31 @@ export default function ActivityListContainer({
               {safeActivities.map((activity) => (
                 <li
                   key={activity.id}
-                  className="
+                  role={isAdmin ? 'button' : undefined}
+                  tabIndex={isAdmin ? 0 : undefined}
+                  aria-label={
+                    isAdmin ? `Abrir atividade ${activity.title}` : undefined
+                  }
+                  className={`
                     relative group
-                    bg-white
                     rounded-2xl
-                    overflow-hidden
-                    shadow-sm
-                    border border-gray-100
-                    transition-all
-                    hover:-translate-y-1
-                    hover:shadow-md
-                    cursor-pointer
-                  "
+                    transition-transform duration-200
+                    focus-visible:outline-none
+                    focus-visible:ring-2
+                    focus-visible:ring-primary/40
+                    focus-visible:ring-offset-4
+                    ${
+                      isAdmin
+                        ? 'cursor-pointer hover:-translate-y-1'
+                        : ''
+                    }
+                  `}
                   onClick={() =>
                     isAdmin &&
                     navigateFromList(`/admin/atividades/${activity.id}`)
+                  }
+                  onKeyDown={(event) =>
+                    handleActivityKeyDown(event, activity.id)
                   }
                 >
                   <div className="pointer-events-none">
@@ -564,15 +593,15 @@ export default function ActivityListContainer({
                         md:group-hover:translate-y-0
                         transition-all duration-200
                       "
-                      onClick={(event) => event.stopPropagation()}
                     >
                       <button
                         type="button"
-                        onClick={() =>
+                        onClick={(event) => {
+                          event.stopPropagation();
                           navigateFromList(
                             `/admin/atividades/${activity.id}/editar`
-                          )
-                        }
+                          );
+                        }}
                         className="
                           w-10 h-10
                           flex items-center justify-center
@@ -580,12 +609,12 @@ export default function ActivityListContainer({
                           bg-white
                           text-gray-600
                           border border-gray-200
-                          shadow-md
+                          shadow-sm
                           transition-all
                           hover:bg-orange-500
                           hover:text-white
                           hover:border-orange-500
-                          hover:shadow-lg
+                          hover:shadow-md
                           active:scale-95
                           cursor-pointer
                         "
@@ -597,7 +626,10 @@ export default function ActivityListContainer({
 
                       <button
                         type="button"
-                        onClick={() => handleDelete(activity.id)}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleDelete(activity.id);
+                        }}
                         className="
                           w-10 h-10
                           flex items-center justify-center
@@ -605,13 +637,14 @@ export default function ActivityListContainer({
                           bg-white
                           text-red-500
                           border border-gray-200
-                          shadow-md
+                          shadow-sm
                           transition-all
                           hover:bg-red-500
                           hover:text-white
                           hover:border-red-500
-                          hover:shadow-lg
+                          hover:shadow-md
                           active:scale-95
+                          cursor-pointer
                         "
                         title="Deletar Atividade"
                         aria-label="Deletar atividade"

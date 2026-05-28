@@ -18,11 +18,15 @@ import GoogleAnalytics from '@/components/providers/GoogleAnalytics';
 const openSans = Open_Sans({
   variable: '--font-open-sans',
   subsets: ['latin'],
+  weight: ['400', '600', '700'],
+  display: 'swap',
 });
 
 const montserrat = Montserrat({
   variable: '--font-montserrat',
   subsets: ['latin'],
+  weight: ['500', '600', '700'],
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
@@ -84,8 +88,7 @@ export default function RootLayout({
               email: 'contato@projetocasulobp.org.br',
               address: {
                 '@type': 'PostalAddress',
-                streetAddress:
-                  'Rua Francisco Rodrigues Dias, 80',
+                streetAddress: 'Rua Francisco Rodrigues Dias, 80',
                 addressLocality: 'Bragança Paulista',
                 addressRegion: 'SP',
                 postalCode: '12908-843',
@@ -99,9 +102,7 @@ export default function RootLayout({
 
       <body className="min-h-screen flex flex-col">
         <AuthProvider>
-          <MotionProvider>
-            {children}
-          </MotionProvider>
+          <MotionProvider>{children}</MotionProvider>
         </AuthProvider>
 
         <GoogleAnalytics />

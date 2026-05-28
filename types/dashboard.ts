@@ -19,21 +19,41 @@ export interface DashboardCms {
 export interface DashboardStatus {
   api?: string;
   analytics?: string;
+  last_sync?: string;
+}
+
+export interface DashboardRecentActivityAdmin {
+  id?: number | null;
+  name?: string | null;
+  role?: string | null;
+}
+
+export interface DashboardRecentActivitySubject {
+  type?: string | null;
+  id?: number | null;
+  name?: string | null;
 }
 
 export interface DashboardRecentActivity {
-  type:
-    | 'article'
-    | 'activity'
-    | 'partner'
-    | 'document'
-    | 'donation'
-    | 'media'
-    | string;
+  id?: number | null;
+
+  admin?: DashboardRecentActivityAdmin;
+
+  action: string;
+  type?: string;
+
+  subject?: DashboardRecentActivitySubject;
+
   title: string;
   description: string;
+
+  properties?: Record<string, unknown>;
+
+  ip_address?: string | null;
+
   time: string;
   date?: string | null;
+  created_at?: string | null;
 }
 
 export interface DashboardData {

@@ -9,7 +9,11 @@ export async function getDashboard() {
     credentials: 'include',
   });
 
-  if (!res.ok) throw new Error(`Erro ${res.status}`);
+  if (!res.ok) {
+    throw new Error(`Erro ${res.status}`);
+  }
 
-  return res.json();
+  const json = await res.json();
+
+  return json?.data ?? json;
 }
