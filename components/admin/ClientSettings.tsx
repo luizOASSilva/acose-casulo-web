@@ -829,7 +829,7 @@ export default function ClientSettings({
           }
           className={fieldClass(
             error,
-            'w-full rounded-md border bg-white px-3 py-2 text-sm text-zinc-800 outline-none'
+            'w-full cursor-pointer rounded-md border bg-white px-3 py-2 text-sm text-zinc-800 outline-none'
           )}
         >
           <option value="1">Ativo</option>
@@ -864,7 +864,7 @@ export default function ClientSettings({
             href={setting.value}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-primary"
+            className="mt-1 inline-flex cursor-pointer items-center gap-1 text-xs font-medium text-primary transition hover:text-primary/80"
           >
             Abrir link
             <ExternalLink className="h-3 w-3" />
@@ -1035,7 +1035,7 @@ export default function ClientSettings({
             <button
               type="button"
               onClick={resetUserForm}
-              className="rounded-md bg-zinc-100 p-2 text-zinc-600 transition"
+              className="cursor-pointer rounded-md bg-zinc-100 p-2 text-zinc-600 transition hover:bg-zinc-200 active:scale-95"
               aria-label="Fechar formulário"
             >
               <X className="h-4 w-4" />
@@ -1107,7 +1107,7 @@ export default function ClientSettings({
                 }}
                 className={fieldClass(
                   userErrors.is_active,
-                  'w-full rounded-md border bg-white px-3 py-2 text-zinc-800 outline-none'
+                  'w-full cursor-pointer rounded-md border bg-white px-3 py-2 text-zinc-800 outline-none'
                 )}
               >
                 <option value="1">Ativo</option>
@@ -1142,7 +1142,7 @@ export default function ClientSettings({
               type="button"
               onClick={resetUserForm}
               disabled={isSavingUser}
-              className="rounded-md bg-zinc-100 px-4 py-2 text-sm font-semibold text-zinc-700 transition disabled:opacity-50"
+              className="cursor-pointer rounded-md bg-zinc-100 px-4 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-200 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Cancelar
             </button>
@@ -1151,7 +1151,7 @@ export default function ClientSettings({
               type="button"
               onClick={handleSaveUser}
               disabled={isSavingUser}
-              className="inline-flex items-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white transition disabled:opacity-50"
+              className="inline-flex cursor-pointer items-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Save className="h-4 w-4" />
               {isSavingUser
@@ -1186,7 +1186,7 @@ export default function ClientSettings({
               type="button"
               onClick={handleSaveSettings}
               disabled={isSavingSettings || settings.length === 0}
-              className="inline-flex w-fit shrink-0 items-center justify-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex w-fit shrink-0 cursor-pointer items-center justify-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Save className="h-4 w-4" />
               {isSavingSettings ? 'Salvando...' : 'Salvar alterações'}
@@ -1208,7 +1208,7 @@ export default function ClientSettings({
                   <a
                     key={section.id}
                     href={`#${section.id}`}
-                    className={`block rounded-md border px-3 py-2.5 text-sm font-medium transition ${
+                    className={`block cursor-pointer rounded-md border px-3 py-2.5 text-sm font-medium transition ${
                       isSensitive
                         ? 'border-red-200 bg-red-50/80 text-red-700 hover:bg-red-100'
                         : 'border-transparent text-zinc-700 hover:bg-zinc-50'
@@ -1323,7 +1323,7 @@ export default function ClientSettings({
                       <button
                         type="button"
                         onClick={openCreateUserForm}
-                        className="inline-flex w-fit shrink-0 items-center justify-center gap-2 rounded-md border border-primary bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-white hover:text-primary"
+                        className="inline-flex w-fit shrink-0 cursor-pointer items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-primary/90 active:scale-95"
                       >
                         <Plus className="h-4 w-4" />
                         Novo usuário
@@ -1381,11 +1381,7 @@ export default function ClientSettings({
                                   <button
                                     type="button"
                                     onClick={() => openEditUserForm(admin)}
-                                    className="
-                                      rounded-xl p-2.5 transition-all active:scale-95
-                                      text-gray-600 bg-gray-100
-                                      hover:bg-orange-500/20 hover:text-orange-600
-                                    "
+                                    className="cursor-pointer rounded-xl bg-gray-100 p-2.5 text-gray-600 transition-all hover:bg-orange-500/20 hover:text-orange-600 active:scale-95"
                                     title="Editar usuário"
                                   >
                                     <Pencil className="h-5 w-5" />
@@ -1394,11 +1390,7 @@ export default function ClientSettings({
                                   <button
                                     type="button"
                                     onClick={() => handleDeleteUser(admin)}
-                                    className="
-                                      rounded-xl p-2.5 transition-all active:scale-95
-                                      text-red-600 bg-red-500/10
-                                      hover:bg-red-500/20
-                                    "
+                                    className="cursor-pointer rounded-xl bg-red-500/10 p-2.5 text-red-600 transition-all hover:bg-red-500/20 active:scale-95"
                                     title="Remover usuário"
                                   >
                                     <Trash2 className="h-5 w-5" />
@@ -1436,7 +1428,7 @@ export default function ClientSettings({
                       type="button"
                       onClick={handleClearCache}
                       disabled={isClearingCache}
-                      className="inline-flex w-fit shrink-0 items-center justify-center gap-2 rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white transition disabled:opacity-50"
+                      className="inline-flex w-fit shrink-0 cursor-pointer items-center justify-center gap-2 rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       <RefreshCcw className="h-4 w-4" />
                       {isClearingCache ? 'Limpando...' : 'Limpar cache'}

@@ -70,10 +70,18 @@ function AuditListSkeleton() {
   );
 }
 
-function fmtGrowth(raw?: string): string {
-  if (!raw) return '—';
+function fmtValue(value?: string | number | null): string {
+  if (value === undefined || value === null || value === '') return '—';
 
-  return raw.endsWith('%') ? raw : `${raw}%`;
+  return String(value);
+}
+
+function fmtGrowth(raw?: string | number | null): string {
+  if (raw === undefined || raw === null || raw === '') return '—';
+
+  const value = String(raw);
+
+  return value.endsWith('%') ? value : `${value}%`;
 }
 
 function statusLabel(value: string | undefined): string {
@@ -344,7 +352,7 @@ function RecentAuditList({
               type="button"
               onClick={onRefresh}
               disabled={dataLoading}
-              className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-zinc-500 transition hover:bg-orange-50 hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-zinc-500 transition hover:bg-orange-50 hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
               aria-label="Atualizar atividades recentes"
               title="Atualizar"
             >
@@ -363,7 +371,7 @@ function RecentAuditList({
 
         <Link
           href="/admin/auditoria"
-          className="mt-1 shrink-0 text-sm font-medium text-zinc-600 transition hover:text-zinc-950"
+          className="mt-1 shrink-0 cursor-pointer text-sm font-medium text-zinc-600 transition hover:text-zinc-950"
         >
           Ver todos
         </Link>
@@ -426,7 +434,7 @@ export default function AdminDashboardPage() {
           <button
             type="button"
             onClick={refetch}
-            className="inline-flex cursor-pointer items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white"
+            className="inline-flex cursor-pointer items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary/90 active:scale-95"
           >
             <RefreshCw size={15} />
             Tentar novamente
@@ -473,7 +481,7 @@ export default function AdminDashboardPage() {
                 onClick={refetch}
                 disabled={dataLoading}
                 aria-label="Atualizar dados"
-                className="text-zinc-600 transition hover:text-zinc-900 disabled:opacity-40"
+                className="cursor-pointer text-zinc-600 transition hover:text-zinc-900 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <RefreshCw
                   size={16}
@@ -490,28 +498,28 @@ export default function AdminDashboardPage() {
               <AnalyticsCard
                 icon={<Globe size={22} />}
                 title="Visitantes hoje"
-                value={data?.analytics?.visitors ?? '—'}
+                value={fmtValue(data?.analytics?.visitors)}
                 growth={fmtGrowth(data?.analytics?.visitors_growth)}
               />
 
               <AnalyticsCard
                 icon={<HeartHandshake size={22} />}
                 title="Doações iniciadas"
-                value={String(data?.analytics?.donations ?? '—')}
+                value={fmtValue(data?.analytics?.donations)}
                 growth={fmtGrowth(data?.analytics?.donations_growth)}
               />
 
               <AnalyticsCard
                 icon={<FileText size={22} />}
                 title="Artigos lidos"
-                value={data?.analytics?.articles_read ?? '—'}
+                value={fmtValue(data?.analytics?.articles_read)}
                 growth="—"
               />
 
               <AnalyticsCard
                 icon={<BarChart3 size={22} />}
                 title="Conversão"
-                value={data?.analytics?.conversion ?? '—'}
+                value={fmtValue(data?.analytics?.conversion)}
                 growth={fmtGrowth(data?.analytics?.conversion_growth)}
               />
             </div>

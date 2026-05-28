@@ -10,6 +10,8 @@
     "format": "prettier --write \"./**/*.{js,jsx,ts,tsx,css,md,json}\""
   },
   "dependencies": {
+    "@fontsource-variable/montserrat": "^5.2.8",
+    "@fontsource-variable/open-sans": "^5.2.7",
     "@hookform/resolvers": "^5.2.2",
     "@tailwindcss/line-clamp": "^0.4.4",
     "clsx": "^2.1.1",
