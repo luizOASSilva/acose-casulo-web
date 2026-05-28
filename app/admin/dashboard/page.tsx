@@ -9,6 +9,7 @@ import {
   FileText,
   Globe,
   HeartHandshake,
+  Images,
   RefreshCw,
   ShieldCheck,
 } from 'lucide-react';
@@ -35,8 +36,18 @@ function AnalyticsSkeleton() {
 function StatsSkeleton() {
   return (
     <div className="space-y-4">
-      {Array.from({ length: 4 }).map((_, index) => (
+      {Array.from({ length: 5 }).map((_, index) => (
         <div key={index} className={`${skeletonCls} h-5`} />
+      ))}
+    </div>
+  );
+}
+
+function ActivitySkeleton() {
+  return (
+    <div className="space-y-4">
+      {Array.from({ length: 5 }).map((_, index) => (
+        <div key={index} className={`${skeletonCls} h-14`} />
       ))}
     </div>
   );
@@ -55,16 +66,18 @@ function statusLabel(value: string | undefined): string {
     Online: 'Online',
     Ativo: 'Ativo',
     Offline: 'Offline',
+    Indisponível: 'Indisponível',
   };
 
   return map[value] ?? value;
 }
 
-export default function AdminDashboard() {
+export default function AdminDashboardPage() {
   const { admin } = useAuth();
   const { data, loading: dataLoading, error, refetch } = useDashboard();
 
   const name = admin?.name?.split(' ')[0] ?? 'Admin';
+  const recentActivity = data?.recent_activity ?? [];
 
   if (error) {
     return (
@@ -81,7 +94,7 @@ export default function AdminDashboard() {
           <button
             type="button"
             onClick={refetch}
-            className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white cursor-pointer"
+            className="inline-flex cursor-pointer items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white"
           >
             <RefreshCw size={15} />
             Tentar novamente
@@ -103,7 +116,8 @@ export default function AdminDashboard() {
               </h1>
 
               <p className="mt-3 text-base leading-relaxed text-zinc-600">
-                Gerencie conteúdos, acompanhe métricas, monitore atividades e controle a plataforma.
+                Gerencie conteúdos, acompanhe métricas, monitore atividades e
+                controle a plataforma.
               </p>
             </div>
           </div>
@@ -140,7 +154,7 @@ export default function AdminDashboard() {
           {dataLoading ? (
             <AnalyticsSkeleton />
           ) : (
-            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
               <AnalyticsCard
                 icon={<Globe size={22} />}
                 title="Visitantes hoje"
@@ -183,7 +197,7 @@ export default function AdminDashboard() {
             </h2>
           </div>
 
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <QuickActionCard
               icon={<FileText size={20} />}
               title="Novo artigo"
@@ -202,19 +216,26 @@ export default function AdminDashboard() {
               icon={<HeartHandshake size={20} />}
               title="Novo parceiro"
               description="Cadastrar parceiro institucional."
-              href="/admin/partners/new"
+              href="/admin/parceiros/novo"
             />
 
             <QuickActionCard
               icon={<ShieldCheck size={20} />}
               title="Transparência"
               description="Enviar novos documentos."
-              href="/admin/transparency/new"
+              href="/admin/transparencia/novo"
+            />
+
+            <QuickActionCard
+              icon={<Images size={20} />}
+              title="Adicionar mídia"
+              description="Enviar imagens para usar no site."
+              href="/admin/midias"
             />
           </div>
         </section>
 
-        <section className="grid gap-6 grid-cols-1 xl:grid-cols-[1.5fr_1fr]">
+        <section className="grid grid-cols-1 gap-6 xl:grid-cols-[1.5fr_1fr]">
           <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
             <div className="mb-6 flex items-center justify-between">
               <div>
@@ -227,36 +248,41 @@ export default function AdminDashboard() {
                 </p>
               </div>
 
-              <button className="text-sm font-medium text-zinc-600 transition hover:text-zinc-950">
-                Ver tudo
+              <button
+                type="button"
+                onClick={refetch}
+                disabled={dataLoading}
+                className="text-sm font-medium text-zinc-600 transition hover:text-zinc-950 disabled:opacity-40"
+              >
+                Atualizar
               </button>
             </div>
 
-            <div className="space-y-4">
-              <ActivityItem
-                title="Hero atualizado"
-                description="Texto principal alterado."
-                time="Há 12 minutes"
-              />
+            {dataLoading ? (
+              <ActivitySkeleton />
+            ) : recentActivity.length > 0 ? (
+              <div className="space-y-4">
+                {recentActivity.map((item, index) => (
+                  <ActivityItem
+                    key={`${item.type}-${item.date ?? index}-${index}`}
+                    title={item.title}
+                    description={item.description}
+                    time={item.time}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-lg border border-dashed border-zinc-200 p-6 text-center">
+                <p className="text-sm font-medium text-zinc-700">
+                  Nenhuma atividade recente.
+                </p>
 
-              <ActivityItem
-                title="Novo parceiro adicionado"
-                description="Logo institucional enviada."
-                time="Há 1 hora"
-              />
-
-              <ActivityItem
-                title="PDF atualizado"
-                description="Documento financeiro substituído."
-                time="Hoje às 10:42"
-              />
-
-              <ActivityItem
-                title="Novo artigo publicado"
-                description="Conteúdo publicado na seção artigos."
-                time="Ontem"
-              />
-            </div>
+                <p className="mt-1 text-xs text-zinc-500">
+                  Quando conteúdos forem criados, atualizados ou mídias forem
+                  enviadas, eles aparecerão aqui.
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="flex flex-col gap-6">
@@ -278,22 +304,39 @@ export default function AdminDashboard() {
                   <>
                     <StatItem
                       label="Artigos publicados"
-                      value={String(data?.cms.articles ?? '—').padStart(2, '0')}
+                      value={String(data?.cms.articles ?? '—').padStart(
+                        2,
+                        '0'
+                      )}
                     />
 
                     <StatItem
                       label="Atividades"
-                      value={String(data?.cms.activities ?? '—').padStart(2, '0')}
+                      value={String(data?.cms.activities ?? '—').padStart(
+                        2,
+                        '0'
+                      )}
                     />
 
                     <StatItem
                       label="Parceiros"
-                      value={String(data?.cms.partners ?? '—').padStart(2, '0')}
+                      value={String(data?.cms.partners ?? '—').padStart(
+                        2,
+                        '0'
+                      )}
                     />
 
                     <StatItem
                       label="Documentos"
-                      value={String(data?.cms.documents ?? '—').padStart(2, '0')}
+                      value={String(data?.cms.documents ?? '—').padStart(
+                        2,
+                        '0'
+                      )}
+                    />
+
+                    <StatItem
+                      label="Mídias"
+                      value={String(data?.cms.media ?? '—').padStart(2, '0')}
                     />
                   </>
                 )}
@@ -328,12 +371,12 @@ export default function AdminDashboard() {
 
                     <StatusItem
                       label="Último deploy"
-                      status="Hoje"
+                      status="—"
                     />
 
                     <StatusItem
                       label="Drafts pendentes"
-                      status="3"
+                      status="—"
                     />
                   </>
                 )}

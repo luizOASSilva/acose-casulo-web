@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+
 import { getDashboard } from '@/services/admin/dashboard';
 import type { DashboardData, UseDashboardReturn } from '@/types/dashboard';
 
@@ -17,19 +18,34 @@ export function useDashboard(): UseDashboardReturn {
 
       try {
         const json = await getDashboard();
-        if (!cancelled) setData(json);
+
+        if (!cancelled) {
+          setData(json);
+        }
       } catch (err) {
-        if (!cancelled)
-          setError(err instanceof Error ? err.message : 'Erro ao carregar dados');
+        if (!cancelled) {
+          setError(
+            err instanceof Error ? err.message : 'Erro ao carregar dados'
+          );
+        }
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     }
 
     load();
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [trigger]);
 
-  return { data, loading, error, refetch: () => setTrigger((t) => t + 1) };
+  return {
+    data,
+    loading,
+    error,
+    refetch: () => setTrigger((current) => current + 1),
+  };
 }
