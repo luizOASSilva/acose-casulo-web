@@ -23,7 +23,6 @@ import UserBadge from '@/components/ui/UserBadge';
 
 import type {
   AdminCreationRequestDTO,
-  AdminRole,
   AdminUser,
   SettingItem,
   UpdateAdminDTO,
@@ -60,14 +59,12 @@ type SettingErrors = Record<string, string>;
 type UserFormErrors = Partial<{
   name: string;
   email: string;
-  role: string;
   is_active: string;
 }>;
 
 type UserForm = {
   name: string;
   email: string;
-  role: AdminRole;
   is_active: boolean;
 };
 
@@ -149,7 +146,7 @@ function FieldError({ message }: { message?: string }) {
 }
 
 function getSortOrder(setting: SettingItem): number {
-  return Number((setting as any).sort_order ?? (setting as any).order ?? 0);
+  return Number((setting as any).sort_order ?? 0);
 }
 
 function getSectionByGroup(group: string): SectionId {
@@ -183,18 +180,24 @@ function roleBadgeClass(role?: string | null) {
 
 function statusBadgeClass(isActive?: boolean) {
   return isActive
-    ? 'bg-emerald-50 text-emerald-700'
-    : 'bg-zinc-100 text-zinc-500';
+    ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100'
+    : 'bg-zinc-200 text-zinc-600 ring-1 ring-zinc-300';
+}
+
+function adminRowClass(isActive: boolean): string {
+  return isActive
+    ? 'bg-white/90 hover:bg-white'
+    : 'bg-zinc-100/80 opacity-70 grayscale hover:bg-zinc-100';
+}
+
+function adminTextClass(isActive: boolean): string {
+  return isActive ? 'text-zinc-900' : 'text-zinc-500';
 }
 
 function getAdminIsActive(admin: AdminUser): boolean {
   return (admin as any).is_active === undefined
     ? true
     : Boolean((admin as any).is_active);
-}
-
-function isAdminRole(role?: string | null): role is AdminRole {
-  return role === 'admin' || role === 'master';
 }
 
 export default function ClientSettings({
@@ -231,7 +234,6 @@ export default function ClientSettings({
   const [userForm, setUserForm] = useState<UserForm>({
     name: '',
     email: '',
-    role: 'admin',
     is_active: true,
   });
 
@@ -480,7 +482,6 @@ export default function ClientSettings({
     setUserForm({
       name: '',
       email: '',
-      role: 'admin',
       is_active: true,
     });
 
@@ -496,34 +497,19 @@ export default function ClientSettings({
     setUserForm({
       name: '',
       email: '',
-      role: 'admin',
       is_active: true,
     });
 
     setIsUserFormOpen(true);
   };
 
-  const openEditUserForm = async (admin: AdminUser) => {
-    if (!isAdminRole(admin.role)) {
-      await confirm({
-        title: 'Nível inválido',
-        description:
-          'Este usuário possui um nível de acesso desconhecido. Corrija no backend antes de editar pelo painel.',
-        confirmText: 'Entendi',
-        cancelText: 'Fechar',
-        variant: 'danger',
-      });
-
-      return;
-    }
-
+  const openEditUserForm = (admin: AdminUser) => {
     setEditingAdminId(admin.id);
     setUserErrors({});
 
     setUserForm({
       name: admin.name,
       email: admin.email,
-      role: admin.role,
       is_active: getAdminIsActive(admin),
     });
 
@@ -556,10 +542,6 @@ export default function ClientSettings({
       nextErrors.email = 'Informe um e-mail válido.';
     }
 
-    if (!['master', 'admin'].includes(userForm.role)) {
-      nextErrors.role = 'Nível inválido.';
-    }
-
     if (typeof userForm.is_active !== 'boolean') {
       nextErrors.is_active = 'Status inválido.';
     }
@@ -576,19 +558,31 @@ export default function ClientSettings({
       return;
     }
 
+    const editingAdmin = isEdit
+      ? admins.find((admin) => admin.id === editingAdminId)
+      : null;
+
     const payload = {
       name: userForm.name.trim(),
       email: userForm.email.trim(),
-      role: userForm.role,
       is_active: userForm.is_active,
-    };
+    } satisfies AdminCreationRequestDTO;
+
+    if (isEdit && currentAdmin?.id === editingAdminId && !payload.is_active) {
+      await confirm({
+        title: 'Ação não permitida',
+        description: 'Você não pode inativar o próprio usuário logado.',
+        confirmText: 'Entendi',
+        cancelText: 'Fechar',
+        variant: 'danger',
+      });
+      return;
+    }
 
     setIsSavingUser(true);
 
     if (!isEdit) {
-      const creationMessage = await requestAdminCreation(
-        payload as AdminCreationRequestDTO
-      );
+      const creationMessage = await requestAdminCreation(payload);
 
       setIsSavingUser(false);
 
@@ -596,7 +590,7 @@ export default function ClientSettings({
         await confirm({
           title: 'Erro ao solicitar criação',
           description:
-            'Não foi possível enviar a confirmação para o master. Revise os dados e tente novamente.',
+            'Não foi possível enviar a confirmação para o seu e-mail. Revise os dados e tente novamente.',
           confirmText: 'Entendi',
           cancelText: 'Fechar',
           variant: 'danger',
@@ -607,8 +601,9 @@ export default function ClientSettings({
       resetUserForm();
 
       await confirm({
-        title: 'Confirmação enviada ao master',
-        description: creationMessage,
+        title: 'Confirmação enviada',
+        description:
+          'Enviamos um link para o seu e-mail. O administrador só será criado depois da sua confirmação.',
         confirmText: 'Entendi',
         cancelText: 'Fechar',
         variant: 'success',
@@ -616,8 +611,6 @@ export default function ClientSettings({
 
       return;
     }
-
-    const editingAdmin = admins.find((admin) => admin.id === editingAdminId);
 
     const normalizedCurrentEmail = normalizeEmail(editingAdmin?.email);
     const normalizedNextEmail = normalizeEmail(userForm.email);
@@ -627,13 +620,11 @@ export default function ClientSettings({
         normalizedCurrentEmail !== normalizedNextEmail
     );
 
-    const updatePayload = emailChanged
-      ? {
-          name: payload.name,
-          role: payload.role,
-          is_active: payload.is_active,
-        }
-      : payload;
+    const updatePayload = {
+      name: payload.name,
+      email: emailChanged ? undefined : payload.email,
+      is_active: payload.is_active,
+    };
 
     const response = await updateAdmin(
       editingAdminId,
@@ -657,6 +648,21 @@ export default function ClientSettings({
     let emailChangeMessage: string | null = null;
 
     if (emailChanged && editingAdminId !== null) {
+      const confirmedEmailChange = await confirm({
+        title: 'Enviar confirmação?',
+        description: `Vamos enviar um link para o seu e-mail. O e-mail de ${
+          editingAdmin?.name || 'administrador'
+        } só será alterado após sua confirmação.`,
+        confirmText: 'Enviar confirmação',
+        cancelText: 'Cancelar',
+        variant: 'danger',
+      });
+
+      if (!confirmedEmailChange) {
+        setIsSavingUser(false);
+        return;
+      }
+
       emailChangeMessage = await requestAdminEmailChange(
         editingAdminId,
         payload.email
@@ -666,9 +672,9 @@ export default function ClientSettings({
         setIsSavingUser(false);
 
         await confirm({
-          title: 'Usuário salvo, mas e-mail não enviado',
+          title: 'Usuário salvo, mas confirmação não enviada',
           description:
-            'As outras informações foram atualizadas, mas não foi possível enviar a confirmação de troca de e-mail para o master.',
+            'As demais informações foram atualizadas, mas não foi possível enviar a confirmação para o seu e-mail. O e-mail do administrador não foi alterado.',
           confirmText: 'Entendi',
           cancelText: 'Fechar',
           variant: 'danger',
@@ -680,7 +686,20 @@ export default function ClientSettings({
     setIsSavingUser(false);
 
     setAdmins((current) =>
-      current.map((admin) => (admin.id === response.id ? response : admin))
+      current.map((admin) =>
+        admin.id === response.id
+          ? {
+              ...admin,
+              ...response,
+              role: admin.role,
+              email: emailChanged ? admin.email : response.email,
+              is_active:
+                response.is_active === undefined
+                  ? payload.is_active
+                  : response.is_active,
+            }
+          : admin
+      )
     );
 
     resetUserForm();
@@ -688,9 +707,10 @@ export default function ClientSettings({
     await confirm({
       title: emailChanged ? 'Confirmação enviada' : 'Usuário atualizado',
       description: emailChanged
-        ? emailChangeMessage ||
-          'Enviamos um e-mail de confirmação para o master. O e-mail do administrador só será alterado após a confirmação.'
-        : 'O usuário administrativo foi atualizado com sucesso.',
+        ? 'Enviamos um link para o seu e-mail. O e-mail do administrador só será alterado depois da sua confirmação.'
+        : payload.is_active
+          ? 'O usuário administrativo foi atualizado com sucesso.'
+          : 'O usuário foi inativado com sucesso e não poderá acessar o painel.',
       confirmText: 'Entendi',
       cancelText: 'Fechar',
       variant: 'success',
@@ -711,7 +731,7 @@ export default function ClientSettings({
 
     const confirmed = await confirm({
       title: 'Remover usuário?',
-      description: `O usuário ${admin.name} perderá acesso ao painel administrativo. Essa ação não pode ser desfeita.`,
+      description: `O usuário ${admin.name} será removido do painel administrativo. Para manter histórico e apenas bloquear acesso, prefira inativar o usuário.`,
       confirmText: 'Remover usuário',
       cancelText: 'Cancelar',
       variant: 'danger',
@@ -725,7 +745,7 @@ export default function ClientSettings({
       await confirm({
         title: 'Erro ao remover usuário',
         description:
-          'Não foi possível remover o usuário agora. Tente novamente em alguns instantes.',
+          'Não foi possível remover o usuário agora. Verifique se ele possui vínculos no sistema ou tente novamente em alguns instantes.',
         confirmText: 'Entendi',
         cancelText: 'Fechar',
         variant: 'danger',
@@ -749,7 +769,7 @@ export default function ClientSettings({
 
     if (isImageSetting(setting.key)) {
       return (
-        <div className="space-y-3">
+        <div className="w-full min-w-0">
           <MediaPicker
             collection="general"
             value={setting.value ?? ''}
@@ -873,32 +893,64 @@ export default function ClientSettings({
 
     return (
       <div className="divide-y divide-zinc-100">
-        {items.map((setting) => (
-          <div
-            key={setting.key}
-            className="grid grid-cols-1 gap-4 px-5 py-4 lg:grid-cols-[235px_1fr]"
-          >
-            <div>
-              <label className="text-[13px] font-semibold text-zinc-900">
-                {setting.label}
-              </label>
+        {items.map((setting) => {
+          const isImage = isImageSetting(setting.key);
 
-              {setting.description && (
-                <p className="mt-1 text-xs leading-relaxed text-zinc-500">
-                  {setting.description}
+          if (isImage) {
+            return (
+              <div key={setting.key} className="px-5 py-5">
+                <div className="mb-4">
+                  <label className="text-[13px] font-semibold text-zinc-900">
+                    {setting.label}
+                  </label>
+
+                  {setting.description && (
+                    <p className="mt-1 max-w-2xl text-xs leading-relaxed text-zinc-500">
+                      {setting.description}
+                    </p>
+                  )}
+
+                  <FieldError message={settingErrors[setting.key]} />
+
+                  <p className="mt-2 text-[11px] font-mono text-zinc-400">
+                    {setting.key}
+                  </p>
+                </div>
+
+                <div className="w-full min-w-0">
+                  {renderSettingInput(setting)}
+                </div>
+              </div>
+            );
+          }
+
+          return (
+            <div
+              key={setting.key}
+              className="grid min-w-0 grid-cols-1 gap-4 px-5 py-4 lg:grid-cols-[220px_minmax(0,1fr)]"
+            >
+              <div className="min-w-0">
+                <label className="text-[13px] font-semibold text-zinc-900">
+                  {setting.label}
+                </label>
+
+                {setting.description && (
+                  <p className="mt-1 text-xs leading-relaxed text-zinc-500">
+                    {setting.description}
+                  </p>
+                )}
+
+                <FieldError message={settingErrors[setting.key]} />
+
+                <p className="mt-2 break-all text-[11px] font-mono text-zinc-400">
+                  {setting.key}
                 </p>
-              )}
+              </div>
 
-              <FieldError message={settingErrors[setting.key]} />
-
-              <p className="mt-2 text-[11px] font-mono text-zinc-400">
-                {setting.key}
-              </p>
+              <div className="min-w-0">{renderSettingInput(setting)}</div>
             </div>
-
-            <div>{renderSettingInput(setting)}</div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     );
   };
@@ -916,15 +968,15 @@ export default function ClientSettings({
     return (
       <section
         id={sectionId}
-        className="scroll-mt-8 rounded-md border border-zinc-200 bg-white shadow-sm"
+        className="min-w-0 scroll-mt-8 overflow-hidden rounded-md border border-zinc-200 bg-white shadow-sm"
       >
         <header className="border-b border-zinc-100 px-5 py-4">
-          <div className="flex items-start gap-4">
+          <div className="flex min-w-0 items-start gap-4">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
               <Icon className="h-5 w-5" />
             </div>
 
-            <div>
+            <div className="min-w-0">
               <h2 className="text-xl font-semibold tracking-tight text-zinc-900">
                 {title}
               </h2>
@@ -941,7 +993,7 @@ export default function ClientSettings({
         ) : entries.length > 0 ? (
           <div className="divide-y divide-zinc-100">
             {entries.map(([group, items]) => (
-              <div key={group}>
+              <div key={group} className="min-w-0">
                 {entries.length > 1 && (
                   <div className="bg-zinc-50 px-5 py-3">
                     <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
@@ -975,7 +1027,7 @@ export default function ClientSettings({
 
               <p className="mt-1 text-sm text-zinc-600">
                 {editingAdminId
-                  ? 'Atualize acesso, e-mail e status do administrador.'
+                  ? 'Atualize dados de acesso e status do administrador.'
                   : 'Solicite a criação de um novo acesso administrativo.'}
               </p>
             </div>
@@ -990,8 +1042,8 @@ export default function ClientSettings({
             </button>
           </div>
 
-          <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2">
-            <div className="space-y-1.5">
+          <div className="mt-5 grid min-w-0 grid-cols-1 gap-5 md:grid-cols-2">
+            <div className="min-w-0 space-y-1.5">
               <label className="text-xs font-semibold text-zinc-600">
                 Nome
               </label>
@@ -1015,7 +1067,7 @@ export default function ClientSettings({
               <FieldError message={userErrors.name} />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="min-w-0 space-y-1.5">
               <label className="text-xs font-semibold text-zinc-600">
                 E-mail
               </label>
@@ -1039,33 +1091,7 @@ export default function ClientSettings({
               <FieldError message={userErrors.email} />
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-zinc-600">
-                Nível
-              </label>
-
-              <select
-                value={userForm.role}
-                onChange={(event) => {
-                  setUserForm((current) => ({
-                    ...current,
-                    role: event.target.value as AdminRole,
-                  }));
-                  clearUserError('role');
-                }}
-                className={fieldClass(
-                  userErrors.role,
-                  'w-full rounded-md border bg-white px-3 py-2 text-zinc-800 outline-none'
-                )}
-              >
-                <option value="admin">Admin</option>
-                <option value="master">Master</option>
-              </select>
-
-              <FieldError message={userErrors.role} />
-            </div>
-
-            <div className="space-y-1.5">
+            <div className="min-w-0 space-y-1.5 md:col-span-2">
               <label className="text-xs font-semibold text-zinc-600">
                 Status
               </label>
@@ -1091,21 +1117,22 @@ export default function ClientSettings({
               <FieldError message={userErrors.is_active} />
             </div>
 
-            <div className="rounded-md border border-orange-100 bg-orange-50 px-4 py-3 md:col-span-2">
+            <div className="min-w-0 rounded-md border border-orange-100 bg-orange-50 px-4 py-3 md:col-span-2">
               <p className="text-xs leading-relaxed text-orange-800">
                 Atenção: revise cuidadosamente o e-mail informado. Na criação de
                 um novo usuário, o acesso ainda não será criado imediatamente.
-                Um e-mail será enviado ao master para revisar e confirmar os
-                dados. Se o endereço estiver incorreto ou não pertencer à pessoa
+                Um e-mail será enviado para você revisar e confirmar os dados.
+                Se o endereço estiver incorreto ou não pertencer à pessoa
                 correta, não confirme a solicitação.
               </p>
             </div>
 
-            <div className="rounded-md border border-zinc-200 bg-zinc-50 px-4 py-3 md:col-span-2">
+            <div className="min-w-0 rounded-md border border-zinc-200 bg-zinc-50 px-4 py-3 md:col-span-2">
               <p className="text-xs leading-relaxed text-zinc-700">
-                Senhas não são definidas pelo painel. Após a confirmação do
-                master, o novo administrador receberá instruções para criar a
-                própria senha usando “Esqueceu sua senha?” na tela de login.
+                O nível de acesso é definido pelo sistema. Novos usuários criados
+                pelo painel entram como administradores comuns. Senhas não são
+                definidas pelo painel; após a confirmação, o novo administrador
+                deve usar “Esqueceu sua senha?” na tela de login.
               </p>
             </div>
           </div>
@@ -1140,11 +1167,11 @@ export default function ClientSettings({
   };
 
   return (
-    <div className="p-6 md:p-8">
-      <div className="mx-auto flex max-w-7xl flex-col gap-8">
-        <section className="relative overflow-hidden py-4">
-          <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-            <div className="max-w-3xl">
+    <div className="min-w-0 overflow-x-hidden p-6 md:p-8">
+      <div className="mx-auto flex min-w-0 max-w-7xl flex-col gap-8">
+        <section className="relative min-w-0 overflow-hidden py-4">
+          <div className="relative flex min-w-0 flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+            <div className="min-w-0 max-w-3xl">
               <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 md:text-4xl">
                 Configurações do Sistema
               </h1>
@@ -1159,7 +1186,7 @@ export default function ClientSettings({
               type="button"
               onClick={handleSaveSettings}
               disabled={isSavingSettings || settings.length === 0}
-              className="inline-flex w-fit items-center justify-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex w-fit shrink-0 items-center justify-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Save className="h-4 w-4" />
               {isSavingSettings ? 'Salvando...' : 'Salvar alterações'}
@@ -1167,8 +1194,8 @@ export default function ClientSettings({
           </div>
         </section>
 
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[270px_1fr]">
-          <aside className="h-fit rounded-md border border-zinc-200 bg-white p-2 shadow-sm lg:sticky lg:top-8">
+        <div className="grid min-w-0 grid-cols-1 gap-8 lg:grid-cols-[minmax(0,270px)_minmax(0,1fr)]">
+          <aside className="h-fit min-w-0 rounded-md border border-zinc-200 bg-white p-2 shadow-sm lg:sticky lg:top-8">
             <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
               Navegação
             </p>
@@ -1202,7 +1229,7 @@ export default function ClientSettings({
             </nav>
           </aside>
 
-          <div className="space-y-8">
+          <div className="min-w-0 space-y-8">
             {renderSettingsCard(
               'geral',
               Brush,
@@ -1235,15 +1262,15 @@ export default function ClientSettings({
             {isMaster && (
               <section
                 id="area-sensivel"
-                className="scroll-mt-8 overflow-hidden rounded-md border border-red-200 bg-red-50/80 shadow-sm"
+                className="min-w-0 scroll-mt-8 overflow-hidden rounded-md border border-red-200 bg-red-50/80 shadow-sm"
               >
                 <header className="border-b border-red-200 bg-red-50 px-5 py-4">
-                  <div className="flex items-start gap-4">
+                  <div className="flex min-w-0 items-start gap-4">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-600/10 text-red-700">
                       <ShieldCheck className="h-5 w-5" />
                     </div>
 
-                    <div>
+                    <div className="min-w-0">
                       <h2 className="text-xl font-semibold tracking-tight text-red-700">
                         Área sensível
                       </h2>
@@ -1256,10 +1283,10 @@ export default function ClientSettings({
                   </div>
                 </header>
 
-                <div className="divide-y divide-red-100">
+                <div className="min-w-0 divide-y divide-red-100">
                   {donationEnabledSetting && (
-                    <div className="grid grid-cols-1 gap-4 px-5 py-5 lg:grid-cols-[235px_1fr]">
-                      <div>
+                    <div className="grid min-w-0 grid-cols-1 gap-4 px-5 py-5 lg:grid-cols-[220px_minmax(0,1fr)]">
+                      <div className="min-w-0">
                         <label className="text-[13px] font-semibold text-zinc-950">
                           {donationEnabledSetting.label}
                         </label>
@@ -1269,18 +1296,20 @@ export default function ClientSettings({
                           emergência ou erro operacional.
                         </p>
 
-                        <p className="mt-2 text-[11px] font-mono text-zinc-500">
+                        <p className="mt-2 break-all text-[11px] font-mono text-zinc-500">
                           {donationEnabledSetting.key}
                         </p>
                       </div>
 
-                      <div>{renderSettingInput(donationEnabledSetting)}</div>
+                      <div className="min-w-0">
+                        {renderSettingInput(donationEnabledSetting)}
+                      </div>
                     </div>
                   )}
 
-                  <div className="px-5 py-5">
-                    <div className="mb-4 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                      <div>
+                  <div className="min-w-0 px-5 py-5">
+                    <div className="mb-4 flex min-w-0 flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                      <div className="min-w-0">
                         <h3 className="text-[13px] font-semibold text-zinc-950">
                           Usuários administrativos
                         </h3>
@@ -1294,14 +1323,14 @@ export default function ClientSettings({
                       <button
                         type="button"
                         onClick={openCreateUserForm}
-                        className="inline-flex w-fit items-center justify-center gap-2 rounded-md border border-primary bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-white hover:text-primary"
+                        className="inline-flex w-fit shrink-0 items-center justify-center gap-2 rounded-md border border-primary bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:bg-white hover:text-primary"
                       >
                         <Plus className="h-4 w-4" />
                         Novo usuário
                       </button>
                     </div>
 
-                    <div className="overflow-hidden rounded-md border border-red-100 bg-white/90">
+                    <div className="min-w-0 overflow-hidden rounded-md border border-red-100 bg-white/90">
                       <div className="divide-y divide-zinc-100">
                         {sortedAdmins.length > 0 ? (
                           sortedAdmins.map((admin) => {
@@ -1310,16 +1339,20 @@ export default function ClientSettings({
                             return (
                               <div
                                 key={admin.id}
-                                className="grid grid-cols-1 gap-4 px-5 py-4 md:grid-cols-[1fr_auto]"
+                                className={`grid min-w-0 grid-cols-1 gap-4 px-5 py-4 transition md:grid-cols-[minmax(0,1fr)_auto] ${adminRowClass(
+                                  isActive
+                                )}`}
                               >
                                 <div className="flex min-w-0 items-start gap-4">
-                                  <UserBadge
-                                    name={admin.name}
-                                    subtitle={admin.email}
-                                    size="md"
-                                  />
+                                  <div className={adminTextClass(isActive)}>
+                                    <UserBadge
+                                      name={admin.name}
+                                      subtitle={admin.email}
+                                      size="md"
+                                    />
+                                  </div>
 
-                                  <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                                  <div className="flex min-w-0 flex-wrap items-center gap-2 pt-0.5">
                                     <span
                                       className={`rounded-md px-2 py-0.5 text-[11px] font-semibold uppercase ${roleBadgeClass(
                                         admin.role
@@ -1344,7 +1377,7 @@ export default function ClientSettings({
                                   </div>
                                 </div>
 
-                                <div className="flex items-center gap-2">
+                                <div className="flex shrink-0 items-center gap-2">
                                   <button
                                     type="button"
                                     onClick={() => openEditUserForm(admin)}
@@ -1387,8 +1420,8 @@ export default function ClientSettings({
 
                   {renderUserForm()}
 
-                  <div className="grid grid-cols-1 gap-4 px-5 py-5 md:grid-cols-[1fr_auto]">
-                    <div>
+                  <div className="grid min-w-0 grid-cols-1 gap-4 px-5 py-5 md:grid-cols-[minmax(0,1fr)_auto]">
+                    <div className="min-w-0">
                       <h3 className="text-[13px] font-semibold text-zinc-950">
                         Cache de configurações
                       </h3>
@@ -1403,15 +1436,15 @@ export default function ClientSettings({
                       type="button"
                       onClick={handleClearCache}
                       disabled={isClearingCache}
-                      className="inline-flex w-fit items-center justify-center gap-2 rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white transition disabled:opacity-50"
+                      className="inline-flex w-fit shrink-0 items-center justify-center gap-2 rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white transition disabled:opacity-50"
                     >
                       <RefreshCcw className="h-4 w-4" />
                       {isClearingCache ? 'Limpando...' : 'Limpar cache'}
                     </button>
                   </div>
 
-                  <div className="grid grid-cols-1 gap-4 px-5 py-5 md:grid-cols-[1fr_auto]">
-                    <div>
+                  <div className="grid min-w-0 grid-cols-1 gap-4 px-5 py-5 md:grid-cols-[minmax(0,1fr)_auto]">
+                    <div className="min-w-0">
                       <h3 className="text-[13px] font-semibold text-zinc-950">
                         Sessão atual
                       </h3>
@@ -1421,7 +1454,7 @@ export default function ClientSettings({
                       </p>
                     </div>
 
-                    <div className="inline-flex w-fit items-center gap-2 rounded-md bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
+                    <div className="inline-flex w-fit shrink-0 items-center gap-2 rounded-md bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
                       <CheckCircle2 className="h-4 w-4" />
                       {currentAdmin?.name || 'Admin'}
                     </div>

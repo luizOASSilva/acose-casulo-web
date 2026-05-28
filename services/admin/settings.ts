@@ -3,8 +3,9 @@ import { api } from '@/lib/api';
 import type {
   AdminCreationRequestDTO,
   AdminCreationRequestPreview,
-  AdminCreationRequestPreviewResponse,
+  AdminForgotPasswordDTO,
   AdminMessageResponse,
+  AdminResetPasswordDTO,
   AdminUser,
   CreateAdminDTO,
   SettingItem,
@@ -24,6 +25,11 @@ interface AdminSingleResponse {
 interface SettingsCollectionResponse {
   data?: SettingItem[];
   settings?: SettingItem[];
+}
+
+interface AdminCreationRequestPreviewResponse {
+  data?: AdminCreationRequestPreview;
+  request?: AdminCreationRequestPreview;
 }
 
 function normalizeAdmins(
@@ -54,6 +60,16 @@ function normalizeSettings(
   if (Array.isArray(payload?.settings)) return payload.settings;
 
   return [];
+}
+
+function normalizeCreationPreview(
+  payload: AdminCreationRequestPreviewResponse | AdminCreationRequestPreview
+): AdminCreationRequestPreview | null {
+  if (!payload) return null;
+  if ('data' in payload && payload.data) return payload.data;
+  if ('request' in payload && payload.request) return payload.request;
+
+  return payload as AdminCreationRequestPreview;
 }
 
 export async function getCurrentAdmin(
@@ -107,7 +123,6 @@ export async function createAdmin(
       {
         name: data.name,
         email: data.email,
-        role: data.role,
         is_active: data.is_active ?? true,
         password: data.password,
         password_confirmation: data.password_confirmation,
@@ -130,14 +145,13 @@ export async function requestAdminCreation(
       {
         name: data.name,
         email: data.email,
-        role: data.role,
         is_active: data.is_active ?? true,
       }
     );
 
     return (
       response?.message ||
-      'Enviamos um e-mail para o master confirmar a criação deste usuário. O novo administrador ainda não tem acesso ao painel.'
+      'Enviamos um link para o seu e-mail. O administrador só será criado depois da sua confirmação.'
     );
   } catch (error) {
     console.error('Erro ao solicitar criação de admin:', error);
@@ -149,11 +163,11 @@ export async function getAdminCreationRequest(
   token: string
 ): Promise<AdminCreationRequestPreview | null> {
   try {
-    const response = await api.get<AdminCreationRequestPreviewResponse>(
-      `/admins/creation-request?token=${encodeURIComponent(token)}`
-    );
+    const response = await api.get<
+      AdminCreationRequestPreviewResponse | AdminCreationRequestPreview
+    >(`/admins/creation-request?token=${encodeURIComponent(token)}`);
 
-    return response?.data ?? null;
+    return normalizeCreationPreview(response);
   } catch (error) {
     console.error('Erro ao buscar solicitação de criação de admin:', error);
     return null;
@@ -171,10 +185,7 @@ export async function confirmAdminCreationRequest(
       }
     );
 
-    return (
-      response?.message ||
-      'Administrador criado com sucesso. Enviamos um e-mail para o novo usuário com instruções para criar a senha.'
-    );
+    return response?.message || 'Administrador criado com sucesso.';
   } catch (error) {
     console.error('Erro ao confirmar criação de admin:', error);
     return null;
@@ -191,7 +202,6 @@ export async function updateAdmin(
       {
         name: data.name,
         email: data.email,
-        role: data.role,
         is_active: data.is_active,
         ...(data.password
           ? {
@@ -223,10 +233,13 @@ export async function requestAdminEmailChange(
 
     return (
       response?.message ||
-      'Enviamos um e-mail de confirmação para o master. O e-mail do administrador só será alterado após a confirmação.'
+      'Enviamos um link para o seu e-mail. O e-mail do administrador só será alterado depois da sua confirmação.'
     );
   } catch (error) {
-    console.error(`Erro ao solicitar troca de e-mail do admin ID ${adminId}:`, error);
+    console.error(
+      `Erro ao solicitar troca de e-mail do admin ID ${adminId}:`,
+      error
+    );
     return null;
   }
 }
@@ -306,5 +319,46 @@ export async function clearSettingsCache(): Promise<boolean> {
   } catch (error) {
     console.error('Erro ao limpar cache de configurações:', error);
     return false;
+  }
+}
+
+export async function requestAdminPasswordReset(
+  data: AdminForgotPasswordDTO
+): Promise<string | null> {
+  try {
+    const response = await api.post<AdminMessageResponse>(
+      '/auth/forgot-password',
+      {
+        email: data.email,
+      }
+    );
+
+    return (
+      response?.message ||
+      'Se este e-mail estiver cadastrado, enviaremos um link para redefinir a senha.'
+    );
+  } catch (error) {
+    console.error('Erro ao solicitar redefinição de senha:', error);
+    return null;
+  }
+}
+
+export async function resetAdminPassword(
+  data: AdminResetPasswordDTO
+): Promise<string | null> {
+  try {
+    const response = await api.post<AdminMessageResponse>(
+      '/auth/reset-password',
+      {
+        token: data.token,
+        password: data.password,
+        password_confirmation: data.password_confirmation,
+      }
+    );
+
+    return response?.message || 'Senha redefinida com sucesso.';
+  } catch (error) {
+    console.error('Erro ao redefinir senha:', error);
+    return null;
   }
 }

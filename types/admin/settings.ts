@@ -14,7 +14,6 @@ export interface AdminUser {
 export interface CreateAdminDTO {
   name: string;
   email: string;
-  role: AdminRole;
   is_active?: boolean;
   password?: string;
   password_confirmation?: string;
@@ -23,10 +22,30 @@ export interface CreateAdminDTO {
 export interface UpdateAdminDTO {
   name?: string;
   email?: string;
-  role?: AdminRole;
   is_active?: boolean;
   password?: string;
   password_confirmation?: string;
+}
+
+export interface AdminCreationRequestDTO {
+  name: string;
+  email: string;
+  is_active?: boolean;
+}
+
+export interface AdminCreationRequestPreview {
+  id?: number;
+  name: string;
+  email: string;
+  role: AdminRole | string;
+  is_active: boolean;
+  expires_at?: string | null;
+  created_at?: string | null;
+  requested_by?: {
+    id?: number;
+    name?: string | null;
+    email?: string | null;
+  } | null;
 }
 
 export interface AdminEmailChangeRequestDTO {
@@ -37,28 +56,14 @@ export interface AdminEmailChangeConfirmDTO {
   token: string;
 }
 
-export interface AdminCreationRequestDTO {
-  name: string;
+export interface AdminForgotPasswordDTO {
   email: string;
-  role: AdminRole;
-  is_active?: boolean;
 }
 
-export interface AdminCreationRequestPreview {
-  name: string;
-  email: string;
-  role: AdminRole | string;
-  is_active: boolean;
-  expires_at?: string | null;
-  requested_by?: {
-    name?: string | null;
-    email?: string | null;
-  } | null;
-}
-
-export interface AdminCreationRequestPreviewResponse {
-  data?: AdminCreationRequestPreview;
-  message?: string;
+export interface AdminResetPasswordDTO {
+  token: string;
+  password: string;
+  password_confirmation: string;
 }
 
 export interface AdminMessageResponse {

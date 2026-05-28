@@ -1,7 +1,8 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useId } from 'react';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { Mail, Lock } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useForm } from 'react-hook-form';
@@ -19,7 +20,11 @@ type LoginSchema = z.infer<typeof loginSchema>;
 
 export default function LoginForm() {
   const { login, admin, loading } = useAuth();
+
   const router = useRouter();
+  const params = useParams<{ token?: string }>();
+
+  const accessToken = params?.token || '';
 
   const emailId = useId();
   const passwordId = useId();
@@ -121,12 +126,12 @@ export default function LoginForm() {
               Senha
             </label>
 
-            <button
-              type="button"
+            <Link
+              href={accessToken ? `/acesso/${accessToken}/esqueci-senha` : '#'}
               className="text-xs font-medium text-primary transition hover:opacity-80"
             >
               Esqueceu sua senha?
-            </button>
+            </Link>
           </div>
 
           <div className="group relative">
