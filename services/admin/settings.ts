@@ -22,6 +22,10 @@ interface SettingsCollectionResponse {
   settings?: SettingItem[];
 }
 
+interface MessageResponse {
+  message?: string;
+}
+
 function normalizeAdmins(
   payload: AdminCollectionResponse | AdminUser[]
 ): AdminUser[] {
@@ -141,6 +145,46 @@ export async function updateAdmin(
     return normalizeAdmin(response);
   } catch (error) {
     console.error(`Erro ao atualizar admin ID ${id}:`, error);
+    return null;
+  }
+}
+
+export async function requestAdminEmailChange(
+  adminId: number,
+  email: string
+): Promise<string | null> {
+  try {
+    const response = await api.post<MessageResponse>(
+      `/admins/${adminId}/email-change-request`,
+      {
+        email,
+      }
+    );
+
+    return (
+      response?.message ||
+      'Enviamos um e-mail de confirmação para o master. O e-mail do administrador só será alterado após a confirmação.'
+    );
+  } catch (error) {
+    console.error(`Erro ao solicitar troca de e-mail do admin ID ${adminId}:`, error);
+    return null;
+  }
+}
+
+export async function confirmAdminEmailChange(
+  token: string
+): Promise<string | null> {
+  try {
+    const response = await api.post<MessageResponse>(
+      '/admins/email-change/confirm',
+      {
+        token,
+      }
+    );
+
+    return response?.message || 'E-mail do administrador alterado com sucesso.';
+  } catch (error) {
+    console.error('Erro ao confirmar troca de e-mail do admin:', error);
     return null;
   }
 }

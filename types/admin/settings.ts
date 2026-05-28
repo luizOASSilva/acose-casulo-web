@@ -29,6 +29,18 @@ export interface UpdateAdminDTO {
   password_confirmation?: string;
 }
 
+export interface AdminEmailChangeRequestDTO {
+  email: string;
+}
+
+export interface AdminEmailChangeConfirmDTO {
+  token: string;
+}
+
+export interface AdminMessageResponse {
+  message?: string;
+}
+
 export interface SettingItem {
   id?: number;
   key: string;
