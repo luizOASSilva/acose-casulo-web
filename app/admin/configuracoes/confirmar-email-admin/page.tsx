@@ -44,7 +44,7 @@ export default function ConfirmarEmailAdminPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-background px-6 py-12">
-      <section className="w-full max-w-md rounded-2xl border border-gray-100 bg-white p-8 text-center shadow-sm">
+      <section className="w-full max-w-md rounded-md border border-gray-100 bg-white p-8 text-center shadow-sm">
         <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-orange-50 text-primary">
           {status === 'loading' && (
             <Loader2 className="h-7 w-7 animate-spin" aria-hidden="true" />

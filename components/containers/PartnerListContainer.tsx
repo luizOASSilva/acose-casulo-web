@@ -303,7 +303,7 @@ export default function PartnerListContainer({
         <section
           ref={filterRef}
           className={`
-            sticky top-4 z-30 rounded-md border border-gray-200 bg-zinc-50 p-4
+            sticky top-4 z-50 rounded-md border border-gray-200 bg-zinc-50 p-4
             transition-shadow duration-200
             ${
               isFilterSticky
@@ -372,7 +372,9 @@ export default function PartnerListContainer({
             <p className="mt-3 text-xs text-gray-500">
               {pagination.total === 0
                 ? 'Nenhum parceiro encontrado.'
-                : `Mostrando ${pagination.from ?? 0}–${pagination.to ?? 0} de ${pagination.total} parceiros.`}
+                : `Mostrando ${pagination.from ?? 0}–${
+                    pagination.to ?? 0
+                  } de ${pagination.total} parceiros.`}
             </p>
           )}
         </section>
@@ -385,7 +387,7 @@ export default function PartnerListContainer({
         </section>
 
         {safePartners.length > 0 ? (
-          <section className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+          <section className="relative z-0 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
             {safePartners.map((partner, index) => {
               const isInactive = !partner.is_active;
               const hasWebsite = Boolean(partner.website_url);
@@ -405,7 +407,7 @@ export default function PartnerListContainer({
                     }
                   }}
                   className={`
-                    group overflow-hidden rounded-md border shadow-sm
+                    group relative z-0 overflow-hidden rounded-md border shadow-sm
                     transition-all
                     hover:-translate-y-1
                     hover:shadow-md
@@ -446,11 +448,11 @@ export default function PartnerListContainer({
                       </div>
                     )}
 
-                    <div className="pointer-events-none absolute inset-0 z-20 bg-black/0 transition group-hover:bg-black/5" />
+                    <div className="pointer-events-none absolute inset-0 z-10 bg-black/0 transition group-hover:bg-black/5" />
 
                     <div
                       className="
-                        absolute left-4 top-4 z-30
+                        absolute left-4 top-4 z-20
                         translate-y-0 opacity-100
                         md:-translate-y-1 md:opacity-0
                         transition
@@ -481,7 +483,7 @@ export default function PartnerListContainer({
 
                     <div
                       className="
-                        absolute right-4 top-4 z-30 flex items-center gap-2
+                        absolute right-4 top-4 z-20 flex items-center gap-2
                         translate-y-0 opacity-100
                         md:-translate-y-1 md:opacity-0
                         transition

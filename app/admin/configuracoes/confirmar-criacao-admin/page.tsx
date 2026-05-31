@@ -88,7 +88,7 @@ export default function ConfirmarCriacaoAdminPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-background px-6 py-12">
-      <section className="w-full max-w-lg rounded-2xl border border-gray-100 bg-white p-8 shadow-sm">
+      <section className="w-full max-w-lg rounded-md border border-gray-100 bg-white p-8 shadow-sm">
         <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-orange-50 text-primary">
           {(isLoading || isConfirming) && (
             <Loader2 className="h-7 w-7 animate-spin" aria-hidden="true" />
@@ -139,7 +139,7 @@ export default function ConfirmarCriacaoAdminPage() {
               </div>
             </div>
 
-            <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4">
+            <div className="rounded-md border border-zinc-200 bg-zinc-50 p-4">
               <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
                 Novo administrador
               </p>

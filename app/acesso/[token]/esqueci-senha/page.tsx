@@ -131,7 +131,7 @@ export default async function EsqueciSenha({ params }: Props) {
             <div className="mt-6 text-center">
               <Link
                 href={`/acesso/${token}`}
-                className="text-sm font-semibold text-primary transition hover:opacity-80"
+                className="text-sm font-semibold text-primary transition hover:opacity-80 cursor-default"
               >
                 Voltar para o login
               </Link>

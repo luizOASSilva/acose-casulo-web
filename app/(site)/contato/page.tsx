@@ -81,6 +81,7 @@ export default async function Contato() {
               <br />
               <span className="text-primary">Fale com a gente.</span>
             </h1>
+
             <p className="text-gray-600 text-lg leading-relaxed">
               Seja para tirar dúvidas sobre o Centro Dia, apoiar nossa causa ou
               iniciar uma parceria — estamos aqui por quem mais precisa.
@@ -97,10 +98,12 @@ export default async function Contato() {
                     className="text-gray-500"
                   />
                 </div>
+
                 <div className="space-y-0.5">
                   <p className="text-xs font-semibold uppercase tracking-widest text-black">
                     Atendimento
                   </p>
+
                   <p className="text-gray-700 text-sm whitespace-pre-line">
                     {businessHours}
                   </p>
@@ -117,10 +120,12 @@ export default async function Contato() {
                     className="text-gray-500"
                   />
                 </div>
+
                 <div className="space-y-0.5">
                   <p className="text-xs font-semibold uppercase tracking-widest text-black">
                     Endereço
                   </p>
+
                   <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
                     {address}
                   </p>
@@ -137,10 +142,12 @@ export default async function Contato() {
                     className="text-gray-500"
                   />
                 </div>
+
                 <div className="space-y-0.5">
                   <p className="text-xs font-semibold uppercase tracking-widest text-black">
                     E-mail
                   </p>
+
                   <a
                     href={`mailto:${email}`}
                     className="text-orange-800 text-sm hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-800 rounded"
@@ -160,10 +167,12 @@ export default async function Contato() {
                     className="text-gray-500"
                   />
                 </div>
+
                 <div className="space-y-0.5">
                   <p className="text-xs font-semibold uppercase tracking-widest text-black">
                     Telefone
                   </p>
+
                   <a
                     href={phoneDigits ? `tel:+55${phoneDigits}` : undefined}
                     className="text-gray-700 text-sm hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
@@ -215,6 +224,7 @@ export default async function Contato() {
           >
             Envie sua mensagem para nós
           </h2>
+
           <p className="text-gray-300 text-sm">
             Respondemos o mais rápido possível
           </p>

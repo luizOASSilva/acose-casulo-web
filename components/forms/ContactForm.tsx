@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
@@ -27,7 +27,10 @@ function FieldError({ message }: { message?: string }) {
 }
 
 export default function ContactForm() {
+  const startedAt = useMemo(() => Math.floor(Date.now() / 1000), []);
+
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
 
   const {
     register,
@@ -40,6 +43,7 @@ export default function ContactForm() {
     defaultValues: {
       name: '',
       email: '',
+      phone: '',
       subject: '',
       message: '',
     },
@@ -47,21 +51,56 @@ export default function ContactForm() {
 
   const onSubmit = async (data: ContactSchemaData) => {
     setStatus('idle');
+    setFeedbackMessage(null);
 
-    const success = await sendContactMessage(data);
+    try {
+      const response = await sendContactMessage({
+        name: data.name,
+        email: data.email,
+        phone: data.phone || undefined,
+        subject: data.subject,
+        message: data.message,
 
-    if (!success) {
+        website: '',
+        started_at: startedAt,
+      });
+
+      setStatus('success');
+      setFeedbackMessage(
+        response?.message ||
+          'Mensagem enviada com sucesso! Entraremos em contato em breve.'
+      );
+
+      reset();
+    } catch (error) {
       setStatus('error');
-      return;
+      setFeedbackMessage(
+        error instanceof Error
+          ? error.message
+          : 'Erro ao enviar. Tente novamente ou nos contate por e-mail.'
+      );
     }
-
-    setStatus('success');
-    reset();
   };
 
   return (
     <>
       <FormWrapper onSubmit={handleSubmit(onSubmit)} loading={isSubmitting}>
+        <div
+          aria-hidden="true"
+          className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden"
+        >
+          <label htmlFor="website">Site</label>
+
+          <input
+            id="website"
+            type="text"
+            tabIndex={-1}
+            autoComplete="off"
+            value=""
+            readOnly
+          />
+        </div>
+
         <div className="flex flex-col gap-1.5">
           <label htmlFor="name" className="text-sm font-medium text-white/80">
             Nome{' '}
@@ -78,6 +117,7 @@ export default function ContactForm() {
             autoComplete="name"
             placeholder="Seu nome completo"
             aria-invalid={!!errors.name}
+            disabled={isSubmitting}
             {...register('name')}
             className={fieldClass}
           />
@@ -100,7 +140,28 @@ export default function ContactForm() {
             autoComplete="email"
             placeholder="seu@email.com"
             aria-invalid={!!errors.email}
+            disabled={isSubmitting}
             {...register('email')}
+            className={fieldClass}
+          />
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="phone" className="text-sm font-medium text-white/80">
+            Telefone / WhatsApp
+          </label>
+
+          <FieldError message={errors.phone?.message} />
+
+          <input
+            id="phone"
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            placeholder="(11) 99999-9999"
+            aria-invalid={!!errors.phone}
+            disabled={isSubmitting}
+            {...register('phone')}
             className={fieldClass}
           />
         </div>
@@ -123,6 +184,7 @@ export default function ContactForm() {
             type="text"
             placeholder="Como podemos ajudar?"
             aria-invalid={!!errors.subject}
+            disabled={isSubmitting}
             {...register('subject')}
             className={fieldClass}
           />
@@ -146,6 +208,7 @@ export default function ContactForm() {
             rows={5}
             placeholder="Descreva sua dúvida ou mensagem..."
             aria-invalid={!!errors.message}
+            disabled={isSubmitting}
             {...register('message')}
             className={`${fieldClass} resize-none`}
           />
@@ -159,15 +222,11 @@ export default function ContactForm() {
         className="mt-2 text-sm"
       >
         {status === 'success' && (
-          <p className="font-medium text-green-400">
-            ✓ Mensagem enviada com sucesso! Entraremos em contato em breve.
-          </p>
+          <p className="font-medium text-green-400">✓ {feedbackMessage}</p>
         )}
 
         {status === 'error' && (
-          <p className="font-medium text-red-300">
-            ✗ Erro ao enviar. Tente novamente ou nos contate por e-mail.
-          </p>
+          <p className="font-medium text-red-300">✗ {feedbackMessage}</p>
         )}
       </div>
     </>

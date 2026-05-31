@@ -408,7 +408,7 @@ export default function ArticleListContainer({
         </h1>
 
         {isAdmin && (
-          <p className="text-sm text-gray-600 bg-emerald-50 px-3 py-1.5 rounded-lg inline-block border border-emerald-100">
+          <p className="text-sm text-gray-600 bg-emerald-50 px-3 py-1.5 rounded-md inline-block border border-emerald-100">
             Painel conectado ao banco de dados. Alterações são refletidas em
             tempo real.
           </p>
@@ -418,37 +418,71 @@ export default function ArticleListContainer({
       <Reveal>
         <div className="space-y-8">
           {isAdmin && (
-            <button
-              type="button"
-              onClick={() => navigateFromList('/admin/artigos/novo')}
-              className="
-                w-full min-h-[245px]
-                flex items-center justify-center
-                border border-dashed border-gray-300
-                rounded-2xl
-                hover:border-orange-400
-                hover:bg-orange-50/50
-                transition-colors
-                group
-                cursor-pointer
-              "
-            >
-              <div className="flex flex-col items-center gap-4 text-center p-8">
-                <div className="w-16 h-16 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-5xl font-extralight transition-transform group-hover:scale-110">
-                  +
-                </div>
+            <div className="grid gap-4 md:grid-cols-[1fr_260px]">
+              <button
+                type="button"
+                onClick={() => navigateFromList('/admin/artigos/novo')}
+                className="
+                  w-full min-h-[245px]
+                  flex items-center justify-center
+                  border border-dashed border-gray-300
+                  rounded-md
+                  hover:border-orange-400
+                  hover:bg-orange-50/50
+                  transition-colors
+                  group
+                  cursor-pointer
+                "
+              >
+                <div className="flex flex-col items-center gap-4 text-center p-8">
+                  <div className="w-16 h-16 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-5xl font-extralight transition-transform group-hover:scale-110">
+                    +
+                  </div>
 
-                <div className="space-y-1">
-                  <p className="text-lg font-semibold text-gray-800">
-                    Criar Novo Artigo
-                  </p>
+                  <div className="space-y-1">
+                    <p className="text-lg font-semibold text-gray-800">
+                      Criar Novo Artigo
+                    </p>
 
-                  <p className="text-sm text-gray-600 max-w-xs">
-                    Publique uma nova matéria direto no sistema.
-                  </p>
+                    <p className="text-sm text-gray-600 max-w-xs">
+                      Publique uma nova matéria direto no sistema.
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </button>
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  navigateFromList('/admin/artigos/palavras-chave')
+                }
+                className="
+                  min-h-[245px]
+                  flex items-center justify-center
+                  rounded-md border border-orange-100 bg-orange-50/60
+                  p-8 text-center transition
+                  hover:border-orange-300 hover:bg-orange-50
+                  active:scale-[0.99] cursor-pointer
+                "
+              >
+                <div className="space-y-3">
+                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-white text-orange-600">
+                    <Tag className="h-7 w-7" aria-hidden="true" />
+                  </div>
+
+                  <div className="space-y-1">
+                    <p className="text-lg font-semibold text-gray-800">
+                      Palavras-chave
+                    </p>
+
+                    <p className="text-sm text-gray-600">
+                      Gerencie os termos usados para filtrar e organizar os
+                      artigos.
+                    </p>
+                  </div>
+                </div>
+              </button>
+            </div>
           )}
 
           {isAdmin && (
@@ -553,7 +587,7 @@ export default function ArticleListContainer({
                     )}
 
                     {isKeywordOpen && (
-                      <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-40 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
+                      <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-40 overflow-hidden rounded-md border border-gray-200 bg-white shadow-xl">
                         <div className="max-h-64 overflow-y-auto p-2">
                           {filteredKeywordSuggestions.length > 0 ? (
                             <div className="flex flex-wrap gap-2">
@@ -646,7 +680,10 @@ export default function ArticleListContainer({
                         aria-label="Limpar filtros"
                         title="Limpar filtros"
                       >
-                        <X className="h-4 w-4 text-red-600" aria-hidden="true" />
+                        <X
+                          className="h-4 w-4 text-red-600"
+                          aria-hidden="true"
+                        />
                       </button>
                     )}
                   </div>
@@ -763,7 +800,7 @@ export default function ArticleListContainer({
                             );
                           }}
                           className="
-                            p-2.5 rounded-xl transition-all active:scale-95
+                            p-2.5 rounded-md transition-all active:scale-95
                             text-gray-600 bg-gray-100
                             hover:bg-orange-500/20 hover:text-orange-600
                             cursor-pointer
@@ -782,7 +819,7 @@ export default function ArticleListContainer({
                           }}
                           className="
                             p-2.5 text-red-600 bg-red-500/10 hover:bg-red-500/20
-                            rounded-xl transition-all active:scale-95 cursor-pointer
+                            rounded-md transition-all active:scale-95 cursor-pointer
                           "
                           title="Deletar Artigo"
                           aria-label="Deletar artigo"

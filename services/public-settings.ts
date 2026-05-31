@@ -10,20 +10,39 @@ function getApiUrl(): string {
   return API_URL.replace(/\/$/, '');
 }
 
-function normalizePublicSettings(payload: any): PublicSettings {
-  if (!payload) return {};
-  if (payload.data && typeof payload.data === 'object') return payload.data;
+function normalizePublicSettings(payload: unknown): PublicSettings {
+  if (!payload || typeof payload !== 'object') {
+    return {};
+  }
 
-  return payload;
+  const data = payload as {
+    data?: unknown;
+  };
+
+  if (data.data && typeof data.data === 'object') {
+    return data.data as PublicSettings;
+  }
+
+  return payload as PublicSettings;
 }
 
 export async function getPublicSettings(): Promise<PublicSettings> {
   try {
     const response = await fetch(`${getApiUrl()}/settings/public`, {
       method: 'GET',
-      cache: 'no-store',
       headers: {
         Accept: 'application/json',
+      },
+
+      /**
+       * Não usar cache: 'no-store' aqui.
+       *
+       * Esse service é usado em páginas/layouts públicos e pode ser chamado
+       * durante o build, inclusive no /_not-found.
+       * Com no-store ou revalidate: 0, o Next acusa Dynamic server usage.
+       */
+      next: {
+        revalidate: 60,
       },
     });
 

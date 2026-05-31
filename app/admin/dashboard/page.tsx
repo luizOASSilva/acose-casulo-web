@@ -18,6 +18,7 @@ import {
   RefreshCw,
   Settings,
   ShieldCheck,
+  Tag,
   Trash2,
   Upload,
 } from 'lucide-react';
@@ -115,6 +116,7 @@ function getActionIcon(action?: string) {
   if (action.includes('document')) return ShieldCheck;
   if (action.includes('activity')) return ActivityIcon;
   if (action.includes('setting')) return Settings;
+  if (action.includes('keyword')) return Tag;
 
   return ActivityIcon;
 }
@@ -149,40 +151,46 @@ function getActionLabel(action?: string): string {
 function getActionTone(action?: string) {
   if (!action) {
     return {
-      icon: 'bg-zinc-100 text-zinc-600',
+      icon: 'bg-primary/10 text-primary',
       badge: 'border-zinc-200 bg-zinc-100 text-zinc-600',
-      border: 'border-zinc-100 hover:border-zinc-300',
+      item: 'border-transparent bg-transparent',
+      accent: '',
     };
   }
 
   if (action.includes('deleted')) {
     return {
       icon: 'bg-red-50 text-red-600',
-      badge: 'border-red-100 bg-red-50 text-red-600',
-      border: 'border-red-200 hover:border-red-300',
+      badge: 'border-red-200 bg-red-50 text-red-600',
+      item: 'border-red-100 bg-red-50/40 hover:bg-red-50',
+      accent:
+        'before:absolute before:inset-y-3 before:left-0 before:w-1 before:rounded-r-full before:bg-red-500',
     };
   }
 
   if (action.includes('updated')) {
     return {
-      icon: 'bg-zinc-100 text-zinc-800',
+      icon: 'bg-zinc-100 text-zinc-700',
       badge: 'border-zinc-200 bg-zinc-100 text-zinc-700',
-      border: 'border-zinc-100 hover:border-zinc-300',
+      item: 'border-transparent bg-transparent',
+      accent: '',
     };
   }
 
   if (action.includes('created') || action.includes('media')) {
     return {
-      icon: 'bg-orange-50 text-primary',
-      badge: 'border-orange-100 bg-orange-50 text-primary',
-      border: 'border-zinc-100 hover:border-primary/25',
+      icon: 'bg-primary/10 text-primary',
+      badge: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+      item: 'border-transparent bg-transparent',
+      accent: '',
     };
   }
 
   return {
-    icon: 'bg-zinc-100 text-zinc-600',
+    icon: 'bg-primary/10 text-primary',
     badge: 'border-zinc-200 bg-zinc-100 text-zinc-600',
-    border: 'border-zinc-100 hover:border-zinc-300',
+    item: 'border-transparent bg-transparent',
+    accent: '',
   };
 }
 
@@ -219,7 +227,7 @@ function AdminRoleBadge({ label }: { label: string }) {
         inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide
         ${
           isMaster
-            ? 'border-primary/20 bg-orange-50 text-primary'
+            ? 'border-primary/15 bg-primary/10 text-primary'
             : 'border-zinc-200 bg-zinc-100 text-zinc-600'
         }
       `}
@@ -251,23 +259,24 @@ function AuditListItem({
     <article
       key={getActivityKey(item, index)}
       className={`
-        rounded-xl border bg-white px-4 py-3 transition
-        ${tone.border}
+        group relative rounded-md border px-5 py-4 transition hover:bg-gray-50/70
+        ${tone.item}
+        ${tone.accent}
       `}
     >
       <div className="flex items-start gap-3">
         <div
           className={`
-            mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl
+            relative z-10 mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-md
             ${tone.icon}
           `}
         >
-          <Icon size={17} aria-hidden="true" />
+          <Icon size={18} aria-hidden="true" />
         </div>
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="text-sm font-semibold text-zinc-950">
+            <h3 className="text-[15px] font-semibold text-zinc-950">
               {item.title}
             </h3>
 
@@ -285,12 +294,12 @@ function AuditListItem({
           </div>
 
           {item.description && (
-            <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-zinc-600">
+            <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-zinc-600">
               {item.description}
             </p>
           )}
 
-          <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-zinc-400">
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-zinc-400">
             {item.admin?.name && (
               <span>
                 Por{' '}
@@ -304,7 +313,7 @@ function AuditListItem({
               <>
                 <span className="hidden text-zinc-300 sm:inline">•</span>
 
-                <span className="truncate">
+                <span className="min-w-0 truncate">
                   Item:{' '}
                   <span className="font-medium text-zinc-500">
                     {item.subject.name}
@@ -340,11 +349,11 @@ function RecentAuditList({
   const previewItems = items.slice(0, 5);
 
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
-      <div className="mb-6 flex items-start justify-between gap-4">
+    <div className="space-y-4">
+      <div className="flex items-end justify-between gap-4">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-semibold leading-tight text-zinc-900 sm:text-2xl">
+            <h2 className="text-2xl font-semibold text-zinc-900">
               Atividade recente
             </h2>
 
@@ -352,7 +361,7 @@ function RecentAuditList({
               type="button"
               onClick={onRefresh}
               disabled={dataLoading}
-              className="inline-flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-zinc-500 transition hover:bg-orange-50 hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-zinc-500 transition hover:bg-primary/10 hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
               aria-label="Atualizar atividades recentes"
               title="Atualizar"
             >
@@ -370,43 +379,45 @@ function RecentAuditList({
         </div>
 
         <Link
-          href="/admin/auditoria"
-          className="mt-1 shrink-0 cursor-pointer text-sm font-medium text-zinc-600 transition hover:text-zinc-950"
+          href="/admin/auditoria?from=dashboard"
+          className="shrink-0 text-sm font-medium text-zinc-600 transition hover:text-zinc-950"
         >
           Ver todos
         </Link>
       </div>
 
-      {dataLoading ? (
-        <AuditListSkeleton />
-      ) : previewItems.length > 0 ? (
-        <div className="space-y-3">
-          {previewItems.map((item, index) => (
-            <AuditListItem
-              key={getActivityKey(item, index)}
-              item={item}
-              index={index}
-              currentAdminName={currentAdminName}
-              currentAdminRole={currentAdminRole}
-            />
-          ))}
-        </div>
-      ) : (
-        <div className="rounded-xl border border-dashed border-zinc-200 bg-zinc-50/70 p-8 text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-primary">
-            <Clock size={20} aria-hidden="true" />
+      <div className="rounded-md border border-gray-200 bg-white p-4 shadow-sm">
+        {dataLoading ? (
+          <AuditListSkeleton />
+        ) : previewItems.length > 0 ? (
+          <div className="space-y-0">
+            {previewItems.map((item, index) => (
+              <AuditListItem
+                key={getActivityKey(item, index)}
+                item={item}
+                index={index}
+                currentAdminName={currentAdminName}
+                currentAdminRole={currentAdminRole}
+              />
+            ))}
           </div>
+        ) : (
+          <div className="rounded-md border border-dashed border-zinc-200 bg-white p-8 text-center">
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-md bg-primary/10 text-primary">
+              <Clock size={20} aria-hidden="true" />
+            </div>
 
-          <p className="text-sm font-semibold text-zinc-700">
-            Nenhuma atividade recente.
-          </p>
+            <p className="text-sm font-semibold text-zinc-700">
+              Nenhuma atividade recente.
+            </p>
 
-          <p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-zinc-500">
-            Quando um administrador criar, atualizar, remover ou enviar algo, o
-            histórico aparecerá aqui.
-          </p>
-        </div>
-      )}
+            <p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-zinc-500">
+              Quando um administrador criar, atualizar, remover ou enviar algo,
+              o histórico aparecerá aqui.
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -427,9 +438,7 @@ export default function AdminDashboardPage() {
             Falha ao carregar o painel
           </p>
 
-          <p className="text-sm text-zinc-500">
-            {error}
-          </p>
+          <p className="text-sm text-zinc-500">{error}</p>
 
           <button
             type="button"
@@ -568,6 +577,12 @@ export default function AdminDashboardPage() {
               description="Enviar imagens para usar no site."
               href="/admin/midias"
             />
+            <QuickActionCard
+              icon={<Tag size={20} />}
+              title="Nova palavra-chave"
+              description="Criar nova palavra-chave para artigo"
+              href="/admin/artigos/pal  avras-chave"
+            />
           </div>
         </section>
 
@@ -581,15 +596,13 @@ export default function AdminDashboardPage() {
           />
 
           <div className="flex flex-col gap-6">
-            <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+            <div className="rounded-md border border-zinc-200 bg-white p-6 shadow-sm">
               <div>
                 <h2 className="text-2xl font-semibold text-zinc-900">
                   Conteúdo
                 </h2>
 
-                <p className="text-sm text-zinc-500">
-                  Dados gerais do CMS
-                </p>
+                <p className="text-sm text-zinc-500">Dados gerais do CMS</p>
               </div>
 
               <div className="mt-6 space-y-4">
@@ -638,7 +651,7 @@ export default function AdminDashboardPage() {
               </div>
             </div>
 
-            <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+            <div className="rounded-md border border-zinc-200 bg-white p-6 shadow-sm">
               <div>
                 <h2 className="text-2xl font-semibold text-zinc-900">
                   Sistema

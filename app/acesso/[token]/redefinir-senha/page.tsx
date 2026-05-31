@@ -136,7 +136,7 @@ export default async function RedefinirSenha({ params, searchParams }: Props) {
             <div className="mt-6 text-center">
               <Link
                 href={`/acesso/${accessToken}`}
-                className="text-sm font-semibold text-primary transition hover:opacity-80"
+                className="text-sm font-semibold text-primary transition hover:opacity-80 cursor-default"
               >
                 Voltar para o login
               </Link>
