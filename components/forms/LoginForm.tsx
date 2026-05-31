@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useId } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useId, useMemo } from 'react';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Mail, Lock } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useForm } from 'react-hook-form';
@@ -18,13 +18,56 @@ const loginSchema = z.object({
 
 type LoginSchema = z.infer<typeof loginSchema>;
 
+function getSafeRedirect(redirect: string | null): string {
+  if (!redirect) {
+    return '/admin/dashboard';
+  }
+
+  try {
+    const decodedRedirect = decodeURIComponent(redirect);
+
+    if (
+      decodedRedirect.startsWith('/admin/') &&
+      !decodedRedirect.startsWith('/admin/login') &&
+      !decodedRedirect.startsWith('/acesso')
+    ) {
+      return decodedRedirect;
+    }
+
+    return '/admin/dashboard';
+  } catch {
+    return '/admin/dashboard';
+  }
+}
+
 export default function LoginForm() {
   const { login, admin, loading } = useAuth();
 
   const router = useRouter();
   const params = useParams<{ token?: string }>();
+  const searchParams = useSearchParams();
 
   const accessToken = params?.token || '';
+  const redirectParam = searchParams.get('redirect');
+
+  const redirectTo = useMemo(
+    () => getSafeRedirect(redirectParam),
+    [redirectParam]
+  );
+
+  const forgotPasswordHref = useMemo(() => {
+    if (!accessToken) {
+      return '#';
+    }
+
+    const baseHref = `/acesso/${accessToken}/esqueci-senha`;
+
+    if (!redirectParam) {
+      return baseHref;
+    }
+
+    return `${baseHref}?redirect=${encodeURIComponent(redirectTo)}`;
+  }, [accessToken, redirectParam, redirectTo]);
 
   const emailId = useId();
   const passwordId = useId();
@@ -42,13 +85,13 @@ export default function LoginForm() {
 
   useEffect(() => {
     if (!loading && admin) {
-      router.replace('/admin/dashboard');
+      router.replace(redirectTo);
     }
-  }, [admin, loading, router]);
+  }, [admin, loading, redirectTo, router]);
 
   const onSubmit = async (data: LoginSchema) => {
     try {
-      await login(data.email, data.password);
+      await login(data.email, data.password, redirectTo);
     } catch (err: any) {
       setError('root', {
         message: err?.message ?? 'Credenciais inválidas.',
@@ -127,7 +170,7 @@ export default function LoginForm() {
             </label>
 
             <Link
-              href={accessToken ? `/acesso/${accessToken}/esqueci-senha` : '#'}
+              href={forgotPasswordHref}
               className="text-xs font-medium text-primary transition hover:opacity-80"
             >
               Esqueceu sua senha?
@@ -190,7 +233,7 @@ export default function LoginForm() {
           type="submit"
           disabled={isSubmitting}
           aria-busy={isSubmitting}
-          className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-md bg-primary px-5 text-sm font-semibold text-white transition hover:brightness-110 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
+          className="inline-flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-md bg-primary px-5 text-sm font-semibold text-white transition hover:brightness-110 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
         >
           <span>{isSubmitting ? 'Entrando...' : 'Entrar'}</span>
         </button>

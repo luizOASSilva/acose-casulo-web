@@ -7,7 +7,9 @@ import { getPublicSettings } from '@/services/public-settings';
 const SECRET_TOKEN = process.env.PANEL_SLUG ?? '';
 
 interface Props {
-  params: Promise<{ token: string }>;
+  params: Promise<{
+    token: string;
+  }>;
 }
 
 function normalizeLogoUrl(url?: string | null): string {
@@ -59,6 +61,7 @@ export default async function Acesso({ params }: Props) {
           <svg
             className="absolute inset-0 h-full w-full opacity-[0.06]"
             xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
           >
             <defs>
               <pattern
@@ -107,7 +110,10 @@ export default async function Acesso({ params }: Props) {
         </aside>
 
         <div className="relative flex items-center justify-center overflow-hidden px-6 py-12">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,#d46c2b12,transparent_60%)]" />
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,#d46c2b12,transparent_60%)]"
+          />
 
           <div className="relative z-10 w-full max-w-sm">
             <header className="mb-8 space-y-2">
