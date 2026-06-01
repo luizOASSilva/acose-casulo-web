@@ -55,7 +55,7 @@ export default function AdminAuditDetailsPage() {
           </Link>
         </div>
 
-        <div className="flex min-h-[360px] items-center justify-center rounded-md border border-gray-200 bg-white">
+        <div className="flex min-h-90 items-center justify-center rounded-md">
           <div className="flex flex-col items-center gap-3 text-center">
             <Loader2 className="h-6 w-6 animate-spin text-primary" />
             <p className="text-sm font-medium text-zinc-600">

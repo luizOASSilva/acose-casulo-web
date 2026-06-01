@@ -581,7 +581,7 @@ export default function AdminDashboardPage() {
               icon={<Tag size={20} />}
               title="Nova palavra-chave"
               description="Criar nova palavra-chave para artigo"
-              href="/admin/artigos/pal  avras-chave"
+              href="/admin/artigos/palavras-chave"
             />
           </div>
         </section>

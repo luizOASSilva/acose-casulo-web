@@ -173,11 +173,13 @@ function AuditTimelineItem({
   item,
   currentAdminName,
   currentAdminRole,
+  canViewDetails,
   isLast,
 }: {
   item: AuditItem;
   currentAdminName?: string;
   currentAdminRole?: string;
+  canViewDetails: boolean;
   isLast?: boolean;
 }) {
   const action = item.action || item.type;
@@ -186,14 +188,14 @@ function AuditTimelineItem({
   const tone = getActionTone(action);
   const roleLabel = getAdminRoleLabel(item, currentAdminName, currentAdminRole);
 
-  const canViewDetails = currentAdminRole === 'master' && Boolean(item.id);
+  const showDetailsLink = canViewDetails && Boolean(item.id);
 
   return (
     <article className="group relative grid grid-cols-[46px_minmax(0,1fr)] gap-5 transition-all hover:bg-gray-50/70">
       {!isLast && (
         <span
           aria-hidden="true"
-          className="absolute left-[22px] top-[52px] bottom-0 z-0 w-px bg-zinc-200"
+          className="absolute bottom-0 left-[22px] top-[52px] z-0 w-px bg-zinc-200"
         />
       )}
 
@@ -267,7 +269,7 @@ function AuditTimelineItem({
                   )}
                 </div>
 
-                {canViewDetails && (
+                {showDetailsLink && (
                   <Link
                     href={`/admin/auditoria/${item.id}`}
                     className="
@@ -322,6 +324,7 @@ export default function AdminAuditoriaPage() {
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
   const adminRole = (admin as { role?: string } | null)?.role;
+  const isMaster = adminRole === 'master' || Boolean(admin?.is_master);
 
   const showDashboardBack = searchParams.get('from') === 'dashboard';
 
@@ -671,6 +674,7 @@ export default function AdminAuditoriaPage() {
                   item={item}
                   currentAdminName={admin?.name}
                   currentAdminRole={adminRole}
+                  canViewDetails={isMaster}
                   isLast={index === items.length - 1}
                 />
               ))}

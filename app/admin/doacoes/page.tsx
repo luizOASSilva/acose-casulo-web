@@ -130,7 +130,7 @@ export default async function AdminDoacoesPage({
                 icon={<Gift size={22} />}
                 title="Brindes"
                 value={String(stats.gifts_count)}
-                helper="Doações com brindes"
+                helper="Doações com brindes finalizadas"
                 iconWrapperClassName="bg-secondary/30"
               />
             </DonationCardFilter>

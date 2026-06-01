@@ -3,13 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-import {
-  FolderOpen,
-  FileText,
-  Plus,
-  Pencil,
-  Trash2,
-} from 'lucide-react';
+import { FolderOpen, FileText, Plus, Pencil, Trash2 } from 'lucide-react';
 
 import YearFilter from '@/components/ui/YearFilter';
 import { useConfirmDialog } from '@/context/ConfirmDialogContext';
@@ -60,10 +54,8 @@ function getCategoryTheme(index: number): CategoryTheme {
       emptyIcon: 'text-white/70',
       emptyTitle: 'text-white',
       emptyText: 'text-white/60',
-      actionEdit:
-        'text-white bg-white/10 hover:bg-white hover:text-secondary',
-      actionDelete:
-        'text-white bg-red-500/30 hover:bg-red-500 hover:text-white',
+      actionEdit: 'text-white bg-white/10 hover:bg-white hover:text-secondary',
+      actionDelete: 'text-white bg-red-500/30 hover:bg-red-500 hover:text-white',
     };
   }
 
@@ -84,10 +76,8 @@ function getCategoryTheme(index: number): CategoryTheme {
       emptyIcon: 'text-white/75',
       emptyTitle: 'text-white',
       emptyText: 'text-white/65',
-      actionEdit:
-        'text-white bg-white/10 hover:bg-white hover:text-primary',
-      actionDelete:
-        'text-white bg-red-500/30 hover:bg-red-500 hover:text-white',
+      actionEdit: 'text-white bg-white/10 hover:bg-white hover:text-primary',
+      actionDelete: 'text-white bg-red-500/30 hover:bg-red-500 hover:text-white',
     };
   }
 
@@ -109,8 +99,7 @@ function getCategoryTheme(index: number): CategoryTheme {
     emptyText: 'text-zinc-500',
     actionEdit:
       'text-gray-600 bg-gray-100 hover:bg-orange-500/20 hover:text-orange-600',
-    actionDelete:
-      'text-red-600 bg-red-500/10 hover:bg-red-500/20',
+    actionDelete: 'text-red-600 bg-red-500/10 hover:bg-red-500/20',
   };
 }
 
@@ -187,8 +176,8 @@ export default function TransparencyClient({
               </h1>
 
               <p className="mt-3 text-base leading-relaxed text-zinc-600">
-                Gerencie documentos institucionais, arquivos públicos e conteúdos
-                da área de transparência da plataforma.
+                Gerencie documentos institucionais, arquivos públicos e
+                conteúdos da área de transparência da plataforma.
               </p>
             </div>
 
@@ -204,9 +193,7 @@ export default function TransparencyClient({
 
         <section>
           <div className="mb-5">
-            <h2 className="text-2xl font-semibold text-zinc-900">
-              Métricas
-            </h2>
+            <h2 className="text-2xl font-semibold text-zinc-900">Métricas</h2>
 
             <p className="text-sm text-zinc-500">
               Dados gerais da transparência
@@ -240,9 +227,7 @@ export default function TransparencyClient({
 
             <div className="rounded-md border border-zinc-200 bg-white px-5 py-4 shadow-sm">
               <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-zinc-500">
-                  Ano atual
-                </p>
+                <p className="text-sm font-medium text-zinc-500">Ano atual</p>
 
                 <h3 className="text-2xl font-semibold tracking-tight text-zinc-900">
                   {data.year}
@@ -252,9 +237,11 @@ export default function TransparencyClient({
           </div>
         </section>
 
-        <section className="overflow-hidden rounded-md border border-zinc-200 bg-white shadow-sm">
-          <YearFilter years={data.years} activeYear={data.year} />
-        </section>
+        <YearFilter
+          years={data.years}
+          activeYear={data.year}
+          className="sticky top-4 z-30"
+        />
 
         <section className="grid gap-5 lg:grid-cols-2">
           {data.categories.map((category: any, categoryIndex: number) => {
@@ -319,7 +306,9 @@ export default function TransparencyClient({
                                   {doc.title}
                                 </p>
 
-                                <p className={`mt-1 text-xs ${theme.documentDate}`}>
+                                <p
+                                  className={`mt-1 text-xs ${theme.documentDate}`}
+                                >
                                   {formatDate(doc.created_at)}
                                 </p>
                               </div>
@@ -335,11 +324,15 @@ export default function TransparencyClient({
                               />
 
                               <div className="min-w-0">
-                                <p className={`truncate text-sm font-medium ${theme.documentTitle}`}>
+                                <p
+                                  className={`truncate text-sm font-medium ${theme.documentTitle}`}
+                                >
                                   {doc.title}
                                 </p>
 
-                                <p className={`mt-1 text-xs ${theme.documentDate}`}>
+                                <p
+                                  className={`mt-1 text-xs ${theme.documentDate}`}
+                                >
                                   {formatDate(doc.created_at)}
                                 </p>
                               </div>
@@ -360,7 +353,7 @@ export default function TransparencyClient({
                           <button
                             type="button"
                             onClick={() => handleDelete(doc.id, doc.title)}
-                            className={`rounded-xl p-2.5 cursor-pointer transition-all active:scale-95 ${theme.actionDelete}`}
+                            className={`cursor-pointer rounded-xl p-2.5 transition-all active:scale-95 ${theme.actionDelete}`}
                             title="Remover documento"
                             aria-label="Remover documento"
                           >
