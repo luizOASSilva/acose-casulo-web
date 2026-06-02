@@ -37,11 +37,31 @@ const ADMIN_ARTICLES_PATH = '/admin/artigos';
 const ADMIN_ARTICLES_RETURN_PATH_KEY = 'admin.articles.returnPath';
 const MAX_KEYWORD_SUGGESTIONS = 20;
 
+const ALLOWED_IMAGE_MIME_TYPES = [
+  'image/svg+xml',
+  'image/png',
+  'image/jpg',
+  'image/jpeg',
+  'image/webp',
+];
+
+const ALLOWED_IMAGE_EXTENSIONS = ['svg', 'png', 'jpg', 'jpeg', 'webp'];
+
 const API_URL = (
   process.env.NEXT_PUBLIC_API_URL ||
   process.env.NEXT_PUBLIC_BACKEND_URL ||
   'https://api.luizoassilva.xyz'
 ).replace(/\/$/, '');
+
+function isAllowedImageFile(file: File): boolean {
+  const mimeType = file.type.toLowerCase();
+  const extension = file.name.split('.').pop()?.toLowerCase() || '';
+
+  return (
+    ALLOWED_IMAGE_MIME_TYPES.includes(mimeType) ||
+    ALLOWED_IMAGE_EXTENSIONS.includes(extension)
+  );
+}
 
 function normalizeArticleImageUrl(url?: string | null): string {
   if (!url) return '';
@@ -447,6 +467,23 @@ export default function ArticleDetailsContainer({
   };
 
   const handleSave = async () => {
+    if (pendingImageFile && !isAllowedImageFile(pendingImageFile)) {
+      setErrors((current) => ({
+        ...current,
+        image_url: 'A imagem deve ser SVG, PNG, JPG, JPEG ou WEBP.',
+      }));
+
+      await confirm({
+        title: 'Erro ao salvar',
+        description: 'A imagem deve ser SVG, PNG, JPG, JPEG ou WEBP.',
+        confirmText: 'Entendi',
+        cancelText: 'Fechar',
+        variant: 'danger',
+      });
+
+      return;
+    }
+
     const validationImageUrl =
       pendingImageFile && !imageUrl ? '__pending_image__' : imageUrl;
 
@@ -647,6 +684,17 @@ export default function ArticleDetailsContainer({
               value={imageUrl}
               pendingFile={pendingImageFile}
               onPendingFileChange={(file) => {
+                if (file && !isAllowedImageFile(file)) {
+                  setPendingImageFile(null);
+
+                  setErrors((current) => ({
+                    ...current,
+                    image_url: 'A imagem deve ser SVG, PNG, JPG, JPEG ou WEBP.',
+                  }));
+
+                  return;
+                }
+
                 setPendingImageFile(file);
                 clearError('image_url');
               }}

@@ -40,6 +40,32 @@ function normalizePaginatedArticles(response: any): PaginatedArticlesResponse {
   };
 }
 
+function normalizeKeywords(response: any): string[] {
+  const list = Array.isArray(response)
+    ? response
+    : Array.isArray(response?.data)
+      ? response.data
+      : Array.isArray(response?.keywords)
+        ? response.keywords
+        : [];
+
+  return Array.from(
+    new Set(
+      list
+        .map((keyword: any) => {
+          if (typeof keyword === 'string') return keyword;
+          if (keyword?.word) return keyword.word;
+          if (keyword?.name) return keyword.name;
+
+          return '';
+        })
+        .filter(Boolean)
+        .map((keyword: string) => keyword.trim().toLowerCase())
+        .filter(Boolean)
+    )
+  );
+}
+
 function mapOrderToApi(ordem?: string): string {
   const map: Record<string, string> = {
     recentes: 'recent',
@@ -68,6 +94,17 @@ export async function getArticles(): Promise<Article[]> {
     return normalizeArticles(response);
   } catch (error) {
     console.error('Erro ao buscar listagem de artigos:', error);
+    return [];
+  }
+}
+
+export async function getArticleKeywords(): Promise<string[]> {
+  try {
+    const response = await api.get<any>('/keywords');
+
+    return normalizeKeywords(response);
+  } catch (error) {
+    console.error('Erro ao buscar palavras-chave:', error);
     return [];
   }
 }

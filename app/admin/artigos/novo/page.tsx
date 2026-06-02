@@ -1,18 +1,8 @@
 import ArticleDetailsContainer from '@/components/containers/ArticleDetailsContainer';
-import { getArticles } from '@/services/articles';
+import { getArticleKeywords } from '@/services/articles';
 
 export default async function AdminNovoArtigoPage() {
-  const articles = await getArticles();
-
-  const allKeywords = Array.from(
-    new Set(
-      articles.flatMap((article) =>
-        article.keywords?.map((keyword: any) =>
-          typeof keyword === 'object' ? keyword.word : keyword
-        ) ?? []
-      )
-    )
-  ).filter(Boolean);
+  const allKeywords = await getArticleKeywords();
 
   const blankDraftSkeleton = {
     id: 0,
