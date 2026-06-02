@@ -48,7 +48,7 @@ export default function AdminAuditDetailsPage() {
         <div className="mb-10 flex items-center justify-between border-b border-gray-100 pb-4">
           <Link
             href="/admin/auditoria"
-            className="inline-flex items-center gap-2 text-sm font-medium text-zinc-600 transition hover:text-zinc-950"
+            className="inline-flex items-center gap-2 text-sm font-medium text-zinc-600 transition hover:text-zinc-950 cursor-default"
           >
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             Voltar para auditoria
