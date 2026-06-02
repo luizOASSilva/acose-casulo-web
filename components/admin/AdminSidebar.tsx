@@ -9,6 +9,7 @@ import UserBadge from '@/components/ui/UserBadge';
 
 import {
   Activity,
+  BarChart3,
   ChevronLeft,
   ChevronRight,
   ExternalLink,
@@ -30,7 +31,7 @@ import { useAuth } from '@/context/AuthContext';
 import type { AdminUser } from '@/types/admin/settings';
 
 const mainNav = [
-  { label: 'Dashboard', href: 'dashboard', icon: LayoutDashboard },
+  { label: 'Geral', href: 'geral', icon: LayoutDashboard },
   { label: 'Doações', href: 'doacoes', icon: HandHeart },
   { label: 'Parceiros', href: 'parceiros', icon: HeartHandshake },
   { label: 'Transparência', href: 'transparencia', icon: ShieldCheck },
@@ -40,6 +41,12 @@ const mainNav = [
 ];
 
 const systemNav = [
+  {
+    label: 'Dashboard',
+    href: 'dashboard',
+    icon: BarChart3,
+    roles: ['admin', 'master'],
+  },
   {
     label: 'Auditoria',
     href: 'auditoria',
@@ -180,8 +187,8 @@ export function AdminSidebar({
           }`}
         >
           <Link
-            href="/admin/dashboard"
-            aria-label="Ir para o dashboard administrativo"
+            href="/admin/geral"
+            aria-label="Ir para a visão geral administrativa"
             className="inline-flex items-center justify-center rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
             <Image

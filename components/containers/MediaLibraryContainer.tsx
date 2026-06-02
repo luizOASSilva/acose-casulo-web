@@ -649,7 +649,7 @@ export default function MediaLibraryContainer({
         </section>
 
         {isLoading ? (
-          <section className="flex min-h-[360px] items-center justify-center rounded-md border border-dashed border-zinc-300 bg-white">
+          <section className="flex min-h-[360px] items-center justify-center rounded-md">
             <div className="flex flex-col items-center gap-3 text-center">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
 

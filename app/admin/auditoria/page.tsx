@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 
 import {
@@ -468,11 +468,11 @@ export default function AdminAuditoriaPage() {
         <section className="flex flex-col gap-5">
           {showDashboardBack && (
             <Link
-              href="/admin/dashboard"
+              href="/admin/geral"
               className="inline-flex w-fit items-center gap-2 text-sm font-medium text-zinc-600 transition hover:text-zinc-950"
             >
               <ArrowLeft size={16} />
-              Voltar para o dashboard
+              Voltar para a visão geral
             </Link>
           )}
 

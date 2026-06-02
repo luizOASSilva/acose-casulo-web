@@ -40,6 +40,8 @@ interface AuthProviderProps {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+const ADMIN_HOME_PATH = '/admin/geral';
+
 const ADMIN_PREVIEW_ACTIVE_KEY = 'admin.preview.active';
 const ADMIN_PREVIEW_RETURN_TO_KEY = 'admin.preview.returnTo';
 const ADMIN_PREVIEW_DISMISSED_KEY = 'admin.preview.dismissed';
@@ -52,34 +54,8 @@ function clearAdminPreviewSession() {
   sessionStorage.removeItem(ADMIN_PREVIEW_DISMISSED_KEY);
 }
 
-function getSafeAdminRedirect(redirectTo?: string | null): string {
-  if (!redirectTo) {
-    return '/admin/dashboard';
-  }
-
-  try {
-    const decodedRedirect = decodeURIComponent(redirectTo);
-
-    /**
-     * Segurança:
-     * - só permite rotas internas do painel;
-     * - impede voltar para /acesso;
-     * - impede URL externa;
-     * - impede redirecionar para login/acesso novamente.
-     */
-    if (
-      decodedRedirect.startsWith('/admin/') &&
-      !decodedRedirect.startsWith('/admin/login') &&
-      !decodedRedirect.startsWith('/acesso') &&
-      !decodedRedirect.startsWith('//')
-    ) {
-      return decodedRedirect;
-    }
-
-    return '/admin/dashboard';
-  } catch {
-    return '/admin/dashboard';
-  }
+function getSafeAdminRedirect(): string {
+  return ADMIN_HOME_PATH;
 }
 
 export function AuthProvider({
@@ -118,7 +94,7 @@ export function AuthProvider({
   }, [initialAdmin, skipInitialFetch]);
 
   const login = useCallback(
-    async (email: string, password: string, redirectTo?: string | null) => {
+    async (email: string, password: string, _redirectTo?: string | null) => {
       await api.post('/auth/login', {
         email,
         password,
@@ -128,9 +104,7 @@ export function AuthProvider({
 
       setAdmin(me);
 
-      const safeRedirect = getSafeAdminRedirect(redirectTo);
-
-      router.push(safeRedirect);
+      router.push(getSafeAdminRedirect());
       router.refresh();
     },
     [router]

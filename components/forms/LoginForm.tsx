@@ -11,6 +11,8 @@ import { z } from 'zod';
 import { motion, AnimatePresence } from 'framer-motion';
 import LogoLoader from '@/components/ui/LogoLoader';
 
+const ADMIN_HOME_PATH = '/admin/geral';
+
 const loginSchema = z.object({
   email: z.email('E-mail inválido'),
   password: z.string().min(1, 'Senha obrigatória'),
@@ -20,7 +22,7 @@ type LoginSchema = z.infer<typeof loginSchema>;
 
 function getSafeRedirect(redirect: string | null): string {
   if (!redirect) {
-    return '/admin/dashboard';
+    return ADMIN_HOME_PATH;
   }
 
   try {
@@ -29,14 +31,15 @@ function getSafeRedirect(redirect: string | null): string {
     if (
       decodedRedirect.startsWith('/admin/') &&
       !decodedRedirect.startsWith('/admin/login') &&
-      !decodedRedirect.startsWith('/acesso')
+      !decodedRedirect.startsWith('/acesso') &&
+      !decodedRedirect.startsWith('//')
     ) {
       return decodedRedirect;
     }
 
-    return '/admin/dashboard';
+    return ADMIN_HOME_PATH;
   } catch {
-    return '/admin/dashboard';
+    return ADMIN_HOME_PATH;
   }
 }
 

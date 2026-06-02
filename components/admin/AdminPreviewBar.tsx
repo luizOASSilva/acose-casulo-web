@@ -11,11 +11,17 @@ import { api } from '@/lib/api';
 const PREVIEW_ACTIVE_KEY = 'admin.preview.active';
 const PREVIEW_RETURN_TO_KEY = 'admin.preview.returnTo';
 
+const ADMIN_HOME_PATH = '/admin/geral';
+
 function normalizeReturnTo(value?: string | null) {
-  if (!value) return '/admin/dashboard';
+  if (!value) return ADMIN_HOME_PATH;
 
   if (!value.startsWith('/admin')) {
-    return '/admin/dashboard';
+    return ADMIN_HOME_PATH;
+  }
+
+  if (value.startsWith('/admin/login') || value.startsWith('/acesso')) {
+    return ADMIN_HOME_PATH;
   }
 
   return value;
@@ -32,7 +38,7 @@ export default function AdminPreviewBar() {
   );
 
   const [isVisible, setIsVisible] = useState(false);
-  const [returnTo, setReturnTo] = useState('/admin/dashboard');
+  const [returnTo, setReturnTo] = useState(ADMIN_HOME_PATH);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
@@ -98,7 +104,7 @@ export default function AdminPreviewBar() {
       try {
         await api.get('/auth/me');
 
-        const fallbackReturnTo = '/admin/dashboard';
+        const fallbackReturnTo = ADMIN_HOME_PATH;
 
         sessionStorage.setItem(PREVIEW_ACTIVE_KEY, '1');
         sessionStorage.setItem(PREVIEW_RETURN_TO_KEY, fallbackReturnTo);
