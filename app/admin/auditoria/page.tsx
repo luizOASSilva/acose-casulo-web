@@ -471,7 +471,7 @@ export default function AdminAuditoriaPage() {
           {showGeralBack && (
             <Link
               href="/admin/geral"
-              className="inline-flex w-fit items-center gap-2 text-sm font-medium text-zinc-600 transition hover:text-zinc-950"
+              className="inline-flex w-fit items-center gap-2 text-sm font-medium text-zinc-600 transition hover:text-zinc-950 cursor-default"
             >
               <ArrowLeft size={16} />
               Voltar para a visão geral
