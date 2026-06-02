@@ -7,6 +7,7 @@ import {
   AlertTriangle,
   ArrowLeft,
   Database,
+  ExternalLink,
   FileText,
   Fingerprint,
   Globe,
@@ -354,6 +355,51 @@ function isLongValue(value: unknown) {
   return text.length > 140 || text.includes('\n');
 }
 
+function isLikelyUrl(value: unknown): boolean {
+  if (typeof value !== 'string') return false;
+
+  return value.startsWith('http://') || value.startsWith('https://');
+}
+
+function ValueContent({ value }: { value: unknown }) {
+  const formatted = formatValue(value);
+
+  if (isLikelyUrl(value)) {
+    return (
+      <a
+        href={formatted}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="
+          group/link inline-flex max-w-full items-start gap-2 break-words
+          font-sans font-semibold text-primary underline decoration-primary/30
+          underline-offset-4 transition hover:text-primary/80
+          hover:decoration-primary [overflow-wrap:anywhere]
+        "
+      >
+        <span className="min-w-0 break-words [overflow-wrap:anywhere]">
+          {formatted}
+        </span>
+
+        <ExternalLink
+          className="
+            mt-0.5 h-4 w-4 shrink-0 opacity-70 transition
+            group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5
+            group-hover/link:opacity-100
+          "
+          aria-hidden="true"
+        />
+      </a>
+    );
+  }
+
+  return (
+    <pre className="max-w-full whitespace-pre-wrap break-words font-sans [overflow-wrap:anywhere]">
+      {formatted}
+    </pre>
+  );
+}
+
 function IconBox({ icon: Icon }: { icon: ElementType }) {
   return (
     <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -409,7 +455,6 @@ function ValuePanel({
   value: unknown;
   tone: 'red' | 'green' | 'neutral';
 }) {
-  const formatted = formatValue(value);
   const long = isLongValue(value);
 
   const toneClasses = {
@@ -445,9 +490,7 @@ function ValuePanel({
           ${long ? 'max-h-72 overflow-y-auto' : ''}
         `}
       >
-        <pre className="max-w-full whitespace-pre-wrap break-words font-sans [overflow-wrap:anywhere]">
-          {formatted}
-        </pre>
+        <ValueContent value={value} />
       </div>
     </div>
   );
@@ -540,9 +583,9 @@ function SimpleDataGrid({
               {getFieldLabel(key)}
             </p>
 
-            <p className="mt-2 max-w-full whitespace-pre-wrap break-words text-sm font-medium leading-relaxed text-zinc-700 [overflow-wrap:anywhere]">
-              {key === 'size' ? formatBytes(value) : formatValue(value)}
-            </p>
+            <div className="mt-2 max-w-full whitespace-pre-wrap break-words text-sm font-medium leading-relaxed text-zinc-700 [overflow-wrap:anywhere]">
+              <ValueContent value={key === 'size' ? formatBytes(value) : value} />
+            </div>
           </div>
         ))}
       </div>

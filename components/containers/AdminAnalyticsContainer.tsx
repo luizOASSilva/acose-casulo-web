@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 
@@ -8,6 +8,8 @@ import {
   Activity,
   ArrowLeft,
   BarChart3,
+  ChevronDown,
+  ChevronUp,
   Clock,
   ExternalLink,
   Eye,
@@ -21,6 +23,7 @@ import {
   TrendingDown,
   TrendingUp,
   Users,
+  X,
 } from 'lucide-react';
 
 import { getAdminAnalyticsSummary } from '@/services/analytics';
@@ -602,15 +605,25 @@ function DevicesGrid({ data }: { data: AdminAnalyticsSummary }) {
 export default function AdminAnalyticsContainer() {
   const searchParams = useSearchParams();
 
+  const filterRef = useRef<HTMLElement | null>(null);
+  const rafRef = useRef<number | null>(null);
+
   const [days, setDays] = useState(30);
+  const [pendingDays, setPendingDays] = useState(30);
   const [data, setData] = useState<AdminAnalyticsSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [isMobileSticky, setIsMobileSticky] = useState(false);
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+
   const showDashboardBack =
     searchParams.get('from') === 'geral' ||
     searchParams.get('from') === 'dashboard';
+
+  const shouldHideExtraMobileFilters = isMobileSticky && !isMobileFilterOpen;
+  const hasActiveFilters = days !== 30 || pendingDays !== 30;
 
   const dateRangeLabel = useMemo(() => {
     if (!data?.period) return 'Carregando período...';
@@ -656,10 +669,64 @@ export default function AdminAnalyticsContainer() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [days]);
 
-  function handlePeriodChange(value: number) {
-    if (value === days) return;
+  useEffect(() => {
+    function updateStickyState() {
+      const element = filterRef.current;
+      if (!element) return;
 
-    setDays(value);
+      const isMobile = window.matchMedia('(max-width: 767px)').matches;
+      const nextSticky = isMobile && element.getBoundingClientRect().top <= 16;
+
+      setIsMobileSticky((current) => {
+        if (current === nextSticky) return current;
+        return nextSticky;
+      });
+
+      if (!nextSticky) {
+        setIsMobileFilterOpen(false);
+      }
+    }
+
+    function handleScrollOrResize() {
+      if (rafRef.current) return;
+
+      rafRef.current = window.requestAnimationFrame(() => {
+        rafRef.current = null;
+        updateStickyState();
+      });
+    }
+
+    updateStickyState();
+
+    window.addEventListener('scroll', handleScrollOrResize, { passive: true });
+    window.addEventListener('resize', handleScrollOrResize);
+
+    return () => {
+      window.removeEventListener('scroll', handleScrollOrResize);
+      window.removeEventListener('resize', handleScrollOrResize);
+
+      if (rafRef.current) {
+        window.cancelAnimationFrame(rafRef.current);
+      }
+    };
+  }, []);
+
+  function handleFilterSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (pendingDays === days) {
+      loadAnalytics(days, true);
+      return;
+    }
+
+    setDays(pendingDays);
+    setIsMobileFilterOpen(false);
+  }
+
+  function handleClearFilters() {
+    setPendingDays(30);
+    setDays(30);
+    setIsMobileFilterOpen(false);
   }
 
   return (
@@ -717,40 +784,115 @@ export default function AdminAnalyticsContainer() {
           </div>
         </section>
 
-        <section className="sticky top-4 z-30 rounded-md border border-gray-200 bg-white p-4 shadow-sm">
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div>
-              <p className="text-sm font-semibold text-zinc-900">
-                Período analisado
-              </p>
+        <section
+          ref={filterRef}
+          className={`
+            sticky top-4 z-30 rounded-md border border-gray-200 bg-zinc-50 p-4
+            transition-shadow duration-200
+            ${
+              isMobileSticky
+                ? 'shadow-[0_12px_18px_-18px_rgba(0,0,0,0.65)]'
+                : ''
+            }
+          `}
+        >
+          <form onSubmit={handleFilterSubmit} className="space-y-3">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_260px_auto] md:items-start">
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-zinc-900">
+                  Período analisado
+                </p>
 
-              <p className="text-xs text-zinc-500">{dateRangeLabel}</p>
-            </div>
+                <p className="text-xs text-zinc-500">{dateRangeLabel}</p>
+              </div>
 
-            <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-              {PERIOD_OPTIONS.map((option) => {
-                const active = days === option.value;
-
-                return (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() => handlePeriodChange(option.value)}
-                    className={`
-                      h-10 rounded-md border px-4 text-sm font-semibold transition
-                      ${
-                        active
-                          ? 'border-primary bg-primary text-white'
-                          : 'border-zinc-200 bg-white text-zinc-600 hover:border-primary/30 hover:bg-primary/10 hover:text-primary'
-                      }
-                    `}
-                  >
+              <select
+                value={pendingDays}
+                onChange={(event) => setPendingDays(Number(event.target.value))}
+                className={`
+                  h-12 w-full min-w-0 cursor-pointer rounded-md border border-gray-200 bg-white px-4 text-sm outline-none transition
+                  focus:border-primary focus:ring-2 focus:ring-primary/10
+                  ${shouldHideExtraMobileFilters ? 'hidden md:block' : ''}
+                `}
+                aria-label="Selecionar período do analytics"
+              >
+                {PERIOD_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
                     {option.label}
+                  </option>
+                ))}
+              </select>
+
+              <div
+                className={`
+                  flex h-12 min-w-0 gap-2
+                  ${shouldHideExtraMobileFilters ? 'hidden md:flex' : ''}
+                `}
+              >
+                <button
+                  type="submit"
+                  disabled={loading || refreshing}
+                  className="
+                    inline-flex h-12 flex-1 cursor-pointer items-center justify-center
+                    rounded-md bg-primary px-4 text-sm font-semibold
+                    text-white transition hover:brightness-110 active:scale-95
+                    disabled:cursor-not-allowed disabled:opacity-60 md:flex-none
+                  "
+                >
+                  Filtrar
+                </button>
+
+                {hasActiveFilters && (
+                  <button
+                    type="button"
+                    onClick={handleClearFilters}
+                    disabled={loading || refreshing}
+                    className="
+                      inline-flex h-12 w-12 shrink-0 cursor-pointer items-center justify-center
+                      rounded-md bg-red-200 text-gray-600
+                      transition hover:bg-red-300 active:scale-95
+                      disabled:cursor-not-allowed disabled:opacity-60
+                    "
+                    aria-label="Limpar filtros"
+                    title="Limpar filtros"
+                  >
+                    <X className="h-4 w-4 text-red-600" aria-hidden="true" />
                   </button>
-                );
-              })}
+                )}
+              </div>
             </div>
-          </div>
+
+            {isMobileSticky && (
+              <button
+                type="button"
+                onClick={() => setIsMobileFilterOpen((current) => !current)}
+                className="
+                  flex w-full items-center justify-center gap-2 rounded-md
+                  border border-gray-200 bg-white px-3 py-2.5 text-xs
+                  font-semibold text-gray-700 transition active:scale-[0.99] md:hidden
+                "
+                aria-expanded={isMobileFilterOpen}
+              >
+                {isMobileFilterOpen ? (
+                  <>
+                    Recolher filtros
+                    <ChevronUp className="h-4 w-4" aria-hidden="true" />
+                  </>
+                ) : (
+                  <>
+                    Mostrar filtros
+                    <ChevronDown className="h-4 w-4" aria-hidden="true" />
+                  </>
+                )}
+              </button>
+            )}
+          </form>
+
+          <p className="mt-3 text-xs text-gray-500">
+            {data?.available
+              ? 'Dados carregados diretamente do Google Analytics.'
+              : 'Use o filtro para consultar outro intervalo de análise.'}
+          </p>
         </section>
 
         {error ? (

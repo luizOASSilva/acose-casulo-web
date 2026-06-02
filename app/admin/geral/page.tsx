@@ -476,11 +476,11 @@ export default function AdminDashboardPage() {
           <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-2xl font-semibold text-zinc-900">
-                Analytics
+                Dados gerais do projeto
               </h2>
 
               <p className="text-sm text-zinc-500">
-                Dados gerais do projeto
+                Resumo rápido de acessos, doações, conteúdos e desempenho do site.
               </p>
             </div>
 
