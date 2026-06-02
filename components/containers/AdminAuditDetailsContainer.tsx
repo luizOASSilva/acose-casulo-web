@@ -664,11 +664,11 @@ export default function AdminAuditDetailsContainer({
       <div className="mb-8 flex min-w-0 items-center justify-between border-b border-gray-100 pb-4 md:mb-10">
         <Link
           href="/admin/auditoria"
-          className="inline-flex min-w-0 items-center gap-2 text-sm font-medium text-zinc-600 transition hover:text-zinc-950"
+          className="inline-flex min-w-0 items-center gap-2 text-sm font-medium text-zinc-600 transition hover:text-zinc-950 cursor-default"
         >
           <ArrowLeft className="h-4 w-4 shrink-0" aria-hidden="true" />
 
-          <span className="min-w-0 break-words [overflow-wrap:anywhere]">
+          <span className="min-w-0 break-words [overflow-wrap:anywhere] cursor-default">
             Voltar para auditoria
           </span>
         </Link>
