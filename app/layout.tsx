@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 
 import '@fontsource-variable/open-sans';
 import '@fontsource-variable/montserrat';
@@ -244,7 +245,9 @@ export default async function RootLayout({
       </head>
 
       <body className="flex min-h-screen flex-col font-sans">
-        <RouteLoadingBar />
+        <Suspense fallback={null}>
+          <RouteLoadingBar />
+        </Suspense>
 
         <AuthProvider>
           <MotionProvider>{children}</MotionProvider>
