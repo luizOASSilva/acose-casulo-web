@@ -326,7 +326,9 @@ export default function AdminAuditoriaPage() {
   const adminRole = (admin as { role?: string } | null)?.role;
   const isMaster = adminRole === 'master' || Boolean(admin?.is_master);
 
-  const showDashboardBack = searchParams.get('from') === 'dashboard';
+  const showGeralBack =
+    searchParams.get('from') === 'geral' ||
+    searchParams.get('from') === 'dashboard';
 
   const filters = useMemo(
     () => ({
@@ -466,7 +468,7 @@ export default function AdminAuditoriaPage() {
     <div className="p-6 md:p-8">
       <div className="mx-auto flex max-w-6xl flex-col gap-8">
         <section className="flex flex-col gap-5">
-          {showDashboardBack && (
+          {showGeralBack && (
             <Link
               href="/admin/geral"
               className="inline-flex w-fit items-center gap-2 text-sm font-medium text-zinc-600 transition hover:text-zinc-950"
