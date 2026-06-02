@@ -17,6 +17,7 @@ import { getPublicSettings } from '@/services/public-settings';
 import { MotionProvider } from '@/components/providers/MotionProvider';
 import { AuthProvider } from '@/context/AuthContext';
 import GoogleAnalytics from '@/components/providers/GoogleAnalytics';
+import RouteLoadingBar from '@/components/ui/RouteLoadingBar';
 
 type PublicSettings = {
   site_logo_url?: string | null;
@@ -243,6 +244,8 @@ export default async function RootLayout({
       </head>
 
       <body className="flex min-h-screen flex-col font-sans">
+        <RouteLoadingBar />
+
         <AuthProvider>
           <MotionProvider>{children}</MotionProvider>
         </AuthProvider>
