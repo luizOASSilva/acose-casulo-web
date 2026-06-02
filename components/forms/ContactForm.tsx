@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import FormWrapper from '@/components/ui/FormWrapper';
@@ -10,6 +11,8 @@ import {
   type ContactSchemaData,
 } from '@/schemas/contact.schema';
 import { sendContactMessage } from '@/services/contact';
+
+type ContactSchemaInput = z.input<typeof contactSchema>;
 
 const fieldClass = `
   bg-white/10 border border-white/20 text-white placeholder:text-white/40
@@ -37,7 +40,7 @@ export default function ContactForm() {
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<ContactSchemaData>({
+  } = useForm<ContactSchemaInput, unknown, ContactSchemaData>({
     resolver: zodResolver(contactSchema),
     mode: 'onBlur',
     defaultValues: {

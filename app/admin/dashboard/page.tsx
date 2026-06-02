@@ -2,6 +2,6 @@ import AdminAnalyticsContainer from "@/components/containers/AdminAnalyticsConta
 
 export const dynamic = 'force-dynamic';
 
-export default function AdminAnalyticsPage() {
+export default function AdminDashboardPage() {
   return <AdminAnalyticsContainer />;
 }

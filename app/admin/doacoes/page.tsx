@@ -93,51 +93,59 @@ export default async function AdminDoacoesPage({
             </p>
           </div>
 
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
-            <DonationCard
-              icon={<BadgeDollarSign size={22} className="text-primary" />}
-              title="Arrecadado"
-              value={Number(stats.total_raised).toLocaleString('pt-BR', {
-                style: 'currency',
-                currency: 'BRL',
-              })}
-              helper="Valor total arrecadado"
-              iconWrapperClassName="bg-primary/20"
-            />
-
-            <DonationCardFilter filterKey="approved">
+          <div className="grid auto-rows-fr grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="h-full min-w-0">
               <DonationCard
-                icon={<CheckCircle2 size={22} className="text-green-900" />}
-                title="Aprovadas"
-                value={String(stats.approved_count)}
-                helper="Pagamentos confirmados"
-                iconWrapperClassName="bg-green-500/30"
+                icon={<BadgeDollarSign size={22} className="text-primary" />}
+                title="Arrecadado"
+                value={Number(stats.total_raised).toLocaleString('pt-BR', {
+                  style: 'currency',
+                  currency: 'BRL',
+                })}
+                helper="Valor total arrecadado"
+                iconWrapperClassName="rounded-xl bg-primary/20"
               />
-            </DonationCardFilter>
+            </div>
 
-            <DonationCardFilter filterKey="pending">
-              <DonationCard
-                icon={<Clock3 size={22} className="text-yellow-900" />}
-                title="Pendentes"
-                value={String(stats.pending_count)}
-                helper="Aguardando pagamento"
-                iconWrapperClassName="bg-yellow-500/30"
-              />
-            </DonationCardFilter>
+            <div className="h-full min-w-0">
+              <DonationCardFilter filterKey="approved">
+                <DonationCard
+                  icon={<CheckCircle2 size={22} className="text-green-900" />}
+                  title="Aprovadas"
+                  value={String(stats.approved_count)}
+                  helper="Pagamentos confirmados"
+                  iconWrapperClassName="rounded-xl bg-green-500/30"
+                />
+              </DonationCardFilter>
+            </div>
 
-            <DonationCardFilter filterKey="has_gift">
-              <DonationCard
-                icon={<Gift size={22} />}
-                title="Brindes"
-                value={String(stats.gifts_count)}
-                helper="Doações com brindes finalizadas"
-                iconWrapperClassName="bg-secondary/30"
-              />
-            </DonationCardFilter>
+            <div className="h-full min-w-0">
+              <DonationCardFilter filterKey="pending">
+                <DonationCard
+                  icon={<Clock3 size={22} className="text-yellow-900" />}
+                  title="Pendentes"
+                  value={String(stats.pending_count)}
+                  helper="Aguardando pagamento"
+                  iconWrapperClassName="rounded-xl bg-yellow-500/30"
+                />
+              </DonationCardFilter>
+            </div>
+
+            <div className="h-full min-w-0">
+              <DonationCardFilter filterKey="has_gift">
+                <DonationCard
+                  icon={<Gift size={22} />}
+                  title="Brindes"
+                  value={String(stats.gifts_count)}
+                  helper="Doações com brindes"
+                  iconWrapperClassName="rounded-xl bg-secondary/30"
+                />
+              </DonationCardFilter>
+            </div>
           </div>
         </section>
 
-        <section className="rounded-md border border-zinc-200 bg-white shadow-sm overflow-hidden">
+        <section className="overflow-hidden rounded-md border border-zinc-200 bg-white shadow-sm">
           <div className="flex items-center justify-between border-b border-zinc-200 px-6 py-5">
             <div>
               <h2 className="text-2xl font-semibold text-zinc-900">
@@ -180,16 +188,16 @@ export default async function AdminDoacoesPage({
                   >
                     <td className="px-6 py-5">
                       <div className="flex items-center gap-4">
-                        <div className="flex size-11 items-center justify-center rounded-full bg-primary/10 text-primary">
+                        <div className="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
                           <HeartHandshake size={18} />
                         </div>
 
-                        <div className="flex flex-col">
-                          <span className="font-medium text-zinc-900">
+                        <div className="flex min-w-0 flex-col">
+                          <span className="truncate font-medium text-zinc-900">
                             {donation.name}
                           </span>
 
-                          <span className="text-sm text-zinc-500">
+                          <span className="truncate text-sm text-zinc-500">
                             {donation.email}
                           </span>
                         </div>
@@ -247,7 +255,7 @@ export default async function AdminDoacoesPage({
 
             {donations.length === 0 && (
               <div className="flex flex-col items-center justify-center gap-4 py-20">
-                <div className="flex size-16 items-center justify-center rounded-full bg-zinc-100 text-zinc-400">
+                <div className="flex size-16 items-center justify-center rounded-xl bg-zinc-100 text-zinc-400">
                   <HeartHandshake size={28} />
                 </div>
 

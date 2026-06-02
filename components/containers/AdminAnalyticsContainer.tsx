@@ -167,7 +167,7 @@ function MetricCard({
           </strong>
         </div>
 
-        <div className="rounded-md bg-primary/10 p-2.5 text-primary">
+        <div className="rounded-xl bg-primary/10 p-2.5 text-primary">
           <Icon size={20} aria-hidden="true" />
         </div>
       </div>
@@ -190,7 +190,7 @@ function MetricCard({
 function EmptyBox({ message = 'Nenhum dado disponível ainda.' }) {
   return (
     <div className="rounded-md border border-dashed border-zinc-200 bg-zinc-50/70 p-8 text-center">
-      <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-md bg-primary/10 text-primary">
+      <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
         <BarChart3 size={20} aria-hidden="true" />
       </div>
 
@@ -399,7 +399,7 @@ function BarList({
     <div className="overflow-hidden rounded-md border border-zinc-200 bg-white shadow-sm">
       <div className="border-b border-zinc-100 px-5 py-4">
         <div className="flex items-start gap-3">
-          <div className="rounded-md bg-primary/10 p-2 text-primary">
+          <div className="rounded-xl bg-primary/10 p-2 text-primary">
             <Icon size={18} aria-hidden="true" />
           </div>
 
@@ -457,7 +457,7 @@ function TopPagesTable({ data }: { data: AdminAnalyticsSummary }) {
     <div className="overflow-hidden rounded-md border border-zinc-200 bg-white shadow-sm">
       <div className="border-b border-zinc-100 px-5 py-4">
         <div className="flex items-start gap-3">
-          <div className="rounded-md bg-primary/10 p-2 text-primary">
+          <div className="rounded-xl bg-primary/10 p-2 text-primary">
             <Eye size={18} aria-hidden="true" />
           </div>
 
@@ -608,7 +608,9 @@ export default function AdminAnalyticsContainer() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const showDashboardBack = searchParams.get('from') === 'dashboard';
+  const showDashboardBack =
+    searchParams.get('from') === 'geral' ||
+    searchParams.get('from') === 'dashboard';
 
   const dateRangeLabel = useMemo(() => {
     if (!data?.period) return 'Carregando período...';
@@ -663,7 +665,7 @@ export default function AdminAnalyticsContainer() {
   return (
     <div className="p-6 md:p-8">
       <div className="mx-auto flex max-w-7xl flex-col gap-8">
-        <section className="flex flex-col gap-5">
+        <section className="flex flex-col gap-5 py-4">
           {showDashboardBack && (
             <Link
               href="/admin/geral"

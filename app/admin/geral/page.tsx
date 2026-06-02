@@ -267,7 +267,7 @@ function AuditListItem({
       <div className="flex items-start gap-3">
         <div
           className={`
-            relative z-10 mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-md
+            relative z-10 mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl
             ${tone.icon}
           `}
         >
@@ -403,7 +403,7 @@ function RecentAuditList({
           </div>
         ) : (
           <div className="rounded-md border border-dashed border-zinc-200 bg-white p-8 text-center">
-            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-md bg-primary/10 text-primary">
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
               <Clock size={20} aria-hidden="true" />
             </div>
 
