@@ -19,7 +19,6 @@ import {
 } from 'lucide-react';
 
 import MediaPicker from '@/components/admin/MediaPicker';
-import UserBadge from '@/components/ui/UserBadge';
 
 import type {
   AdminCreationRequestDTO,
@@ -198,6 +197,42 @@ function getAdminIsActive(admin: AdminUser): boolean {
   return (admin as any).is_active === undefined
     ? true
     : Boolean((admin as any).is_active);
+}
+
+function getAdminInitial(name?: string | null): string {
+  const initial = String(name || 'A').trim().charAt(0);
+
+  return initial ? initial.toUpperCase() : 'A';
+}
+
+function AdminIdentity({
+  admin,
+  isActive,
+}: {
+  admin: AdminUser;
+  isActive: boolean;
+}) {
+  return (
+    <div className="flex min-w-0 items-center gap-3">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
+        {getAdminInitial(admin.name)}
+      </div>
+
+      <div className="min-w-0">
+        <p
+          className={`truncate text-sm font-semibold leading-tight ${adminTextClass(
+            isActive
+          )}`}
+        >
+          {admin.name}
+        </p>
+
+        <p className="mt-0.5 max-w-full truncate text-[11px] leading-tight text-zinc-500">
+          {admin.email}
+        </p>
+      </div>
+    </div>
+  );
 }
 
 export default function ClientSettings({
@@ -877,7 +912,7 @@ export default function ClientSettings({
   const renderSettingsRows = (items: SettingItem[]) => {
     if (items.length === 0) {
       return (
-        <div className="px-5 py-8">
+        <div className="px-4 py-8 sm:px-5">
           <div className="rounded-md border border-dashed border-zinc-300 bg-zinc-50 p-5 text-center">
             <p className="text-sm font-medium text-zinc-800">
               Nenhuma configuração encontrada.
@@ -898,7 +933,7 @@ export default function ClientSettings({
 
           if (isImage) {
             return (
-              <div key={setting.key} className="px-5 py-5">
+              <div key={setting.key} className="px-4 py-5 sm:px-5">
                 <div className="mb-4">
                   <label className="text-[13px] font-semibold text-zinc-900">
                     {setting.label}
@@ -927,7 +962,7 @@ export default function ClientSettings({
           return (
             <div
               key={setting.key}
-              className="grid min-w-0 grid-cols-1 gap-4 px-5 py-4 lg:grid-cols-[220px_minmax(0,1fr)]"
+              className="grid min-w-0 grid-cols-1 gap-4 px-4 py-4 sm:px-5 lg:grid-cols-[220px_minmax(0,1fr)]"
             >
               <div className="min-w-0">
                 <label className="text-[13px] font-semibold text-zinc-900">
@@ -970,7 +1005,7 @@ export default function ClientSettings({
         id={sectionId}
         className="min-w-0 scroll-mt-8 overflow-hidden rounded-md border border-zinc-200 bg-white shadow-sm"
       >
-        <header className="border-b border-zinc-100 px-5 py-4">
+        <header className="border-b border-zinc-100 px-4 py-4 sm:px-5">
           <div className="flex min-w-0 items-start gap-4">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
               <Icon className="h-5 w-5" />
@@ -995,7 +1030,7 @@ export default function ClientSettings({
             {entries.map(([group, items]) => (
               <div key={group} className="min-w-0">
                 {entries.length > 1 && (
-                  <div className="bg-zinc-50 px-5 py-3">
+                  <div className="bg-zinc-50 px-4 py-3 sm:px-5">
                     <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
                       {getGroupTitle(group)}
                     </h3>
@@ -1017,10 +1052,10 @@ export default function ClientSettings({
     if (!isUserFormOpen) return null;
 
     return (
-      <div className="border-t border-red-100 bg-red-500/5 px-5 py-5">
-        <div className="rounded-md border border-zinc-200 bg-white p-5">
+      <div className="border-t border-red-100 bg-red-500/5 px-4 py-5 sm:px-5">
+        <div className="rounded-md border border-zinc-200 bg-white p-4 sm:p-5">
           <div className="flex items-start justify-between gap-4">
-            <div>
+            <div className="min-w-0">
               <h3 className="text-lg font-semibold text-zinc-900">
                 {editingAdminId ? 'Editar usuário' : 'Criar usuário'}
               </h3>
@@ -1035,7 +1070,7 @@ export default function ClientSettings({
             <button
               type="button"
               onClick={resetUserForm}
-              className="cursor-pointer rounded-md bg-zinc-100 p-2 text-zinc-600 transition hover:bg-zinc-200 active:scale-95"
+              className="shrink-0 cursor-pointer rounded-md bg-zinc-100 p-2 text-zinc-600 transition hover:bg-zinc-200 active:scale-95"
               aria-label="Fechar formulário"
             >
               <X className="h-4 w-4" />
@@ -1084,7 +1119,7 @@ export default function ClientSettings({
                 }}
                 className={fieldClass(
                   userErrors.email,
-                  'w-full rounded-md border bg-white px-3 py-2 text-zinc-800 outline-none'
+                  'w-full rounded-md border bg-white px-3 py-2 text-sm text-zinc-800 outline-none'
                 )}
               />
 
@@ -1107,7 +1142,7 @@ export default function ClientSettings({
                 }}
                 className={fieldClass(
                   userErrors.is_active,
-                  'w-full cursor-pointer rounded-md border bg-white px-3 py-2 text-zinc-800 outline-none'
+                  'w-full cursor-pointer rounded-md border bg-white px-3 py-2 text-sm text-zinc-800 outline-none'
                 )}
               >
                 <option value="1">Ativo</option>
@@ -1137,7 +1172,7 @@ export default function ClientSettings({
             </div>
           </div>
 
-          <div className="mt-5 flex justify-end gap-3 border-t border-zinc-100 pt-4">
+          <div className="mt-5 flex flex-col-reverse gap-3 border-t border-zinc-100 pt-4 sm:flex-row sm:justify-end">
             <button
               type="button"
               onClick={resetUserForm}
@@ -1151,7 +1186,7 @@ export default function ClientSettings({
               type="button"
               onClick={handleSaveUser}
               disabled={isSavingUser}
-              className="inline-flex cursor-pointer items-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Save className="h-4 w-4" />
               {isSavingUser
@@ -1167,8 +1202,8 @@ export default function ClientSettings({
   };
 
   return (
-    <div className="min-w-0 overflow-x-hidden p-6 md:p-8">
-      <div className="mx-auto flex min-w-0 max-w-7xl flex-col gap-8">
+    <div className="min-w-0 overflow-x-hidden p-4 sm:p-6 md:p-8">
+      <div className="mx-auto flex min-w-0 max-w-7xl flex-col gap-6 md:gap-8">
         <section className="relative min-w-0 overflow-hidden py-4">
           <div className="relative flex min-w-0 flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="min-w-0 max-w-3xl">
@@ -1186,7 +1221,7 @@ export default function ClientSettings({
               type="button"
               onClick={handleSaveSettings}
               disabled={isSavingSettings || settings.length === 0}
-              className="inline-flex w-fit shrink-0 cursor-pointer items-center justify-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex w-full shrink-0 cursor-pointer items-center justify-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 sm:w-fit"
             >
               <Save className="h-4 w-4" />
               {isSavingSettings ? 'Salvando...' : 'Salvar alterações'}
@@ -1194,7 +1229,7 @@ export default function ClientSettings({
           </div>
         </section>
 
-        <div className="grid min-w-0 grid-cols-1 gap-8 lg:grid-cols-[minmax(0,270px)_minmax(0,1fr)]">
+        <div className="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-[minmax(0,270px)_minmax(0,1fr)] lg:gap-8">
           <aside className="h-fit min-w-0 rounded-md border border-zinc-200 bg-white p-2 shadow-sm lg:sticky lg:top-8">
             <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
               Navegação
@@ -1229,7 +1264,7 @@ export default function ClientSettings({
             </nav>
           </aside>
 
-          <div className="min-w-0 space-y-8">
+          <div className="min-w-0 space-y-6 md:space-y-8">
             {renderSettingsCard(
               'geral',
               Brush,
@@ -1264,7 +1299,7 @@ export default function ClientSettings({
                 id="area-sensivel"
                 className="min-w-0 scroll-mt-8 overflow-hidden rounded-md border border-red-200 bg-red-50/80 shadow-sm"
               >
-                <header className="border-b border-red-200 bg-red-50 px-5 py-4">
+                <header className="border-b border-red-200 bg-red-50 px-4 py-4 sm:px-5">
                   <div className="flex min-w-0 items-start gap-4">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-600/10 text-red-700">
                       <ShieldCheck className="h-5 w-5" />
@@ -1285,7 +1320,7 @@ export default function ClientSettings({
 
                 <div className="min-w-0 divide-y divide-red-100">
                   {donationEnabledSetting && (
-                    <div className="grid min-w-0 grid-cols-1 gap-4 px-5 py-5 lg:grid-cols-[220px_minmax(0,1fr)]">
+                    <div className="grid min-w-0 grid-cols-1 gap-4 px-4 py-5 sm:px-5 lg:grid-cols-[220px_minmax(0,1fr)]">
                       <div className="min-w-0">
                         <label className="text-[13px] font-semibold text-zinc-950">
                           {donationEnabledSetting.label}
@@ -1307,7 +1342,7 @@ export default function ClientSettings({
                     </div>
                   )}
 
-                  <div className="min-w-0 px-5 py-5">
+                  <div className="min-w-0 px-4 py-5 sm:px-5">
                     <div className="mb-4 flex min-w-0 flex-col gap-4 md:flex-row md:items-center md:justify-between">
                       <div className="min-w-0">
                         <h3 className="text-[13px] font-semibold text-zinc-950">
@@ -1323,7 +1358,7 @@ export default function ClientSettings({
                       <button
                         type="button"
                         onClick={openCreateUserForm}
-                        className="inline-flex w-fit shrink-0 cursor-pointer items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-primary/90 active:scale-95"
+                        className="inline-flex w-full shrink-0 cursor-pointer items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-primary/90 active:scale-95 sm:w-fit"
                       >
                         <Plus className="h-4 w-4" />
                         Novo usuário
@@ -1339,22 +1374,21 @@ export default function ClientSettings({
                             return (
                               <div
                                 key={admin.id}
-                                className={`grid min-w-0 grid-cols-1 gap-4 px-5 py-4 transition md:grid-cols-[minmax(0,1fr)_auto] ${adminRowClass(
+                                className={`flex min-w-0 flex-col gap-3 px-4 py-4 transition sm:px-5 lg:flex-row lg:items-center lg:justify-between ${adminRowClass(
                                   isActive
                                 )}`}
                               >
-                                <div className="flex min-w-0 items-start gap-4">
-                                  <div className={adminTextClass(isActive)}>
-                                    <UserBadge
-                                      name={admin.name}
-                                      subtitle={admin.email}
-                                      size="md"
+                                <div className="flex min-w-0 flex-1 flex-col gap-3 sm:flex-row sm:items-start">
+                                  <div className="min-w-0 flex-1">
+                                    <AdminIdentity
+                                      admin={admin}
+                                      isActive={isActive}
                                     />
                                   </div>
 
-                                  <div className="flex min-w-0 flex-wrap items-center gap-2 pt-0.5">
+                                  <div className="flex min-w-0 flex-wrap items-center gap-2 sm:max-w-[260px] lg:justify-end">
                                     <span
-                                      className={`rounded-md px-2 py-0.5 text-[11px] font-semibold uppercase ${roleBadgeClass(
+                                      className={`rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase ${roleBadgeClass(
                                         admin.role
                                       )}`}
                                     >
@@ -1362,7 +1396,7 @@ export default function ClientSettings({
                                     </span>
 
                                     <span
-                                      className={`rounded-md px-2 py-0.5 text-[11px] font-semibold uppercase ${statusBadgeClass(
+                                      className={`rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase ${statusBadgeClass(
                                         isActive
                                       )}`}
                                     >
@@ -1370,7 +1404,7 @@ export default function ClientSettings({
                                     </span>
 
                                     {currentAdmin?.id === admin.id && (
-                                      <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold uppercase text-emerald-700">
+                                      <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase text-emerald-700">
                                         Você
                                       </span>
                                     )}
@@ -1412,7 +1446,7 @@ export default function ClientSettings({
 
                   {renderUserForm()}
 
-                  <div className="grid min-w-0 grid-cols-1 gap-4 px-5 py-5 md:grid-cols-[minmax(0,1fr)_auto]">
+                  <div className="grid min-w-0 grid-cols-1 gap-4 px-4 py-5 sm:px-5 md:grid-cols-[minmax(0,1fr)_auto]">
                     <div className="min-w-0">
                       <h3 className="text-[13px] font-semibold text-zinc-950">
                         Cache de configurações
@@ -1428,14 +1462,14 @@ export default function ClientSettings({
                       type="button"
                       onClick={handleClearCache}
                       disabled={isClearingCache}
-                      className="inline-flex w-fit shrink-0 cursor-pointer items-center justify-center gap-2 rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="inline-flex w-full shrink-0 cursor-pointer items-center justify-center gap-2 rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 sm:w-fit"
                     >
                       <RefreshCcw className="h-4 w-4" />
                       {isClearingCache ? 'Limpando...' : 'Limpar cache'}
                     </button>
                   </div>
 
-                  <div className="grid min-w-0 grid-cols-1 gap-4 px-5 py-5 md:grid-cols-[minmax(0,1fr)_auto]">
+                  <div className="grid min-w-0 grid-cols-1 gap-4 px-4 py-5 sm:px-5 md:grid-cols-[minmax(0,1fr)_auto]">
                     <div className="min-w-0">
                       <h3 className="text-[13px] font-semibold text-zinc-950">
                         Sessão atual
@@ -1446,9 +1480,11 @@ export default function ClientSettings({
                       </p>
                     </div>
 
-                    <div className="inline-flex w-fit shrink-0 items-center gap-2 rounded-md bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
+                    <div className="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-md bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700 sm:w-fit">
                       <CheckCircle2 className="h-4 w-4" />
-                      {currentAdmin?.name || 'Admin'}
+                      <span className="truncate">
+                        {currentAdmin?.name || 'Admin'}
+                      </span>
                     </div>
                   </div>
                 </div>

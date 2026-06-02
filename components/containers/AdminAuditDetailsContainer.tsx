@@ -74,6 +74,7 @@ const FIELD_LABELS: Record<string, string> = {
   logo_url: 'Logo',
   key: 'Chave',
   value: 'Valor',
+  url: 'URL',
   filename: 'Nome do arquivo',
   original_name: 'Nome original',
   path: 'Caminho',
@@ -355,7 +356,7 @@ function isLongValue(value: unknown) {
 
 function IconBox({ icon: Icon }: { icon: ElementType }) {
   return (
-    <div className="rounded-xl bg-primary/10 p-3 text-primary">
+    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
       <Icon className="h-[18px] w-[18px]" aria-hidden="true" />
     </div>
   );
@@ -371,11 +372,11 @@ function TechnicalCard({
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-md border border-gray-200 bg-white p-5">
-      <div className="mb-4 flex items-center gap-2">
+    <section className="min-w-0 overflow-hidden rounded-md border border-gray-200 bg-white p-4 sm:p-5">
+      <div className="mb-4 flex min-w-0 items-center gap-2">
         <IconBox icon={icon} />
 
-        <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-zinc-700">
+        <h2 className="min-w-0 break-words text-xs font-bold uppercase tracking-[0.14em] text-zinc-700 [overflow-wrap:anywhere]">
           {title}
         </h2>
       </div>
@@ -387,12 +388,12 @@ function TechnicalCard({
 
 function DetailRow({ label, value }: { label: string; value?: ReactNode }) {
   return (
-    <div className="grid gap-1 border-b border-gray-100 py-3 last:border-b-0 md:grid-cols-[150px_minmax(0,1fr)]">
-      <dt className="text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-400">
+    <div className="grid min-w-0 gap-1 border-b border-gray-100 py-3 last:border-b-0 md:grid-cols-[150px_minmax(0,1fr)]">
+      <dt className="min-w-0 break-words text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-400 [overflow-wrap:anywhere]">
         {label}
       </dt>
 
-      <dd className="min-w-0 break-words text-sm text-zinc-700">
+      <dd className="min-w-0 max-w-full break-words text-sm text-zinc-700 [overflow-wrap:anywhere]">
         {value || '—'}
       </dd>
     </div>
@@ -424,25 +425,27 @@ function ValuePanel({
   }[tone];
 
   return (
-    <div className="space-y-2">
+    <div className="min-w-0 space-y-2">
       <span
         className={`
-          inline-flex rounded-md border px-2 py-1
+          inline-flex max-w-full rounded-md border px-2 py-1
           text-[10px] font-bold uppercase tracking-[0.12em]
           ${labelClasses}
         `}
       >
-        {title}
+        <span className="min-w-0 break-words [overflow-wrap:anywhere]">
+          {title}
+        </span>
       </span>
 
       <div
         className={`
-          rounded-md border px-4 py-3 text-sm leading-relaxed
+          min-w-0 max-w-full overflow-hidden rounded-md border px-3 py-3 text-sm leading-relaxed sm:px-4
           ${toneClasses}
-          ${long ? 'max-h-72 overflow-auto' : ''}
+          ${long ? 'max-h-72 overflow-y-auto' : ''}
         `}
       >
-        <pre className="whitespace-pre-wrap break-words font-sans">
+        <pre className="max-w-full whitespace-pre-wrap break-words font-sans [overflow-wrap:anywhere]">
           {formatted}
         </pre>
       </div>
@@ -471,33 +474,35 @@ function ChangeBlock({
         : 'Campo alterado';
 
   return (
-    <div className="overflow-hidden rounded-md border border-gray-200 bg-white">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 bg-primary/10 px-4 py-3">
-        <div>
-          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-primary">
+    <div className="min-w-0 overflow-hidden rounded-md border border-gray-200 bg-white">
+      <div className="flex min-w-0 flex-wrap items-center justify-between gap-3 border-b border-gray-100 bg-primary/10 px-4 py-3">
+        <div className="min-w-0">
+          <p className="break-words text-[11px] font-bold uppercase tracking-[0.12em] text-primary [overflow-wrap:anywhere]">
             {heading}
           </p>
 
-          <h3 className="mt-1 text-sm font-semibold capitalize text-zinc-900">
+          <h3 className="mt-1 break-words text-sm font-semibold capitalize text-zinc-900 [overflow-wrap:anywhere]">
             {getFieldLabel(field)}
           </h3>
         </div>
 
-        <span className="rounded-md border border-primary/15 bg-white px-2.5 py-1 text-[11px] font-medium text-primary">
-          {field}
+        <span className="max-w-full rounded-md border border-primary/15 bg-white px-2.5 py-1 text-[11px] font-medium text-primary">
+          <span className="block break-words [overflow-wrap:anywhere]">
+            {field}
+          </span>
         </span>
       </div>
 
       {operation === 'created' ? (
-        <div className="p-4">
+        <div className="min-w-0 p-4">
           <ValuePanel title="Valor criado" value={newValue} tone="green" />
         </div>
       ) : operation === 'deleted' ? (
-        <div className="p-4">
+        <div className="min-w-0 p-4">
           <ValuePanel title="Valor removido" value={oldValue} tone="red" />
         </div>
       ) : (
-        <div className="grid gap-4 p-4 lg:grid-cols-2">
+        <div className="grid min-w-0 gap-4 p-4 lg:grid-cols-2">
           <ValuePanel title="Saiu" value={oldValue} tone="red" />
           <ValuePanel title="Entrou" value={newValue} tone="green" />
         </div>
@@ -516,26 +521,26 @@ function SimpleDataGrid({
   if (entries.length === 0) return null;
 
   return (
-    <section className="rounded-md border border-gray-200 bg-white p-5">
-      <div className="mb-5 flex items-center gap-2">
+    <section className="min-w-0 overflow-hidden rounded-md border border-gray-200 bg-white p-4 sm:p-5">
+      <div className="mb-5 flex min-w-0 items-center gap-2">
         <IconBox icon={Info} />
 
-        <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-zinc-700">
+        <h2 className="min-w-0 break-words text-xs font-bold uppercase tracking-[0.14em] text-zinc-700 [overflow-wrap:anywhere]">
           {title}
         </h2>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {entries.map(([key, value]) => (
           <div
             key={key}
-            className="rounded-md border border-primary/15 bg-primary/10 p-4"
+            className="min-w-0 overflow-hidden rounded-md border border-primary/15 bg-primary/10 p-3 sm:p-4"
           >
-            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-primary">
+            <p className="max-w-full break-words text-[11px] font-bold uppercase tracking-[0.12em] text-primary [overflow-wrap:anywhere]">
               {getFieldLabel(key)}
             </p>
 
-            <p className="mt-2 whitespace-pre-wrap break-words text-sm font-medium text-zinc-700">
+            <p className="mt-2 max-w-full whitespace-pre-wrap break-words text-sm font-medium leading-relaxed text-zinc-700 [overflow-wrap:anywhere]">
               {key === 'size' ? formatBytes(value) : formatValue(value)}
             </p>
           </div>
@@ -553,28 +558,28 @@ function RawTechnicalDetails({
   request: Record<string, unknown>;
 }) {
   return (
-    <details className="mt-6 rounded-md border border-gray-200 bg-white p-5">
-      <summary className="cursor-pointer text-xs font-bold uppercase tracking-[0.14em] text-zinc-700">
+    <details className="mt-6 min-w-0 overflow-hidden rounded-md border border-gray-200 bg-white p-4 sm:p-5">
+      <summary className="cursor-pointer break-words text-xs font-bold uppercase tracking-[0.14em] text-zinc-700 [overflow-wrap:anywhere]">
         Dados técnicos avançados
       </summary>
 
-      <div className="mt-5 grid gap-6 xl:grid-cols-2">
-        <div>
-          <h3 className="mb-3 text-xs font-bold uppercase tracking-[0.12em] text-zinc-500">
+      <div className="mt-5 grid min-w-0 gap-6 xl:grid-cols-2">
+        <div className="min-w-0">
+          <h3 className="mb-3 break-words text-xs font-bold uppercase tracking-[0.12em] text-zinc-500 [overflow-wrap:anywhere]">
             Request capturado
           </h3>
 
-          <pre className="max-h-[420px] overflow-auto rounded-md bg-zinc-950 p-4 text-xs leading-relaxed text-zinc-100">
+          <pre className="max-h-[420px] max-w-full overflow-auto rounded-md bg-zinc-950 p-4 text-xs leading-relaxed text-zinc-100">
             {JSON.stringify(request || {}, null, 2)}
           </pre>
         </div>
 
-        <div>
-          <h3 className="mb-3 text-xs font-bold uppercase tracking-[0.12em] text-zinc-500">
+        <div className="min-w-0">
+          <h3 className="mb-3 break-words text-xs font-bold uppercase tracking-[0.12em] text-zinc-500 [overflow-wrap:anywhere]">
             Properties do log
           </h3>
 
-          <pre className="max-h-[420px] overflow-auto rounded-md bg-zinc-950 p-4 text-xs leading-relaxed text-zinc-100">
+          <pre className="max-h-[420px] max-w-full overflow-auto rounded-md bg-zinc-950 p-4 text-xs leading-relaxed text-zinc-100">
             {JSON.stringify(properties || {}, null, 2)}
           </pre>
         </div>
@@ -612,19 +617,22 @@ export default function AdminAuditDetailsContainer({
       visibleProperties.length;
 
   return (
-    <main className="w-full max-w-6xl mx-auto py-12 md:py-20 px-6 selection:bg-primary selection:text-white">
-      <div className="mb-10 flex items-center justify-between border-b border-gray-100 pb-4">
+    <main className="mx-auto w-full max-w-6xl overflow-x-hidden px-4 py-10 selection:bg-primary selection:text-white sm:px-6 md:py-16 lg:py-20">
+      <div className="mb-8 flex min-w-0 items-center justify-between border-b border-gray-100 pb-4 md:mb-10">
         <Link
           href="/admin/auditoria"
-          className="inline-flex items-center gap-2 text-sm font-medium text-zinc-600 transition hover:text-zinc-950 cursor-default"
+          className="inline-flex min-w-0 items-center gap-2 text-sm font-medium text-zinc-600 transition hover:text-zinc-950"
         >
-          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-          Voltar para auditoria
+          <ArrowLeft className="h-4 w-4 shrink-0" aria-hidden="true" />
+
+          <span className="min-w-0 break-words [overflow-wrap:anywhere]">
+            Voltar para auditoria
+          </span>
         </Link>
       </div>
 
-      <header className="mb-10 space-y-5">
-        <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
+      <header className="mb-8 min-w-0 space-y-5 md:mb-10">
+        <div className="flex min-w-0 flex-col gap-5 md:flex-row md:items-start md:justify-between">
           <div className="flex min-w-0 items-start gap-4">
             <div
               className={`
@@ -636,40 +644,43 @@ export default function AdminAuditDetailsContainer({
             </div>
 
             <div className="min-w-0 space-y-2">
-              <p className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.14em] text-primary">
-                <OperationIcon className="h-3.5 w-3.5" aria-hidden="true" />
+              <p className="inline-flex max-w-full items-center gap-1.5 break-words text-xs font-bold uppercase tracking-[0.14em] text-primary [overflow-wrap:anywhere]">
+                <OperationIcon
+                  className="h-3.5 w-3.5 shrink-0"
+                  aria-hidden="true"
+                />
                 {getActionLabel(log.action)}
               </p>
 
-              <h1 className="text-3xl font-semibold tracking-tight text-zinc-950 md:text-4xl">
+              <h1 className="break-words text-3xl font-semibold tracking-tight text-zinc-950 [overflow-wrap:anywhere] md:text-4xl">
                 {log.title}
               </h1>
 
               {log.description && (
-                <p className="max-w-3xl text-sm leading-relaxed text-zinc-500">
+                <p className="max-w-3xl break-words text-sm leading-relaxed text-zinc-500 [overflow-wrap:anywhere]">
                   {log.description}
                 </p>
               )}
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 md:min-w-[220px]">
-            <div className="rounded-md border border-primary/15 bg-primary/10 px-3 py-2.5">
-              <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-primary">
+          <div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 md:min-w-[220px]">
+            <div className="min-w-0 overflow-hidden rounded-md border border-primary/15 bg-primary/10 px-3 py-2.5">
+              <p className="break-words text-[10px] font-bold uppercase tracking-[0.12em] text-primary [overflow-wrap:anywhere]">
                 Registro
               </p>
 
-              <p className="mt-1 text-sm font-semibold text-zinc-800">
+              <p className="mt-1 break-words text-sm font-semibold text-zinc-800 [overflow-wrap:anywhere]">
                 #{log.id}
               </p>
             </div>
 
-            <div className="rounded-md border border-primary/15 bg-primary/10 px-3 py-2.5">
-              <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-primary">
+            <div className="min-w-0 overflow-hidden rounded-md border border-primary/15 bg-primary/10 px-3 py-2.5">
+              <p className="break-words text-[10px] font-bold uppercase tracking-[0.12em] text-primary [overflow-wrap:anywhere]">
                 Horário
               </p>
 
-              <p className="mt-1 text-sm font-semibold text-zinc-800">
+              <p className="mt-1 break-words text-sm font-semibold text-zinc-800 [overflow-wrap:anywhere]">
                 {formatValue(log.time)}
               </p>
             </div>
@@ -677,42 +688,45 @@ export default function AdminAuditDetailsContainer({
         </div>
       </header>
 
-      <section className="mb-6 grid gap-4 md:grid-cols-3">
-        <div className="rounded-md border border-gray-200 bg-white p-4">
-          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-primary">
+      <section className="mb-6 grid min-w-0 grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="min-w-0 overflow-hidden rounded-md border border-gray-200 bg-white p-4">
+          <p className="break-words text-[11px] font-bold uppercase tracking-[0.12em] text-primary [overflow-wrap:anywhere]">
             Operação
           </p>
 
-          <p className="mt-2 text-sm font-semibold text-zinc-800">
+          <p className="mt-2 break-words text-sm font-semibold text-zinc-800 [overflow-wrap:anywhere]">
             {getActionLabel(log.action)}
           </p>
         </div>
 
-        <div className="rounded-md border border-gray-200 bg-white p-4">
-          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-primary">
+        <div className="min-w-0 overflow-hidden rounded-md border border-gray-200 bg-white p-4">
+          <p className="break-words text-[11px] font-bold uppercase tracking-[0.12em] text-primary [overflow-wrap:anywhere]">
             Campos rastreados
           </p>
 
-          <p className="mt-2 text-sm font-semibold text-zinc-800">
+          <p className="mt-2 break-words text-sm font-semibold text-zinc-800 [overflow-wrap:anywhere]">
             {totalTrackedFields}
           </p>
         </div>
 
-        <div className="rounded-md border border-gray-200 bg-white p-4">
-          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-primary">
+        <div className="min-w-0 overflow-hidden rounded-md border border-gray-200 bg-white p-4">
+          <p className="break-words text-[11px] font-bold uppercase tracking-[0.12em] text-primary [overflow-wrap:anywhere]">
             Objeto
           </p>
 
-          <p className="mt-2 text-sm font-semibold text-zinc-800">
+          <p className="mt-2 break-words text-sm font-semibold text-zinc-800 [overflow-wrap:anywhere]">
             {getSubjectTypeLabel(log.subject?.type)}
           </p>
         </div>
       </section>
 
-      <div className="grid gap-6 xl:grid-cols-2">
+      <div className="grid min-w-0 gap-6 xl:grid-cols-2">
         <TechnicalCard icon={User} title="Responsável">
-          <dl>
-            <DetailRow label="Nome" value={formatValue(log.admin?.name || 'Sistema')} />
+          <dl className="min-w-0">
+            <DetailRow
+              label="Nome"
+              value={formatValue(log.admin?.name || 'Sistema')}
+            />
             <DetailRow label="E-mail" value={formatValue(log.admin?.email)} />
             <DetailRow
               label="Cargo"
@@ -723,7 +737,7 @@ export default function AdminAuditDetailsContainer({
         </TechnicalCard>
 
         <TechnicalCard icon={Database} title="Objeto auditado">
-          <dl>
+          <dl className="min-w-0">
             <DetailRow
               label="Tipo"
               value={getSubjectTypeLabel(log.subject?.type)}
@@ -735,7 +749,7 @@ export default function AdminAuditDetailsContainer({
         </TechnicalCard>
 
         <TechnicalCard icon={Globe} title="Requisição">
-          <dl>
+          <dl className="min-w-0">
             <DetailRow
               label="IP"
               value={formatValue(log.ip_address || request.ip)}
@@ -748,7 +762,7 @@ export default function AdminAuditDetailsContainer({
         </TechnicalCard>
 
         <TechnicalCard icon={Monitor} title="Ambiente">
-          <dl>
+          <dl className="min-w-0">
             <DetailRow label="Data amigável" value={formatValue(log.time)} />
             <DetailRow
               label="Timestamp"
@@ -757,7 +771,7 @@ export default function AdminAuditDetailsContainer({
             <DetailRow
               label="User agent"
               value={
-                <span className="break-words text-xs leading-relaxed text-zinc-600">
+                <span className="block min-w-0 max-w-full break-words text-xs leading-relaxed text-zinc-600 [overflow-wrap:anywhere]">
                   {formatValue(log.user_agent || request.user_agent)}
                 </span>
               }
@@ -766,23 +780,23 @@ export default function AdminAuditDetailsContainer({
         </TechnicalCard>
       </div>
 
-      <section className="mt-6 rounded-md border border-gray-200 bg-white p-5">
-        <div className="mb-5 flex items-center gap-2">
+      <section className="mt-6 min-w-0 overflow-hidden rounded-md border border-gray-200 bg-white p-4 sm:p-5">
+        <div className="mb-5 flex min-w-0 items-start gap-2">
           <IconBox icon={ShieldCheck} />
 
-          <div>
-            <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-zinc-700">
+          <div className="min-w-0">
+            <h2 className="break-words text-xs font-bold uppercase tracking-[0.14em] text-zinc-700 [overflow-wrap:anywhere]">
               Alterações realizadas
             </h2>
 
-            <p className="mt-1 text-xs text-zinc-500">
+            <p className="mt-1 break-words text-xs text-zinc-500 [overflow-wrap:anywhere]">
               Campos com histórico detalhado conforme o tipo de operação.
             </p>
           </div>
         </div>
 
         {hasChanges ? (
-          <div className="space-y-4">
+          <div className="min-w-0 space-y-4">
             {changedEntries.map(([field, values]) => (
               <ChangeBlock
                 key={field}
@@ -794,16 +808,16 @@ export default function AdminAuditDetailsContainer({
             ))}
           </div>
         ) : (
-          <div className="rounded-md border border-dashed border-primary/15 bg-primary/10 p-5">
-            <div className="flex items-start gap-3">
+          <div className="min-w-0 overflow-hidden rounded-md border border-dashed border-primary/15 bg-primary/10 p-4 sm:p-5">
+            <div className="flex min-w-0 items-start gap-3">
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
 
-              <div>
-                <p className="text-sm font-semibold text-zinc-700">
+              <div className="min-w-0">
+                <p className="break-words text-sm font-semibold text-zinc-700 [overflow-wrap:anywhere]">
                   Nenhum comparativo detalhado disponível.
                 </p>
 
-                <p className="mt-1 text-xs leading-relaxed text-zinc-500">
+                <p className="mt-1 break-words text-xs leading-relaxed text-zinc-500 [overflow-wrap:anywhere]">
                   Este registro ainda não possui <strong>changed_values</strong>.
                   Quando o backend salvar o diff completo, esta área mostrará
                   automaticamente o que saiu e o que entrou.
@@ -812,13 +826,15 @@ export default function AdminAuditDetailsContainer({
             </div>
 
             {changedFieldsList.length > 0 && (
-              <div className="mt-4 flex flex-wrap gap-2">
+              <div className="mt-4 flex min-w-0 flex-wrap gap-2">
                 {changedFieldsList.map((field) => (
                   <span
                     key={String(field)}
-                    className="inline-flex rounded-md border border-primary/15 bg-white px-3 py-1 text-xs font-medium capitalize text-primary"
+                    className="inline-flex max-w-full rounded-md border border-primary/15 bg-white px-3 py-1 text-xs font-medium capitalize text-primary"
                   >
-                    {getFieldLabel(String(field))}
+                    <span className="break-words [overflow-wrap:anywhere]">
+                      {getFieldLabel(String(field))}
+                    </span>
                   </span>
                 ))}
               </div>
@@ -828,7 +844,7 @@ export default function AdminAuditDetailsContainer({
       </section>
 
       {!hasChanges && oldValuesEntries.length > 0 && (
-        <div className="mt-6">
+        <div className="mt-6 min-w-0">
           <SimpleDataGrid
             title="Dados anteriores registrados"
             entries={oldValuesEntries}
@@ -837,7 +853,7 @@ export default function AdminAuditDetailsContainer({
       )}
 
       {!hasChanges && newValuesEntries.length > 0 && (
-        <div className="mt-6">
+        <div className="mt-6 min-w-0">
           <SimpleDataGrid
             title="Dados novos registrados"
             entries={newValuesEntries}
@@ -846,7 +862,7 @@ export default function AdminAuditDetailsContainer({
       )}
 
       {visibleProperties.length > 0 && (
-        <div className="mt-6">
+        <div className="mt-6 min-w-0">
           <SimpleDataGrid
             title="Informações complementares"
             entries={visibleProperties}
@@ -854,16 +870,16 @@ export default function AdminAuditDetailsContainer({
         </div>
       )}
 
-      <section className="mt-6 rounded-md border border-gray-200 bg-white p-5">
-        <div className="mb-4 flex items-center gap-2">
+      <section className="mt-6 min-w-0 overflow-hidden rounded-md border border-gray-200 bg-white p-4 sm:p-5">
+        <div className="mb-4 flex min-w-0 items-center gap-2">
           <IconBox icon={Fingerprint} />
 
-          <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-zinc-700">
+          <h2 className="min-w-0 break-words text-xs font-bold uppercase tracking-[0.14em] text-zinc-700 [overflow-wrap:anywhere]">
             Rastreamento
           </h2>
         </div>
 
-        <p className="text-sm leading-relaxed text-zinc-600">
+        <p className="break-words text-sm leading-relaxed text-zinc-600 [overflow-wrap:anywhere]">
           Este registro foi gerado para rastrear uma ação administrativa dentro
           do painel. As informações acima ajudam a identificar quem executou a
           ação, qual item foi afetado, quando aconteceu e quais dados foram
