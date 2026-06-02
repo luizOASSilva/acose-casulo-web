@@ -23,34 +23,34 @@ export const metadata: Metadata = {
 
 const gallery = [
   {
-    src: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=600&q=80',
-    alt: 'Jovens adultos em atividade no Centro Dia',
+    src: '/nossa-historia/nossa-historia1.jpeg',
+    alt: 'Representantes e apoiadores do Projeto Casulo em encontro institucional',
+  },
+  {
+    src: '/nossa-historia/nossa-historia2.avif',
+    alt: 'Grupo reunido em espaço interno da Acose Casulo durante atividade comunitária',
+  },
+  {
+    src: '/nossa-historia/nossa-historia3.avif',
+    alt: 'Equipe e comunidade em momento de confraternização no Centro Dia',
+  },
+  {
+    src: '/nossa-historia/nossa-historia4.avif',
+    alt: 'Participante recebendo camiseta do Projeto Casulo em atividade institucional',
+  },
+  {
+    src: '/nossa-historia/nossa-historia6.jpg',
+    alt: 'Participantes e apoiadores acompanhando atividade institucional da Acose Casulo',
     wide: true,
   },
   {
-    src: 'https://images.unsplash.com/photo-1607453998774-d533f65dac99?w=400&q=80',
-    alt: 'Atividade socioeducativa no Centro Dia',
-  },
-  {
-    src: 'https://images.unsplash.com/photo-1509099836639-18ba1795216d?w=400&q=80',
-    alt: 'Momento de convivência no Projeto Casulo',
-  },
-  {
-    src: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=400&q=80',
-    alt: 'Inclusão e autonomia no Centro Dia',
-  },
-  {
-    src: 'https://images.unsplash.com/photo-1542810634-71277d95dcbb?w=400&q=80',
-    alt: 'Participantes em atividade coletiva',
-  },
-  {
-    src: 'https://images.unsplash.com/photo-1497486751825-1233686d5d80?w=600&q=80',
-    alt: 'Espaço de acolhimento do Projeto Casulo',
+    src: '/nossa-historia/nossa-historia7.jpg',
+    alt: 'Assinatura e registro de parceria com representantes da comunidade',
     wide: true,
   },
   {
-    src: 'https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=400&q=80',
-    alt: 'Voluntários e participantes do Centro Dia',
+    src: '/nossa-historia/nossa-historia5.jpeg',
+    alt: 'Representante da Acose Casulo com mascotes em evento comunitário',
   },
 ];
 
@@ -110,6 +110,7 @@ export default function NossaHistoria() {
 
         <blockquote className="border-l-4 border-l-primary pl-4 mt-10 text-gray-600">
           <p>Bragança Paulista, 2022</p>
+
           <cite className="block mt-2 not-italic">
             Padre José Roberto Cavasa
           </cite>
