@@ -243,20 +243,21 @@ export default function TransparencyClient({
           className="sticky top-4 z-30"
         />
 
-        <section className="grid gap-5 lg:grid-cols-2">
+        <section className="grid items-start gap-5 lg:grid-cols-2 xl:grid-cols-3">
           {data.categories.map((category: any, categoryIndex: number) => {
             const theme = getCategoryTheme(categoryIndex);
+            const hasDocuments = category.documents.length > 0;
 
             return (
               <div
                 key={category.id}
-                className={`overflow-hidden rounded-md border ${theme.card}`}
+                className={`flex h-full min-h-[260px] flex-col overflow-hidden rounded-md border ${theme.card}`}
               >
                 <div
-                  className={`flex items-center justify-between border-b px-5 py-4 ${theme.header}`}
+                  className={`flex min-h-[86px] items-start justify-between border-b px-5 py-4 ${theme.header}`}
                 >
-                  <div className="flex items-center gap-3">
-                    <div className={`rounded-md p-2 ${theme.folderBox}`}>
+                  <div className="flex min-w-0 items-start gap-3">
+                    <div className={`shrink-0 rounded-md p-2 ${theme.folderBox}`}>
                       <FolderOpen
                         size={18}
                         aria-hidden="true"
@@ -264,121 +265,127 @@ export default function TransparencyClient({
                       />
                     </div>
 
-                    <div>
-                      <h3 className={`font-semibold ${theme.title}`}>
+                    <div className="min-w-0">
+                      <h3
+                        className={`break-words font-semibold leading-snug ${theme.title}`}
+                      >
                         {category.name}
                       </h3>
 
-                      <p className={`text-xs ${theme.subtitle}`}>
-                        {category.documents.length} documentos
+                      <p className={`mt-1 text-xs ${theme.subtitle}`}>
+                        {category.documents.length} documento
+                        {category.documents.length === 1 ? '' : 's'}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <div>
-                  {category.documents.length > 0 ? (
-                    category.documents.map((doc: any) => (
-                      <div
-                        key={doc.id}
-                        className={`flex items-center justify-between border-b px-5 py-3 transition ${theme.documentRow}`}
-                      >
-                        {doc.file_url ? (
-                          <a
-                            href={doc.file_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="group min-w-0 flex-1"
-                            title={`Abrir documento: ${doc.title}`}
-                            aria-label={`Abrir documento ${doc.title}`}
-                          >
-                            <div className="flex min-w-0 items-start gap-2">
-                              <FileText
-                                size={15}
-                                className={`mt-0.5 shrink-0 transition ${theme.documentIcon}`}
-                                aria-hidden="true"
-                              />
+                <div className="flex min-h-0 flex-1 flex-col">
+                  {hasDocuments ? (
+                    <div className="flex flex-col">
+                      {category.documents.map((doc: any) => (
+                        <div
+                          key={doc.id}
+                          className={`flex items-start justify-between border-b px-5 py-3 transition last:border-b-0 ${theme.documentRow}`}
+                        >
+                          {doc.file_url ? (
+                            <a
+                              href={doc.file_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="group min-w-0 flex-1"
+                              title={`Abrir documento: ${doc.title}`}
+                              aria-label={`Abrir documento ${doc.title}`}
+                            >
+                              <div className="flex min-w-0 items-start gap-2">
+                                <FileText
+                                  size={15}
+                                  className={`mt-0.5 shrink-0 transition ${theme.documentIcon}`}
+                                  aria-hidden="true"
+                                />
 
-                              <div className="min-w-0">
-                                <p
-                                  className={`truncate text-sm font-medium transition ${theme.documentTitle}`}
-                                >
-                                  {doc.title}
-                                </p>
+                                <div className="min-w-0">
+                                  <p
+                                    className={`line-clamp-2 text-sm font-medium leading-snug transition ${theme.documentTitle}`}
+                                  >
+                                    {doc.title}
+                                  </p>
 
-                                <p
-                                  className={`mt-1 text-xs ${theme.documentDate}`}
-                                >
-                                  {formatDate(doc.created_at)}
-                                </p>
+                                  <p
+                                    className={`mt-1 text-xs ${theme.documentDate}`}
+                                  >
+                                    {formatDate(doc.created_at)}
+                                  </p>
+                                </div>
+                              </div>
+                            </a>
+                          ) : (
+                            <div className="min-w-0 flex-1">
+                              <div className="flex min-w-0 items-start gap-2">
+                                <FileText
+                                  size={15}
+                                  className={`mt-0.5 shrink-0 ${theme.documentIcon}`}
+                                  aria-hidden="true"
+                                />
+
+                                <div className="min-w-0">
+                                  <p
+                                    className={`line-clamp-2 text-sm font-medium leading-snug ${theme.documentTitle}`}
+                                  >
+                                    {doc.title}
+                                  </p>
+
+                                  <p
+                                    className={`mt-1 text-xs ${theme.documentDate}`}
+                                  >
+                                    {formatDate(doc.created_at)}
+                                  </p>
+                                </div>
                               </div>
                             </div>
-                          </a>
-                        ) : (
-                          <div className="min-w-0 flex-1">
-                            <div className="flex min-w-0 items-start gap-2">
-                              <FileText
-                                size={15}
-                                className={`mt-0.5 shrink-0 ${theme.documentIcon}`}
-                                aria-hidden="true"
-                              />
+                          )}
 
-                              <div className="min-w-0">
-                                <p
-                                  className={`truncate text-sm font-medium ${theme.documentTitle}`}
-                                >
-                                  {doc.title}
-                                </p>
+                          <div className="ml-3 flex shrink-0 items-center gap-1">
+                            <Link
+                              href={`/admin/transparencia/${doc.id}/editar`}
+                              className={`rounded-xl p-2.5 transition-all active:scale-95 ${theme.actionEdit}`}
+                              title="Editar documento"
+                              aria-label="Editar documento"
+                            >
+                              <Pencil size={15} aria-hidden="true" />
+                            </Link>
 
-                                <p
-                                  className={`mt-1 text-xs ${theme.documentDate}`}
-                                >
-                                  {formatDate(doc.created_at)}
-                                </p>
-                              </div>
-                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleDelete(doc.id, doc.title)}
+                              className={`cursor-pointer rounded-xl p-2.5 transition-all active:scale-95 ${theme.actionDelete}`}
+                              title="Remover documento"
+                              aria-label="Remover documento"
+                            >
+                              <Trash2 size={15} aria-hidden="true" />
+                            </button>
                           </div>
-                        )}
-
-                        <div className="ml-3 flex shrink-0 items-center gap-1">
-                          <Link
-                            href={`/admin/transparencia/${doc.id}/editar`}
-                            className={`rounded-xl p-2.5 transition-all active:scale-95 ${theme.actionEdit}`}
-                            title="Editar documento"
-                            aria-label="Editar documento"
-                          >
-                            <Pencil size={15} aria-hidden="true" />
-                          </Link>
-
-                          <button
-                            type="button"
-                            onClick={() => handleDelete(doc.id, doc.title)}
-                            className={`cursor-pointer rounded-xl p-2.5 transition-all active:scale-95 ${theme.actionDelete}`}
-                            title="Remover documento"
-                            aria-label="Remover documento"
-                          >
-                            <Trash2 size={15} aria-hidden="true" />
-                          </button>
                         </div>
-                      </div>
-                    ))
+                      ))}
+                    </div>
                   ) : (
-                    <div className="flex flex-col items-center justify-center gap-3 py-12">
-                      <div className={`rounded-md p-4 ${theme.emptyBox}`}>
+                    <div className="flex min-h-[150px] flex-col items-start justify-start gap-3 px-5 py-5">
+                      <div className={`rounded-md p-3 ${theme.emptyBox}`}>
                         <FileText
-                          size={20}
+                          size={18}
                           aria-hidden="true"
                           className={theme.emptyIcon}
                         />
                       </div>
 
-                      <div className="text-center">
+                      <div>
                         <p className={`font-medium ${theme.emptyTitle}`}>
                           Nenhum documento
                         </p>
 
-                        <p className={`text-sm ${theme.emptyText}`}>
-                          Esta categoria está vazia.
+                        <p className={`mt-1 text-sm ${theme.emptyText}`}>
+                          Esta categoria ainda não possui arquivos cadastrados
+                          para {data.year}.
                         </p>
                       </div>
                     </div>

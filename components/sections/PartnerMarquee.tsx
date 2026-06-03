@@ -22,26 +22,25 @@ function MarqueeRow({
   const duration = items.length * (400 / speed);
 
   return (
-    <div className="overflow-hidden w-full">
+    <div className="w-full overflow-hidden">
       <div
         className="flex w-max"
         style={{
           animation: `marquee-${direction} ${duration}s linear infinite`,
         }}
-        onMouseEnter={(e) => {
-          (e.currentTarget as HTMLDivElement).style.animationPlayState =
-            'paused';
+        onMouseEnter={(event) => {
+          event.currentTarget.style.animationPlayState = 'paused';
         }}
-        onMouseLeave={(e) => {
-          (e.currentTarget as HTMLDivElement).style.animationPlayState =
-            'running';
+        onMouseLeave={(event) => {
+          event.currentTarget.style.animationPlayState = 'running';
         }}
       >
-        {repeated.map((logo, i) => (
+        {repeated.map((logo, index) => (
           <PartnerCard
-            key={`${logo.name}-${i}`}
+            key={`${logo.name}-${index}`}
             logo={logo}
-            index={i % items.length}
+            index={index % items.length}
+            isClone={index >= items.length}
           />
         ))}
       </div>
@@ -54,24 +53,30 @@ export default function PartnerMarquee({ partners }: Props) {
   const row2 = partners.slice(Math.ceil(partners.length / 2));
 
   return (
-    <section className="overflow-hidden mb-20" aria-label="Parceiros">
+    <section className="mb-20 overflow-hidden" aria-label="Parceiros">
       <div className="relative w-full">
         <div
-          className="absolute left-0 top-0 bottom-0 z-10 w-7.5 md:w-37.5 pointer-events-none"
+          className="pointer-events-none absolute bottom-0 left-0 top-0 z-10 w-7.5 md:w-37.5"
           style={{
             background: 'linear-gradient(to right, white, transparent)',
           }}
           aria-hidden="true"
         />
+
         <div
-          className="absolute right-0 top-0 bottom-0 z-10 w-7.5 md:w-37.5 pointer-events-none"
-          style={{ background: 'linear-gradient(to left, white, transparent)' }}
+          className="pointer-events-none absolute bottom-0 right-0 top-0 z-10 w-7.5 md:w-37.5"
+          style={{
+            background: 'linear-gradient(to left, white, transparent)',
+          }}
           aria-hidden="true"
         />
 
         <div className="flex flex-col gap-6 md:gap-10">
           <MarqueeRow items={row1} direction="left" speed={35} />
-          <MarqueeRow items={row2} direction="right" speed={30} />
+
+          {row2.length > 0 && (
+            <MarqueeRow items={row2} direction="right" speed={30} />
+          )}
         </div>
       </div>
     </section>

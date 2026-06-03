@@ -28,34 +28,58 @@ export const metadata: Metadata = {
   },
 };
 
+function normalizePartnerUrl(value?: string | null): string {
+  const url = value?.trim();
+
+  if (!url) return '';
+
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+
+  return `https://${url}`;
+}
+
 export default async function Parceiros() {
   const apiPartners = await getPartners();
 
   const partners: Partner[] = apiPartners
     .filter((partner) => partner.logo_url)
     .map((partner) => ({
+      id: partner.id,
       name: partner.name,
       src: partner.logo_url || '',
       bgColor: partner.bg_color || '#ffffff',
+      bg_color: partner.bg_color,
+      logo_url: partner.logo_url,
+      logo_alt: partner.logo_alt,
+      website_url: normalizePartnerUrl(partner.website_url),
+      websiteUrl: normalizePartnerUrl(partner.website_url),
+      url: normalizePartnerUrl(partner.website_url),
+      order: partner.order,
+      is_active: partner.is_active,
+      isActive: partner.is_active,
     }));
 
   return (
-    <main className="flex flex-col justify-between h-full py-8">
+    <main className="flex h-full flex-col justify-between py-8">
       <section>
-        <div className="max-w-7xl mx-auto px-6 pt-10 pb-15 flex items-end justify-between gap-8">
+        <div className="mx-auto flex max-w-7xl items-end justify-between gap-8 px-6 pb-15 pt-10">
           <div className="space-y-2">
-            <p className="text-orange-700 font-bold text-md tracking-widest uppercase">
+            <p className="text-md font-bold uppercase tracking-widest text-orange-700">
               Quem caminha com a gente
             </p>
-            <h1 className="text-3xl md:text-4xl font-extrabold text-gray-800 tracking-tight">
+
+            <h1 className="text-3xl font-extrabold tracking-tight text-gray-800 md:text-4xl">
               Parceiros do Centro Dia da Pessoa com Deficiência
             </h1>
+
             <p className="text-gray-600">
               Empresas e instituições que acreditam no nosso trabalho
             </p>
           </div>
 
-          <div className="text-right shrink-0">
+          <div className="shrink-0 text-right">
             <StatCounterClient
               value={partners.length}
               label="Parceiros ativos"
@@ -74,4 +98,3 @@ export default async function Parceiros() {
     </main>
   );
 }
-  
