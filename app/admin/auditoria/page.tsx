@@ -681,32 +681,26 @@ export default function AdminAuditoriaPage() {
                 />
               ))}
 
-              <div className="relative grid grid-cols-[46px_minmax(0,1fr)] gap-5">
-                <div className="col-start-1 row-start-1 flex justify-center">
-                  <div className="relative z-10 flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
-                    <Clock size={16} />
+              {canLoadMore ? (
+                <div className="pl-[66px]">
+                  <button
+                    type="button"
+                    onClick={() => setPage((current) => current + 1)}
+                    disabled={loadingMore}
+                    className="w-full rounded-md border border-dashed border-zinc-200 bg-zinc-50/70 px-4 py-3 text-sm font-semibold text-zinc-600 transition hover:border-primary/30 hover:bg-primary/10 hover:text-primary disabled:opacity-40"
+                  >
+                    {loadingMore ? 'Carregando...' : 'Carregar mais'}
+                  </button>
+                </div>
+              ) : (
+                <div className="pl-[66px]">
+                  <div className="rounded-md border border-dashed border-zinc-200 bg-zinc-50/70 px-4 py-3">
+                    <p className="text-sm font-semibold text-zinc-700">
+                      Fim do histórico carregado.
+                    </p>
                   </div>
                 </div>
-
-                <div className="col-start-2 row-start-1">
-                  {canLoadMore ? (
-                    <button
-                      type="button"
-                      onClick={() => setPage((current) => current + 1)}
-                      disabled={loadingMore}
-                      className="w-full rounded-md border border-dashed border-zinc-200 bg-zinc-50/70 px-4 py-3 text-sm font-semibold text-zinc-600 transition hover:border-primary/30 hover:bg-primary/10 hover:text-primary disabled:opacity-40"
-                    >
-                      {loadingMore ? 'Carregando...' : 'Carregar mais'}
-                    </button>
-                  ) : (
-                    <div className="rounded-md border border-dashed border-zinc-200 bg-zinc-50/70 px-4 py-3">
-                      <p className="text-sm font-semibold text-zinc-700">
-                        Fim do histórico carregado.
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
+              )}
             </div>
           ) : (
             <div className="rounded-md border border-dashed border-zinc-200 bg-zinc-50/70 p-8 text-center">

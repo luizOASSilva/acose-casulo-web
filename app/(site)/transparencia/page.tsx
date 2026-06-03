@@ -1,11 +1,14 @@
 import type { Metadata } from 'next';
+
 import Hero from '@/components/sections/Hero/Hero';
 import YearFilter from '@/components/ui/YearFilter';
 import TransparencySection from '@/components/sections/TransparencySection';
 import SupportCTA from '@/components/sections/SupportCTA';
+
 import { getTransparencyData } from '@/services/transparency';
-import { TransparencyResponse } from '@/types/transparency';
 import { OG_IMAGE } from '@/lib/config';
+
+import type { TransparencyResponse } from '@/types/transparency';
 
 interface PageProps {
   searchParams: Promise<{ ano?: string }>;
@@ -63,34 +66,47 @@ export default async function Transparencia({ searchParams }: PageProps) {
       <section aria-labelledby="transparency-title">
         <YearFilter years={years} activeYear={currentYear} />
 
-        <div className="max-w-7xl mx-auto px-4 py-10">
-          <h2 className="text-sm text-gray-700 mb-6" id="transparency-title">
+        <div className="mx-auto max-w-7xl px-4 py-10">
+          <h2 className="mb-6 text-sm text-gray-700" id="transparency-title">
             Exibindo documentos de{' '}
             <strong className="text-orange-800">{currentYear}</strong>
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 border-t border-l border-gray-200">
-            {sortedCategories.map((category, index) => (
-              <div
-                key={category.id}
-                className="border-r border-b border-gray-200"
-              >
-                <TransparencySection
-                  number={(index + 1).toString().padStart(2, '0')}
-                  title={category.name}
-                  description={category.description}
-                  documents={category.documents}
-                  variant={
-                    category.featured
-                      ? 'featured'
-                      : category.order === 3
-                        ? 'dark'
-                        : 'light'
-                  }
-                />
-              </div>
-            ))}
-          </div>
+          {sortedCategories.length > 0 ? (
+            <div className="grid items-stretch border-l border-t border-gray-200 md:grid-cols-2 lg:grid-cols-3">
+              {sortedCategories.map((category, index) => (
+                <div
+                  key={category.id}
+                  className="flex min-h-[340px] border-b border-r border-gray-200"
+                >
+                  <TransparencySection
+                    number={(index + 1).toString().padStart(2, '0')}
+                    title={category.name}
+                    description={category.description}
+                    documents={category.documents}
+                    variant={
+                      category.featured
+                        ? 'featured'
+                        : category.order === 3
+                          ? 'dark'
+                          : 'light'
+                    }
+                  />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-md border border-dashed border-gray-200 bg-white p-8 text-center">
+              <p className="text-sm font-semibold text-gray-800">
+                Nenhum documento encontrado para {currentYear}.
+              </p>
+
+              <p className="mt-1 text-sm text-gray-500">
+                Assim que novos documentos forem cadastrados, eles aparecerão
+                nesta área.
+              </p>
+            </div>
+          )}
         </div>
 
         <SupportCTA
