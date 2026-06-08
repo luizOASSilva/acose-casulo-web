@@ -19,6 +19,7 @@ import { formatSchedule, weekdayOptions } from '@/utils/activitySchedule';
 import { activitySchema } from '@/schemas/activity.schema';
 import ActivityScheduleAgenda from '@/components/ui/ActivityScheduleAgenda';
 import MediaPicker from '@/components/admin/MediaPicker';
+import RichTextEditor from '@/components/ui/RichTextEditor';
 import { useConfirmDialog } from '@/context/ConfirmDialogContext';
 
 interface ActivityDetailsContainerProps {
@@ -34,7 +35,6 @@ type ActivityFormErrors = Partial<{
   content: string;
   image_url: string;
   image_description: string;
-  image_caption: string;
   schedules: string;
 }>;
 
@@ -55,6 +55,25 @@ const emptySchedule: ActivitySchedule = {
 
 const ADMIN_ACTIVITIES_PATH = '/admin/atividades';
 const ADMIN_ACTIVITIES_RETURN_PATH_KEY = 'admin.activities.returnPath';
+
+function normalizeRichTextContent(value?: string | null): string {
+  const content = value?.trim();
+
+  if (!content) return '';
+
+  const looksLikeHtml = /<\/?[a-z][\s\S]*>/i.test(content);
+
+  if (looksLikeHtml) {
+    return content;
+  }
+
+  return content
+    .split(/\n{2,}/)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean)
+    .map((paragraph) => `<p>${paragraph.replace(/\n/g, '<br>')}</p>`)
+    .join('');
+}
 
 function normalizeSchedules(activity?: Activity): ActivitySchedule[] {
   if (activity?.schedules && activity.schedules.length > 0) {
@@ -115,6 +134,10 @@ export default function ActivityDetailsContainer({
   const pathname = usePathname();
   const { confirm } = useConfirmDialog();
 
+  const initialContent = useMemo(() => {
+    return normalizeRichTextContent(activity?.content);
+  }, [activity]);
+
   const [isEditMode, setIsEditMode] = useState(startInEditMode || isNew);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -124,12 +147,9 @@ export default function ActivityDetailsContainer({
   const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
 
   const [title, setTitle] = useState(activity?.title || '');
-  const [content, setContent] = useState(activity?.content || '');
+  const [content, setContent] = useState(initialContent);
   const [imageUrl, setImageUrl] = useState(activity?.media?.url || '');
   const [imageAlt, setImageAlt] = useState(activity?.media?.alt_text || '');
-  const [imageCaption, setImageCaption] = useState(
-    activity?.media?.caption || ''
-  );
 
   const [schedules, setSchedules] = useState<ActivitySchedule[]>(
     normalizeSchedules(activity)
@@ -155,10 +175,9 @@ export default function ActivityDetailsContainer({
     if (!activity) return;
 
     setTitle(activity.title || '');
-    setContent(activity.content || '');
+    setContent(normalizeRichTextContent(activity.content));
     setImageUrl(activity.media?.url || '');
     setImageAlt(activity.media?.alt_text || '');
-    setImageCaption(activity.media?.caption || '');
     setSchedules(normalizeSchedules(activity));
     setPendingImageFile(null);
     setErrors({});
@@ -179,19 +198,18 @@ export default function ActivityDetailsContainer({
     return (
       pendingImageFile !== null ||
       title !== (activity?.title || '') ||
-      content !== (activity?.content || '') ||
+      content !== initialContent ||
       imageUrl !== (activity?.media?.url || '') ||
       imageAlt !== (activity?.media?.alt_text || '') ||
-      imageCaption !== (activity?.media?.caption || '') ||
       JSON.stringify(schedules) !== JSON.stringify(initialSchedules)
     );
   }, [
     pendingImageFile,
     title,
     content,
+    initialContent,
     imageUrl,
     imageAlt,
-    imageCaption,
     schedules,
     initialSchedules,
     activity,
@@ -311,10 +329,9 @@ export default function ActivityDetailsContainer({
 
   const resetFields = () => {
     setTitle(activity?.title || '');
-    setContent(activity?.content || '');
+    setContent(normalizeRichTextContent(activity?.content));
     setImageUrl(activity?.media?.url || '');
     setImageAlt(activity?.media?.alt_text || '');
-    setImageCaption(activity?.media?.caption || '');
     setSchedules(normalizeSchedules(activity));
     setPendingImageFile(null);
     setErrors({});
@@ -402,7 +419,7 @@ export default function ActivityDetailsContainer({
 
   const applyValidationErrors = (
     issues: Array<{
-      path: PropertyKey[];
+      path: (string | number)[];
       message: string;
     }>
   ) => {
@@ -470,7 +487,7 @@ export default function ActivityDetailsContainer({
       content,
       image_url: validationImageUrl,
       image_description: imageAlt,
-      image_caption: imageCaption.trim() || null,
+      image_caption: null,
       schedules: schedules.map((schedule) => ({
         weekday: schedule.weekday,
         start_time: schedule.start_time,
@@ -505,6 +522,7 @@ export default function ActivityDetailsContainer({
       const payload = {
         ...parsed.data,
         image_url: finalImageUrl,
+        image_caption: null,
       };
 
       const response = isNew
@@ -604,7 +622,7 @@ export default function ActivityDetailsContainer({
 
           <FieldError message={errors.image_url} />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4">
             <div className="space-y-1">
               <label className="text-xs font-semibold text-gray-500">
                 Texto Alternativo
@@ -630,41 +648,6 @@ export default function ActivityDetailsContainer({
 
                 <span className="ml-auto text-[11px] text-gray-400">
                   {imageAlt.length}/255
-                </span>
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-gray-500">
-                Legenda
-              </label>
-
-              <input
-                type="text"
-                value={imageCaption}
-                onChange={(event) => {
-                  setImageCaption(event.target.value);
-                  clearError('image_caption');
-                }}
-                className={fieldClass(
-                  errors.image_caption,
-                  'w-full text-xs bg-white border rounded-md px-3 py-2 focus:outline-none text-gray-700'
-                )}
-                placeholder="Legenda opcional da imagem"
-                maxLength={255}
-              />
-
-              <div className="flex justify-between gap-3">
-                <FieldError message={errors.image_caption} />
-
-                <span
-                  className={`ml-auto text-[11px] ${
-                    imageCaption.length > 240
-                      ? 'text-orange-600'
-                      : 'text-gray-400'
-                  }`}
-                >
-                  {imageCaption.length}/255
                 </span>
               </div>
             </div>
@@ -921,23 +904,20 @@ export default function ActivityDetailsContainer({
         )}
       </div>
 
-      <div className="text-gray-800 leading-relaxed text-base md:text-lg whitespace-pre-wrap font-normal">
+      <div className="text-gray-800 leading-relaxed text-base md:text-lg font-normal">
         {isEditMode ? (
           <div className="space-y-1">
             <label className="text-xs font-semibold text-gray-500">
               Conteúdo
             </label>
 
-            <textarea
+            <RichTextEditor
               value={content}
-              onChange={(event) => {
-                setContent(event.target.value);
+              onChange={(html) => {
+                setContent(html);
                 clearError('content');
               }}
-              className={fieldClass(
-                errors.content,
-                'w-full min-h-[350px] border rounded-md p-4 focus:outline-none text-base'
-              )}
+              error={errors.content}
               placeholder="Conteúdo completo..."
             />
 
@@ -947,17 +927,26 @@ export default function ActivityDetailsContainer({
           <article className="border-b border-gray-100 pb-8 text-gray-600 leading-relaxed overflow-hidden">
             <h2 className="sr-only">Descrição da atividade</h2>
 
-            {(content || 'Sem conteúdo.')
-              .split('\n')
-              .filter((paragraph) => paragraph.trim())
-              .map((paragraph, index) => (
-                <p
-                  key={index}
-                  className="mb-4 break-words [overflow-wrap:anywhere]"
-                >
-                  {paragraph}
-                </p>
-              ))}
+            <div
+              className="
+                prose prose-gray max-w-none
+                prose-headings:font-bold prose-headings:text-gray-950
+                prose-h2:mt-8 prose-h2:mb-4 prose-h2:text-2xl
+                prose-h3:mt-6 prose-h3:mb-3 prose-h3:text-xl
+                prose-p:text-gray-700 prose-p:text-lg prose-p:leading-relaxed
+                prose-a:text-primary prose-a:font-semibold prose-a:underline prose-a:underline-offset-4
+                prose-ul:my-5 prose-ul:list-disc prose-ul:pl-6
+                prose-ol:my-5 prose-ol:list-decimal prose-ol:pl-6
+                prose-li:my-1 prose-li:text-gray-700
+                prose-li:marker:text-primary
+                break-words [overflow-wrap:anywhere]
+                [&_p:empty]:hidden
+                [&_li>p]:mb-0
+              "
+              dangerouslySetInnerHTML={{
+                __html: content || '<p>Sem conteúdo.</p>',
+              }}
+            />
           </article>
         )}
       </div>

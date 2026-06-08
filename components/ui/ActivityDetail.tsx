@@ -24,6 +24,25 @@ function getActivityLiked(activity: Activity): boolean {
   return Boolean(activity.is_liked ?? activity.liked ?? false);
 }
 
+function normalizeActivityContent(value?: string | null): string {
+  const content = value?.trim();
+
+  if (!content) return '<p>Sem conteúdo.</p>';
+
+  const looksLikeHtml = /<\/?[a-z][\s\S]*>/i.test(content);
+
+  if (looksLikeHtml) {
+    return content;
+  }
+
+  return content
+    .split(/\n{2,}/)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean)
+    .map((paragraph) => `<p>${paragraph.replace(/\n/g, '<br>')}</p>`)
+    .join('');
+}
+
 export default function ActivityDetail({
   id,
   activity,
@@ -46,6 +65,8 @@ export default function ActivityDetail({
     activity.media?.alt_text || `Imagem da atividade ${activity.title}`;
 
   const likeLabel = isLiked ? 'Remover curtida' : 'Curtir atividade';
+  const schedules = activity.schedules ?? [];
+  const contentHtml = normalizeActivityContent(activity.content);
 
   const handleLike = async () => {
     if (isLiking) return;
@@ -104,8 +125,6 @@ export default function ActivityDetail({
     }
   };
 
-  const schedules = activity.schedules ?? [];
-
   return (
     <div
       id={id}
@@ -136,6 +155,7 @@ export default function ActivityDetail({
           ) : (
             <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-gray-400">
               <ImageIcon className="h-8 w-8" aria-hidden="true" />
+
               <span className="text-xs font-medium">Sem imagem</span>
             </div>
           )}
@@ -210,17 +230,26 @@ export default function ActivityDetail({
             >
               <h2 className="sr-only">Descrição da atividade</h2>
 
-              {(activity.content || 'Sem conteúdo.')
-                .split('\n')
-                .filter((paragraph) => paragraph.trim())
-                .map((paragraph, index) => (
-                  <p
-                    key={index}
-                    className="mb-4 max-w-full break-words [overflow-wrap:anywhere]"
-                  >
-                    {paragraph}
-                  </p>
-                ))}
+              <div
+                className="
+                  prose prose-gray max-w-none
+                  prose-headings:font-bold prose-headings:text-gray-950
+                  prose-h2:mt-8 prose-h2:mb-4 prose-h2:text-2xl
+                  prose-h3:mt-6 prose-h3:mb-3 prose-h3:text-xl
+                  prose-p:text-gray-700 prose-p:text-base prose-p:leading-relaxed sm:prose-p:text-lg
+                  prose-a:text-primary prose-a:font-semibold prose-a:underline prose-a:underline-offset-4
+                  prose-ul:my-5 prose-ul:list-disc prose-ul:pl-6
+                  prose-ol:my-5 prose-ol:list-decimal prose-ol:pl-6
+                  prose-li:my-1 prose-li:text-gray-700
+                  prose-li:marker:text-primary
+                  break-words [overflow-wrap:anywhere]
+                  [&_p:empty]:hidden
+                  [&_li>p]:mb-0
+                "
+                dangerouslySetInnerHTML={{
+                  __html: contentHtml,
+                }}
+              />
             </article>
 
             <div className="mt-8 flex flex-col items-center justify-between gap-6 pb-4 sm:flex-row sm:pb-0">

@@ -114,6 +114,31 @@ const IMAGE_SETTING_KEYS = [
   'og_image_url',
 ];
 
+const REQUIRED_SETTINGS: SettingItem[] = [
+  {
+    id: 0,
+    group: 'social',
+    key: 'youtube_url',
+    label: 'YouTube',
+    description: 'Link do canal ou perfil do YouTube exibido no rodapé do site.',
+    type: 'url',
+    value: '',
+    is_public: true,
+    sort_order: 30,
+  } as SettingItem,
+];
+
+function withRequiredSettings(settings: SettingItem[]): SettingItem[] {
+  const safeSettings = Array.isArray(settings) ? settings : [];
+  const existingKeys = new Set(safeSettings.map((setting) => setting.key));
+
+  const missingSettings = REQUIRED_SETTINGS.filter(
+    (setting) => !existingKeys.has(setting.key)
+  );
+
+  return [...safeSettings, ...missingSettings];
+}
+
 function isImageSetting(key: string) {
   return IMAGE_SETTING_KEYS.includes(key);
 }
@@ -124,6 +149,18 @@ function isValidEmail(email: string): boolean {
 
 function normalizeEmail(email?: string | null): string {
   return String(email || '').trim().toLowerCase();
+}
+
+function normalizeExternalUrl(value?: string | null): string {
+  const url = value?.trim();
+
+  if (!url) return '';
+
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+
+  return `https://${url}`;
 }
 
 function fieldClass(error?: string, className = '') {
@@ -247,7 +284,7 @@ export default function ClientSettings({
   );
 
   const [settings, setSettings] = useState<SettingItem[]>(
-    Array.isArray(initialSettings) ? initialSettings : []
+    withRequiredSettings(Array.isArray(initialSettings) ? initialSettings : [])
   );
 
   const [admins, setAdmins] = useState<AdminUser[]>(
@@ -296,7 +333,9 @@ export default function ClientSettings({
       'area-sensivel': {},
     };
 
-    const safeSettings = Array.isArray(settings) ? settings : [];
+    const safeSettings = withRequiredSettings(
+      Array.isArray(settings) ? settings : []
+    );
 
     safeSettings.forEach((setting) => {
       if (!setting?.group) return;
@@ -328,7 +367,7 @@ export default function ClientSettings({
 
   const updateSettingValue = (key: string, value: string) => {
     setSettings((current) =>
-      current.map((setting) =>
+      withRequiredSettings(current).map((setting) =>
         setting.key === key ? { ...setting, value } : setting
       )
     );
@@ -357,8 +396,10 @@ export default function ClientSettings({
   const validateSettings = (
     settingsToValidate: SettingItem[] = settings
   ): SettingErrors => {
+    const safeSettings = withRequiredSettings(settingsToValidate);
+
     const payload = {
-      settings: settingsToValidate.map((setting) => ({
+      settings: safeSettings.map((setting) => ({
         key: setting.key,
         type: setting.type,
         value: setting.value?.trim() || null,
@@ -381,7 +422,7 @@ export default function ClientSettings({
 
       if (index === null) return;
 
-      const setting = settingsToValidate[index];
+      const setting = safeSettings[index];
 
       if (!setting?.key) return;
 
@@ -395,7 +436,7 @@ export default function ClientSettings({
     setIsSavingSettings(true);
 
     try {
-      let nextSettings = [...settings];
+      let nextSettings = withRequiredSettings([...settings]);
 
       for (const [key, file] of Object.entries(pendingSettingFiles)) {
         if (!file) continue;
@@ -427,10 +468,21 @@ export default function ClientSettings({
       }
 
       const success = await updateSettings({
-        settings: nextSettings.map((setting) => ({
-          key: setting.key,
-          value: setting.value?.trim() || null,
-        })),
+        settings: nextSettings.map((setting) => {
+          const rawValue = setting.value?.trim() || '';
+
+          const shouldNormalizeUrl =
+            setting.type === 'url' && !isImageSetting(setting.key);
+
+          return {
+            key: setting.key,
+            value: rawValue
+              ? shouldNormalizeUrl
+                ? normalizeExternalUrl(rawValue)
+                : rawValue
+              : null,
+          };
+        }),
       });
 
       setIsSavingSettings(false);
@@ -896,7 +948,7 @@ export default function ClientSettings({
 
         {setting.type === 'url' && setting.value && (
           <a
-            href={setting.value}
+            href={normalizeExternalUrl(setting.value)}
             target="_blank"
             rel="noopener noreferrer"
             className="mt-1 inline-flex cursor-pointer items-center gap-1 text-xs font-medium text-primary transition hover:text-primary/80"

@@ -114,19 +114,26 @@ export default async function Artigo({ params }: ParamProps) {
         </header>
 
         <div className="w-full max-w-full overflow-hidden">
-          <div className="prose prose-gray max-w-none">
-            {article.content
-              .split('\n\n')
-              .filter((paragraph) => paragraph.trim())
-              .map((paragraph, index) => (
-                <p
-                  key={index}
-                  className="mb-6 max-w-full break-words text-lg leading-relaxed text-gray-700 [overflow-wrap:anywhere]"
-                >
-                  {paragraph}
-                </p>
-              ))}
-          </div>
+          <div
+            className="
+              prose prose-gray max-w-none
+              prose-headings:font-bold prose-headings:text-gray-950
+              prose-h2:mt-8 prose-h2:mb-4 prose-h2:text-2xl
+              prose-h3:mt-6 prose-h3:mb-3 prose-h3:text-xl
+              prose-p:text-gray-700 prose-p:text-lg prose-p:leading-relaxed
+              prose-a:text-primary prose-a:font-semibold prose-a:underline prose-a:underline-offset-4
+              prose-ul:my-5 prose-ul:list-disc prose-ul:pl-6
+              prose-ol:my-5 prose-ol:list-decimal prose-ol:pl-6
+              prose-li:my-1 prose-li:text-gray-700
+              prose-li:marker:text-primary
+              break-words [overflow-wrap:anywhere]
+              [&_p:empty]:hidden
+              [&_li>p]:mb-0
+            "
+            dangerouslySetInnerHTML={{
+              __html: article.content || '<p>Sem conteúdo.</p>',
+            }}
+          />
         </div>
       </article>
     </main>

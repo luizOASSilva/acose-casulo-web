@@ -15,6 +15,7 @@ export interface PublicSettings {
 
   facebook_url?: string | null;
   instagram_url?: string | null;
+  youtube_url?: string | null;
 
   donation_enabled?: string | null;
   donation_message?: string | null;

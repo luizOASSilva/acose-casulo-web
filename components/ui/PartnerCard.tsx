@@ -58,19 +58,6 @@ export default function PartnerCard({
           aria-hidden={isClone ? true : undefined}
         />
       </div>
-
-      {hasUrl && !isClone && (
-        <span
-          className="
-            pointer-events-none absolute right-2 top-2 inline-flex h-6 w-6
-            items-center justify-center rounded-full bg-white/90 text-primary
-            opacity-0 shadow-sm transition group-hover:opacity-100
-          "
-          aria-hidden="true"
-        >
-          <ExternalLink size={13} />
-        </span>
-      )}
     </div>
   );
 

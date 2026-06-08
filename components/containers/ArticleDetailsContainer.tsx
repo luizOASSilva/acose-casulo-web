@@ -9,6 +9,7 @@ import type { Article } from '@/types/article';
 import KeywordBadge from '@/components/ui/KeywordBadge';
 import UserBadge from '@/components/ui/UserBadge';
 import MediaPicker from '@/components/admin/MediaPicker';
+import RichTextEditor from '@/components/ui/RichTextEditor';
 
 import { uploadMediaFile } from '@/services/admin/media-library';
 import { updateArticle, createArticle } from '@/services/articles';
@@ -98,6 +99,25 @@ function normalizeArticleImageUrl(url?: string | null): string {
   return `${API_URL}/storage/media/articles/${cleanUrl}`;
 }
 
+function normalizeRichTextContent(value?: string | null): string {
+  const content = value?.trim();
+
+  if (!content) return '';
+
+  const looksLikeHtml = /<\/?[a-z][\s\S]*>/i.test(content);
+
+  if (looksLikeHtml) {
+    return content;
+  }
+
+  return content
+    .split(/\n{2,}/)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean)
+    .map((paragraph) => `<p>${paragraph.replace(/\n/g, '<br>')}</p>`)
+    .join('');
+}
+
 function parseInitialKeywords(art?: Article): string[] {
   if (!art?.keywords || !Array.isArray(art.keywords)) return [];
 
@@ -176,6 +196,10 @@ export default function ArticleDetailsContainer({
 
   const isCreationFlow = isNew || !article?.id;
 
+  const initialContent = useMemo(() => {
+    return normalizeRichTextContent(article?.content);
+  }, [article]);
+
   const [isEditMode, setIsEditMode] = useState(
     isCreationFlow || startInEditMode
   );
@@ -187,7 +211,7 @@ export default function ArticleDetailsContainer({
 
   const [title, setTitle] = useState(article?.title || '');
   const [summary, setSummary] = useState(article?.summary || '');
-  const [content, setContent] = useState(article?.content || '');
+  const [content, setContent] = useState(initialContent);
 
   const [imageUrl, setImageUrl] = useState(
     normalizeArticleImageUrl(article?.media?.url)
@@ -229,7 +253,7 @@ export default function ArticleDetailsContainer({
 
     setTitle(article.title || '');
     setSummary(article.summary || '');
-    setContent(article.content || '');
+    setContent(normalizeRichTextContent(article.content));
     setImageUrl(normalizeArticleImageUrl(article.media?.url));
     setImageAlt(article.media?.alt_text || '');
     setImageCaption(article.media?.caption || '');
@@ -263,7 +287,7 @@ export default function ArticleDetailsContainer({
       pendingImageFile !== null ||
       title !== (article?.title || '') ||
       summary !== (article?.summary || '') ||
-      content !== (article?.content || '') ||
+      content !== initialContent ||
       imageUrl !== normalizeArticleImageUrl(article?.media?.url) ||
       imageAlt !== (article?.media?.alt_text || '') ||
       imageCaption !== (article?.media?.caption || '') ||
@@ -275,6 +299,7 @@ export default function ArticleDetailsContainer({
     title,
     summary,
     content,
+    initialContent,
     imageUrl,
     imageAlt,
     imageCaption,
@@ -393,7 +418,7 @@ export default function ArticleDetailsContainer({
   const resetFields = () => {
     setTitle(article?.title || '');
     setSummary(article?.summary || '');
-    setContent(article?.content || '');
+    setContent(normalizeRichTextContent(article?.content));
     setImageUrl(normalizeArticleImageUrl(article?.media?.url));
     setImageAlt(article?.media?.alt_text || '');
     setImageCaption(article?.media?.caption || '');
@@ -656,19 +681,24 @@ export default function ArticleDetailsContainer({
             )}
           </header>
 
-          <div className="prose prose-gray max-w-none overflow-hidden">
-            {(content || 'Sem conteúdo.')
-              .split('\n\n')
-              .filter((paragraph) => paragraph.trim())
-              .map((paragraph, index) => (
-                <p
-                  key={index}
-                  className="text-gray-700 text-lg leading-relaxed mb-6 break-words [overflow-wrap:anywhere]"
-                >
-                  {paragraph}
-                </p>
-              ))}
-          </div>
+          <div
+            className="
+              prose prose-gray max-w-none overflow-hidden
+              prose-headings:font-bold prose-headings:text-gray-950
+              prose-h2:mt-8 prose-h2:mb-4 prose-h2:text-2xl
+              prose-h3:mt-6 prose-h3:mb-3 prose-h3:text-xl
+              prose-p:text-gray-700 prose-p:text-lg prose-p:leading-relaxed
+              prose-a:text-primary prose-a:font-semibold prose-a:underline prose-a:underline-offset-4
+              prose-ul:my-5 prose-ul:list-disc prose-ul:pl-6
+              prose-ol:my-5 prose-ol:list-decimal prose-ol:pl-6
+              prose-li:my-1 prose-li:text-gray-700
+              prose-li:marker:text-primary
+              break-words [overflow-wrap:anywhere]
+            "
+            dangerouslySetInnerHTML={{
+              __html: content || '<p>Sem conteúdo.</p>',
+            }}
+          />
         </article>
       )}
 
@@ -1024,16 +1054,13 @@ export default function ArticleDetailsContainer({
               Conteúdo
             </label>
 
-            <textarea
+            <RichTextEditor
               value={content}
-              onChange={(event) => {
-                setContent(event.target.value);
+              onChange={(html) => {
+                setContent(html);
                 clearError('content');
               }}
-              className={fieldClass(
-                errors.content,
-                'w-full min-h-[350px] border rounded-md p-4 focus:outline-none text-base'
-              )}
+              error={errors.content}
               placeholder="Conteúdo completo..."
             />
 
