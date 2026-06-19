@@ -1,7 +1,6 @@
 'use client';
 
 import Image from 'next/image';
-import { ExternalLink } from 'lucide-react';
 
 import type { Partner } from '@/types/partner';
 
