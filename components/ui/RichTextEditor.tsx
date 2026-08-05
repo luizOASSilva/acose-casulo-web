@@ -59,7 +59,7 @@ const editorClassName = [
   '[&_a]:underline-offset-4',
 ].join(' ');
 
-function toolbarButtonClass(active?: boolean) {
+function toolbarButtonClass(active = false) {
   return [
     'inline-flex h-9 min-w-9 items-center justify-center rounded-md border px-2 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-40',
     active
@@ -71,9 +71,14 @@ function toolbarButtonClass(active?: boolean) {
 function normalizeUrl(value: string) {
   const cleanUrl = value.trim();
 
-  if (!cleanUrl) return '';
+  if (!cleanUrl) {
+    return '';
+  }
 
-  if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
+  if (
+    cleanUrl.startsWith('http://') ||
+    cleanUrl.startsWith('https://')
+  ) {
     return cleanUrl;
   }
 
@@ -91,30 +96,36 @@ export default function RichTextEditor({
 
   const editor = useEditor({
     immediatelyRender: false,
+
     extensions: [
       StarterKit.configure({
         heading: {
           levels: [2, 3],
         },
       }),
+
       Link.configure({
         openOnClick: false,
         autolink: true,
         linkOnPaste: true,
+
         HTMLAttributes: {
           target: '_blank',
           rel: 'noopener noreferrer',
         },
       }),
     ],
+
     content: value || '<p></p>',
+
     editorProps: {
       attributes: {
         class: editorClassName,
       },
     },
-    onUpdate({ editor }) {
-      const html = editor.getHTML();
+
+    onUpdate({ editor: updatedEditor }) {
+      const html = updatedEditor.getHTML();
 
       if (html === '<p></p>') {
         onChange('');
@@ -126,13 +137,17 @@ export default function RichTextEditor({
   });
 
   useEffect(() => {
-    if (!editor) return;
+    if (!editor) {
+      return;
+    }
 
     const currentHtml = editor.getHTML();
     const nextHtml = value || '<p></p>';
 
     if (currentHtml !== nextHtml) {
-      editor.commands.setContent(nextHtml, false);
+      editor.commands.setContent(nextHtml, {
+        emitUpdate: false,
+      });
     }
   }, [editor, value]);
 
@@ -142,10 +157,12 @@ export default function RichTextEditor({
     );
   }
 
-  const isEmpty = !editor.getText().trim();
+  // A partir daqui o TypeScript sabe que o editor não é nulo.
+  const activeEditor = editor;
+  const isEmpty = !activeEditor.getText().trim();
 
   function openLinkInput() {
-    const currentLink = editor?.getAttributes('link').href as
+    const currentLink = activeEditor.getAttributes('link').href as
       | string
       | undefined;
 
@@ -154,21 +171,26 @@ export default function RichTextEditor({
   }
 
   function applyLink() {
-    if (!editor) return;
-
     const url = normalizeUrl(linkValue);
 
     if (!url) {
-      editor.chain().focus().extendMarkRange('link').unsetLink().run();
+      activeEditor
+        .chain()
+        .focus()
+        .extendMarkRange('link')
+        .unsetLink()
+        .run();
+
       setIsLinkInputOpen(false);
       setLinkValue('');
+
       return;
     }
 
-    const { from, to, empty } = editor.state.selection;
+    const { from, to, empty } = activeEditor.state.selection;
 
     if (empty) {
-      editor
+      activeEditor
         .chain()
         .focus()
         .insertContent({
@@ -187,10 +209,13 @@ export default function RichTextEditor({
         })
         .run();
     } else {
-      editor
+      activeEditor
         .chain()
         .focus()
-        .setTextSelection({ from, to })
+        .setTextSelection({
+          from,
+          to,
+        })
         .setLink({
           href: url,
           target: '_blank',
@@ -221,8 +246,12 @@ export default function RichTextEditor({
         <button
           type="button"
           onMouseDown={(event) => event.preventDefault()}
-          onClick={() => editor.chain().focus().toggleBold().run()}
-          className={toolbarButtonClass(editor.isActive('bold'))}
+          onClick={() =>
+            activeEditor.chain().focus().toggleBold().run()
+          }
+          className={toolbarButtonClass(
+            activeEditor.isActive('bold'),
+          )}
           title="Negrito"
           aria-label="Negrito"
         >
@@ -232,8 +261,12 @@ export default function RichTextEditor({
         <button
           type="button"
           onMouseDown={(event) => event.preventDefault()}
-          onClick={() => editor.chain().focus().toggleItalic().run()}
-          className={toolbarButtonClass(editor.isActive('italic'))}
+          onClick={() =>
+            activeEditor.chain().focus().toggleItalic().run()
+          }
+          className={toolbarButtonClass(
+            activeEditor.isActive('italic'),
+          )}
           title="Itálico"
           aria-label="Itálico"
         >
@@ -244,10 +277,18 @@ export default function RichTextEditor({
           type="button"
           onMouseDown={(event) => event.preventDefault()}
           onClick={() =>
-            editor.chain().focus().toggleHeading({ level: 2 }).run()
+            activeEditor
+              .chain()
+              .focus()
+              .toggleHeading({
+                level: 2,
+              })
+              .run()
           }
           className={toolbarButtonClass(
-            editor.isActive('heading', { level: 2 })
+            activeEditor.isActive('heading', {
+              level: 2,
+            }),
           )}
           title="Título"
           aria-label="Título"
@@ -258,8 +299,12 @@ export default function RichTextEditor({
         <button
           type="button"
           onMouseDown={(event) => event.preventDefault()}
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className={toolbarButtonClass(editor.isActive('bulletList'))}
+          onClick={() =>
+            activeEditor.chain().focus().toggleBulletList().run()
+          }
+          className={toolbarButtonClass(
+            activeEditor.isActive('bulletList'),
+          )}
           title="Lista"
           aria-label="Lista"
         >
@@ -269,8 +314,12 @@ export default function RichTextEditor({
         <button
           type="button"
           onMouseDown={(event) => event.preventDefault()}
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          className={toolbarButtonClass(editor.isActive('orderedList'))}
+          onClick={() =>
+            activeEditor.chain().focus().toggleOrderedList().run()
+          }
+          className={toolbarButtonClass(
+            activeEditor.isActive('orderedList'),
+          )}
           title="Lista numerada"
           aria-label="Lista numerada"
         >
@@ -281,7 +330,9 @@ export default function RichTextEditor({
           type="button"
           onMouseDown={(event) => event.preventDefault()}
           onClick={openLinkInput}
-          className={toolbarButtonClass(editor.isActive('link'))}
+          className={toolbarButtonClass(
+            activeEditor.isActive('link'),
+          )}
           title="Adicionar link"
           aria-label="Adicionar link"
         >
@@ -291,9 +342,11 @@ export default function RichTextEditor({
         <button
           type="button"
           onMouseDown={(event) => event.preventDefault()}
-          onClick={() => editor.chain().focus().unsetLink().run()}
-          disabled={!editor.isActive('link')}
-          className={toolbarButtonClass(false)}
+          onClick={() =>
+            activeEditor.chain().focus().unsetLink().run()
+          }
+          disabled={!activeEditor.isActive('link')}
+          className={toolbarButtonClass()}
           title="Remover link"
           aria-label="Remover link"
         >
@@ -305,9 +358,11 @@ export default function RichTextEditor({
         <button
           type="button"
           onMouseDown={(event) => event.preventDefault()}
-          onClick={() => editor.chain().focus().undo().run()}
-          disabled={!editor.can().undo()}
-          className={toolbarButtonClass(false)}
+          onClick={() =>
+            activeEditor.chain().focus().undo().run()
+          }
+          disabled={!activeEditor.can().undo()}
+          className={toolbarButtonClass()}
           title="Desfazer"
           aria-label="Desfazer"
         >
@@ -317,9 +372,11 @@ export default function RichTextEditor({
         <button
           type="button"
           onMouseDown={(event) => event.preventDefault()}
-          onClick={() => editor.chain().focus().redo().run()}
-          disabled={!editor.can().redo()}
-          className={toolbarButtonClass(false)}
+          onClick={() =>
+            activeEditor.chain().focus().redo().run()
+          }
+          disabled={!activeEditor.can().redo()}
+          className={toolbarButtonClass()}
           title="Refazer"
           aria-label="Refazer"
         >
@@ -330,7 +387,12 @@ export default function RichTextEditor({
           type="button"
           onMouseDown={(event) => event.preventDefault()}
           onClick={() =>
-            editor.chain().focus().clearNodes().unsetAllMarks().run()
+            activeEditor
+              .chain()
+              .focus()
+              .clearNodes()
+              .unsetAllMarks()
+              .run()
           }
           className="ml-auto inline-flex h-9 items-center justify-center gap-1.5 rounded-md border border-gray-200 bg-white px-3 text-xs font-semibold text-gray-600 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
           title="Limpar formatação"
@@ -346,7 +408,9 @@ export default function RichTextEditor({
           <input
             type="url"
             value={linkValue}
-            onChange={(event) => setLinkValue(event.target.value)}
+            onChange={(event) =>
+              setLinkValue(event.target.value)
+            }
             onKeyDown={(event) => {
               if (event.key === 'Enter') {
                 event.preventDefault();
@@ -392,7 +456,7 @@ export default function RichTextEditor({
           </span>
         )}
 
-        <EditorContent editor={editor} />
+        <EditorContent editor={activeEditor} />
       </div>
     </div>
   );
