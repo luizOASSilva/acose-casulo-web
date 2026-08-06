@@ -677,7 +677,7 @@ export default function AdminAnalyticsContainer() {
           )}
 
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-            <div>
+            <div className="min-w-0 flex-1">
               <h1 className="text-3xl font-semibold tracking-tight text-zinc-950 md:text-4xl">
                 Dashboard de métricas do site
               </h1>
@@ -689,29 +689,33 @@ export default function AdminAnalyticsContainer() {
               </p>
             </div>
 
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <div className="grid w-full grid-cols-1 gap-2 sm:w-auto sm:grid-cols-2 lg:flex lg:shrink-0 lg:items-center">
               <a
                 href="https://analytics.google.com/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-zinc-200 bg-white px-4 text-sm font-semibold text-zinc-700 transition hover:border-primary/30 hover:bg-primary/10 hover:text-primary"
+                className="inline-flex h-11 min-w-[132px] items-center justify-center gap-2 whitespace-nowrap rounded-md border border-zinc-200 bg-white px-4 text-sm font-semibold text-zinc-700 transition hover:border-primary/30 hover:bg-primary/10 hover:text-primary"
               >
                 Abrir no GA4
-                <ExternalLink size={15} aria-hidden="true" />
+                <ExternalLink
+                  size={15}
+                  className="shrink-0"
+                  aria-hidden="true"
+                />
               </a>
 
               <button
                 type="button"
                 onClick={() => loadAnalytics(days, true)}
                 disabled={loading || refreshing}
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-white transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex h-11 min-w-[122px] items-center justify-center gap-2 whitespace-nowrap rounded-md bg-primary px-4 text-sm font-semibold text-white transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <RefreshCw
                   size={15}
-                  className={refreshing ? 'animate-spin' : ''}
+                  className={`shrink-0 ${refreshing ? 'animate-spin' : ''}`}
                   aria-hidden="true"
                 />
-                Atualizar
+                {refreshing ? 'Atualizando...' : 'Atualizar'}
               </button>
             </div>
           </div>
