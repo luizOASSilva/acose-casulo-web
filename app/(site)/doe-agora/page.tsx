@@ -39,7 +39,7 @@ function DonationUnavailable({
   return (
     <main className="py-20">
       <section className="mx-auto flex min-h-[55vh] w-[90%] max-w-2xl items-center justify-center">
-        <div className="w-full rounded-md border p-8 text-center">
+        <div className="w-full p-8 text-center">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-orange-100 text-primary">
             <HeartHandshake className="h-7 w-7" aria-hidden="true" />
           </div>
