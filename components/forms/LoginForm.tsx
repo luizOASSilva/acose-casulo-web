@@ -1,9 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useId, useMemo } from 'react';
+import { useEffect, useId, useMemo, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { Mail, Lock } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -75,6 +75,8 @@ export default function LoginForm() {
   const emailId = useId();
   const passwordId = useId();
   const errorId = useId();
+
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
@@ -190,14 +192,25 @@ export default function LoginForm() {
 
             <input
               id={passwordId}
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               autoComplete="current-password"
               aria-required="true"
               aria-invalid={!!errors.password}
               placeholder="Digite sua senha"
               {...register('password')}
-              className="h-12 w-full rounded-md border border-neutral-200 bg-white pl-12 pr-4 text-sm text-[#141210] outline-none transition placeholder:text-neutral-400 focus:border-primary aria-invalid:border-red-300"
+              className="h-12 w-full rounded-md border border-neutral-200 bg-white pl-12 pr-11 text-sm text-[#141210] outline-none transition placeholder:text-neutral-400 focus:border-primary aria-invalid:border-red-300"
             />
+
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+              aria-pressed={showPassword}
+              tabIndex={-1}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 transition-colors hover:text-neutral-600 focus:outline-none"
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
           </div>
 
           <AnimatePresence>

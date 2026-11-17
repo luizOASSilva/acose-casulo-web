@@ -358,7 +358,7 @@ export default function TransparencyClient({
                             <button
                               type="button"
                               onClick={() => handleDelete(doc.id, doc.title)}
-                              className={`cursor-pointer rounded-xl p-2.5 transition-all active:scale-95 ${theme.actionDelete}`}
+                              className={`rounded-xl p-2.5 transition-all active:scale-95 ${theme.actionDelete}`}
                               title="Remover documento"
                               aria-label="Remover documento"
                             >
